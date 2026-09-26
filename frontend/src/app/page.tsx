@@ -3,7 +3,7 @@
 import { Container, Typography, Box, CircularProgress, Alert } from '@mui/material';
 import { MediaGrid } from '@/components/MediaGrid';
 import { MediaItem } from '@/components/MediaCard';
-import { useGetMediaEntriesQuery } from '@/store/api';
+import { useGetMediaEntriesQuery } from '@/redux/api';
 
 export default function HomePage() {
   // Hook auto-fetches on mount and exposes cache status (no useEffect/dispatch).
