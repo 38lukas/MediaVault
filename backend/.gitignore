@@ -1,0 +1,18 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+
+# Testing & Cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local DBs / Environment
+*.sqlite3
+*.db
+.env
