@@ -6,9 +6,6 @@ from typing import List
 from app.database import get_db, engine, Base
 from app import models, schemas
 
-from app.database import get_db, engine, Base
-from app import models
-
 # Create all tables in PostgreSQL that inherit from Base
 Base.metadata.create_all(bind=engine)
 
@@ -46,6 +43,7 @@ def create_entry(
     db_entry = models.MediaEntry(
         title=entry_in.title,
         media_type=entry_in.media_type,
+        status=entry_in.status,
         external_id=entry_in.external_id,
         poster_path=entry_in.poster_path
     )

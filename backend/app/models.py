@@ -1,23 +1,16 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum
+from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime, timezone
-from enums import MediaType
 from app.database import Base
 
 
 class MediaEntry(Base):
-    """Database model for a media entry."""
+    """SQLAlchemy model for a media entry in the database."""
     __tablename__ = "media_entries"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
-    media_type = Column(Enum(MediaType), nullable=False)
-
-    # External ID from the API
+    media_type = Column(String, nullable=False)
+    status = Column(String, nullable=False)     
     external_id = Column(String, nullable=False)
     poster_path = Column(String, nullable=True)
-
-    # Timestamp for when the media entry was watched
-    watched_at = Column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc)
-    )
+    watched_at = Column(DateTime(timezone=True), nullable=True)
