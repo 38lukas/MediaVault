@@ -1,8 +1,4 @@
-Das liegt daran, dass Markdown-Code-Blöcke geschachtelte Code-Blöcke (wie ````bash`) nicht direkt verarbeiten können und die Formatierung dort abgebrochen ist.
-
-Hier ist der reine Text, den du direkt in deine `README.md` einfügen kannst:
-
-# Media Tracker
+# MediaVault
 
 A private media tracker for **movies, series, and anime**.
 
