@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { MediaItem } from '@/components/MediaCard';
 
-/** Raw shape returned by GET /api/v1/entries. */
+/** Raw shape returned by the entries API. */
 interface MediaEntryResponse {
   id: number;
   title: string;
@@ -10,6 +10,26 @@ interface MediaEntryResponse {
   external_id: string;
   poster_path?: string | null;
   created_at?: string | null;
+}
+
+/** Payload expected by POST/PUT /api/v1/entries. */
+export interface MediaEntryPayload {
+  title: string;
+  media_type: string;
+  status: string;
+  external_id: string;
+  poster_path?: string | null;
+}
+
+function toMediaItem(entry: MediaEntryResponse): MediaItem {
+  return {
+    id: entry.id,
+    title: entry.title,
+    type: entry.media_type,
+    status: entry.status,
+    cover_url: entry.poster_path || undefined,
+    external_id: entry.external_id,
+  };
 }
 
 /**
@@ -27,18 +47,61 @@ export const mediaApi = createApi({
   endpoints: (builder) => ({
     getMediaEntries: builder.query<MediaItem[], void>({
       query: () => '/entries',
-      // Map backend field names to the MediaItem props used by the UI.
+      // Newest first (higher id = later insert) so new cards appear on the left.
       transformResponse: (response: MediaEntryResponse[]): MediaItem[] =>
-        response.map((entry) => ({
-          id: entry.id,
-          title: entry.title,
-          type: entry.media_type,
-          status: entry.status,
-          cover_url: entry.poster_path || undefined,
-        })),
+        [...response]
+          .sort((a, b) => b.id - a.id)
+          .map(toMediaItem),
       providesTags: ['MediaEntries'],
+    }),
+    // POST a new entry; invalidatesTags refetches the list on success.
+    createMediaEntry: builder.mutation<MediaItem, MediaEntryPayload>({
+      query: (body) => ({
+        url: '/entries',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (entry: MediaEntryResponse) => toMediaItem(entry),
+      invalidatesTags: ['MediaEntries'],
+    }),
+    // PUT updates an existing entry and refreshes the cached list.
+    updateMediaEntry: builder.mutation<
+      MediaItem,
+      { id: number; body: MediaEntryPayload }
+    >({
+      query: ({ id, body }) => ({
+        url: `/entries/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      transformResponse: (entry: MediaEntryResponse) => toMediaItem(entry),
+      invalidatesTags: ['MediaEntries'],
+    }),
+    // DELETE removes an entry and refreshes the cached list.
+    deleteMediaEntry: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/entries/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['MediaEntries'],
+    }),
+    // Lazy query: resolve a game cover URL from IGDB by title.
+    fetchIgdbCover: builder.query<
+      { name: string; external_id: string; cover_url: string },
+      string
+    >({
+      query: (name) => ({
+        url: '/igdb/cover',
+        params: { name },
+      }),
     }),
   }),
 });
 
-export const { useGetMediaEntriesQuery } = mediaApi;
+export const {
+  useGetMediaEntriesQuery,
+  useCreateMediaEntryMutation,
+  useUpdateMediaEntryMutation,
+  useDeleteMediaEntryMutation,
+  useLazyFetchIgdbCoverQuery,
+} = mediaApi;

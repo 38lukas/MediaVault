@@ -7,9 +7,10 @@ import Image from 'next/image';
 export interface MediaItem {
   id: number;
   title: string;
-  type: string; 
-  status: string; 
+  type: string;
+  status: string;
   cover_url?: string;
+  external_id?: string;
   rating?: number;
 }
 
