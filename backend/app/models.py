@@ -1,13 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime, Enum
 from datetime import datetime, timezone
-import enum
+from enums import MediaType
 from app.database import Base
 
-class MediaType(str, enum.Enum):
-    """Enumeration of possible media types."""
-    MOVIE = "movie"
-    SERIES = "series"
-    ANIME = "anime"
 
 class MediaEntry(Base):
     """Database model for a media entry."""
