@@ -1,7 +1,5 @@
 """FastAPI application entrypoint for MediaVault."""
 
-import os
-
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -27,19 +25,14 @@ with engine.begin() as connection:
 # redirect_slashes=True (default): /entries and /entries/ both resolve cleanly.
 app = FastAPI(title="Media Tracker API", redirect_slashes=True)
 
-# Allow local Next.js + optional Render static-site origin via env.
-_frontend_origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
-_extra_origin = os.getenv("FRONTEND_ORIGIN", "").strip()
-if _extra_origin:
-    _frontend_origins.append(_extra_origin.rstrip("/"))
-
+# Allow the Render static frontend and local Next.js dev server.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_frontend_origins,
-    allow_origin_regex=r"https://.*\.onrender\.com",
+    allow_origins=[
+        "https://mediavault-1-capb.onrender.com",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
