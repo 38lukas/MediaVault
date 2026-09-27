@@ -1,3 +1,5 @@
+"""Pydantic request/response schemas for media entries."""
+
 from pydantic import BaseModel, ConfigDict, model_validator
 from datetime import datetime
 from typing import Optional
@@ -11,6 +13,8 @@ class MediaEntryBase(BaseModel):
     status: MediaStatus
     external_id: str
     poster_path: Optional[str] = None
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
 
     @model_validator(mode='after')
     def validate_status_for_media_type(self):
@@ -31,7 +35,6 @@ class MediaEntryCreate(MediaEntryBase):
 class MediaEntryResponse(MediaEntryBase):
     """Schema for the response of the API (used in GET requests)."""
     id: int
-    created_at: Optional[datetime] = None
 
     # Configuration to allow Pydantic to read data directly from SQLAlchemy models
     model_config = ConfigDict(from_attributes=True)

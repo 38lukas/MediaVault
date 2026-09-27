@@ -3,31 +3,33 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   Stack,
   TextField,
+  Typography,
 } from '@mui/material';
-import type { MediaItem } from '@/components/MediaCard';
+import Image from 'next/image';
+import { getStatusColor } from '@/lib/mediaStatus';
+import { toDateInputValue, toIsoDateOrNull } from '@/lib/dateUtils';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { closeMediaModal } from '@/redux/libraryUiSlice';
 import {
   useCreateMediaEntryMutation,
   useDeleteMediaEntryMutation,
   useLazyFetchIgdbCoverQuery,
   useUpdateMediaEntryMutation,
-} from '@/redux/api';
+} from '@/redux/mediaApi';
 
-const MEDIA_TYPES = ['Game', 'Movie', 'Series', 'Anime'] as const;
+const MEDIA_TYPES = ['Game', 'DLC', 'Movie', 'Series', 'Anime'] as const;
 
 /** Statuses allowed per media type (mirrors backend ALLOWED_STATUSES). */
 const STATUSES_BY_TYPE: Record<(typeof MEDIA_TYPES)[number], string[]> = {
   Game: ['Playing', 'Finished', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
+  DLC: ['Playing', 'Finished', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
   Movie: ['Watching', 'Finished', 'Dropped', 'Watchlist'],
   Series: ['Watching', 'Finished', 'Dropped', 'Watchlist'],
   Anime: ['Watching', 'Finished', 'Dropped', 'Watchlist'],
@@ -41,20 +43,30 @@ const INITIAL_FORM = {
   status: 'Playing',
   externalId: '',
   posterUrl: '',
+  startedAt: '',
+  finishedAt: '',
+};
+
+const fieldSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+  },
 };
 
 function isMediaType(value: string): value is MediaType {
   return (MEDIA_TYPES as readonly string[]).includes(value);
 }
 
-interface AddMediaModalProps {
-  open: boolean;
-  onClose: () => void;
-  /** When set, the dialog edits this entry instead of creating a new one. */
-  item?: MediaItem | null;
-}
-
-export function AddMediaModal({ open, onClose, item = null }: AddMediaModalProps) {
+/**
+ * Create/edit media dialog.
+ * Open state and editing item come from Redux; form fields stay local.
+ * @returns Media entry dialog bound to library UI + RTK Query mutations.
+ */
+export function AddMediaModal() {
+  const dispatch = useAppDispatch();
+  const open = useAppSelector((state) => state.libraryUi.isMediaModalOpen);
+  const item = useAppSelector((state) => state.libraryUi.editingItem);
   const isEdit = item != null;
   const [createMediaEntry, createState] = useCreateMediaEntryMutation();
   const [updateMediaEntry, updateState] = useUpdateMediaEntryMutation();
@@ -76,19 +88,25 @@ export function AddMediaModal({ open, onClose, item = null }: AddMediaModalProps
       ? updateState.error
       : createState.error;
 
+  const supportsIgdb = form.mediaType === 'Game' || form.mediaType === 'DLC';
+  const statusStyle = getStatusColor(form.status);
+  const statuses = useMemo(() => STATUSES_BY_TYPE[form.mediaType], [form.mediaType]);
+
   // Prefill form when opening create vs edit.
   useEffect(() => {
     if (!open) return;
 
     if (item) {
-      const mediaType = isMediaType(item.type) ? item.type : 'Game';
-      const statuses = STATUSES_BY_TYPE[mediaType];
+      const mediaType = isMediaType(item.media_type) ? item.media_type : 'Game';
+      const nextStatuses = STATUSES_BY_TYPE[mediaType];
       setForm({
         title: item.title,
         mediaType,
-        status: statuses.includes(item.status) ? item.status : statuses[0],
+        status: nextStatuses.includes(item.status) ? item.status : nextStatuses[0],
         externalId: item.external_id ?? '',
-        posterUrl: item.cover_url ?? '',
+        posterUrl: item.poster_path ?? '',
+        startedAt: toDateInputValue(item.started_at),
+        finishedAt: toDateInputValue(item.finished_at),
       });
       updateState.reset();
       deleteState.reset();
@@ -101,8 +119,6 @@ export function AddMediaModal({ open, onClose, item = null }: AddMediaModalProps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, item]);
 
-  const statuses = useMemo(() => STATUSES_BY_TYPE[form.mediaType], [form.mediaType]);
-
   const errorMessage =
     error && 'data' in error && error.data
       ? typeof error.data === 'string'
@@ -114,23 +130,29 @@ export function AddMediaModal({ open, onClose, item = null }: AddMediaModalProps
           ? 'Failed to update media entry'
           : 'Failed to create media entry';
 
+  /**
+   * Closes the dialog via Redux when no request is in flight.
+   * @returns void
+   */
   const handleClose = () => {
     if (isBusy) return;
-    onClose();
+    dispatch(closeMediaModal());
   };
 
-  /** Resolve poster + IGDB external id from the current game title. */
+  /**
+   * Resolves poster URL + IGDB external id from the current title.
+   * @returns Promise that settles when the IGDB lookup finishes.
+   */
   const handleFetchCover = async () => {
     const title = form.title.trim();
-    if (!title || form.mediaType !== 'Game') return;
+    if (!title || !supportsIgdb) return;
 
     setFetchError(null);
     try {
       const result = await fetchIgdbCover(title).unwrap();
       setForm((prev) => ({
         ...prev,
-        posterUrl: result.cover_url,
-        // Prefer the IGDB id when the field is empty or still a manual fallback.
+        posterUrl: result.poster_path,
         externalId:
           !prev.externalId.trim() || prev.externalId.startsWith('manual_')
             ? result.external_id
@@ -151,15 +173,21 @@ export function AddMediaModal({ open, onClose, item = null }: AddMediaModalProps
     }
   };
 
+  /**
+   * Creates or updates the entry, then closes the modal.
+   * @param event - Form submit event.
+   * @returns Promise that settles when the mutation finishes.
+   */
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const payload = {
       title: form.title.trim(),
       media_type: form.mediaType,
       status: form.status,
-      // Backend requires external_id; generate a unique fallback if left blank.
       external_id: form.externalId.trim() || `manual_${Date.now()}`,
       poster_path: form.posterUrl.trim() || null,
+      started_at: toIsoDateOrNull(form.startedAt),
+      finished_at: toIsoDateOrNull(form.finishedAt),
     };
 
     try {
@@ -168,135 +196,353 @@ export function AddMediaModal({ open, onClose, item = null }: AddMediaModalProps
       } else {
         await createMediaEntry(payload).unwrap();
       }
-      onClose();
+      dispatch(closeMediaModal());
     } catch {
       // Mutation error is surfaced via isError below.
     }
   };
 
-  /** Delete the open entry from the database, then close the dialog. */
+  /**
+   * Deletes the open entry from the database, then closes the dialog.
+   * @returns Promise that settles when the delete mutation finishes.
+   */
   const handleDelete = async () => {
     if (!item) return;
     try {
       await deleteMediaEntry(item.id).unwrap();
-      onClose();
+      dispatch(closeMediaModal());
     } catch {
       // Mutation error is surfaced via isError below.
     }
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="md"
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: 3,
+            overflow: 'hidden',
+            backgroundImage: 'none',
+            backgroundColor: '#141414',
+            border: '1px solid rgba(255,255,255,0.08)',
+          },
+        },
+      }}
+    >
       <form onSubmit={handleSubmit}>
-        <DialogTitle>{isEdit ? 'Edit media' : 'Add media'}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+        {/* Header tinted by the currently selected status */}
+        <Box
+          sx={{
+            px: 3,
+            pt: 2.5,
+            pb: 2,
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            background: `linear-gradient(135deg, ${statusStyle.bg} 0%, transparent 70%)`,
+          }}
+        >
+          <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: 1.2 }}>
+            {isEdit ? 'Edit entry' : 'New entry'}
+          </Typography>
+          <Stack
+            direction="row"
+            spacing={1.5}
+            sx={{ alignItems: 'center', flexWrap: 'wrap', mt: 0.5 }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: 700, flex: 1, minWidth: 0 }}>
+              {form.title.trim() || (isEdit ? 'Edit media' : 'Add media')}
+            </Typography>
+            <Box
+              sx={{
+                px: 1.5,
+                py: 0.5,
+                borderRadius: 999,
+                backgroundColor: statusStyle.bg,
+                border: `1px solid ${statusStyle.border}`,
+                color: statusStyle.color,
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                textTransform: 'capitalize',
+              }}
+            >
+              {form.status}
+            </Box>
+          </Stack>
+        </Box>
+
+        <DialogContent sx={{ px: 3, py: 3 }}>
+          <Stack spacing={2.5}>
             {isError && <Alert severity="error">{errorMessage}</Alert>}
             {fetchError && <Alert severity="error">{fetchError}</Alert>}
 
-            <TextField
-              required
-              label="Title"
-              value={form.title}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-              fullWidth
-            />
-
-            <FormControl fullWidth>
-              <InputLabel id="media-type-label">Media Type</InputLabel>
-              <Select
-                labelId="media-type-label"
-                label="Media Type"
-                value={form.mediaType}
-                onChange={(e) => {
-                  const mediaType = e.target.value as MediaType;
-                  const nextStatuses = STATUSES_BY_TYPE[mediaType];
-                  setForm((prev) => ({
-                    ...prev,
-                    mediaType,
-                    // Keep current status only if it is valid for the new type.
-                    status: nextStatuses.includes(prev.status) ? prev.status : nextStatuses[0],
-                  }));
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={3}
+              sx={{ alignItems: { md: 'flex-start' } }}
+            >
+              {/* Live poster preview */}
+              <Box
+                sx={{
+                  width: { xs: 120, md: 148 },
+                  flexShrink: 0,
+                  alignSelf: { xs: 'center', md: 'flex-start' },
                 }}
               >
-                {MEDIA_TYPES.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                <Box
+                  sx={{
+                    position: 'relative',
+                    aspectRatio: '2 / 3',
+                    borderRadius: 2.5,
+                    overflow: 'hidden',
+                    backgroundColor: '#1a1a1a',
+                    border: `1px solid ${statusStyle.border}`,
+                    boxShadow: `0 12px 32px ${statusStyle.bg}`,
+                  }}
+                >
+                  <Image
+                    src={
+                      form.posterUrl.trim() ||
+                      'https://via.placeholder.com/300x450?text=No+Cover'
+                    }
+                    alt={form.title || 'Cover preview'}
+                    fill
+                    sizes="148px"
+                    style={{ objectFit: 'cover' }}
+                  />
+                </Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', textAlign: 'center', mt: 1 }}
+                >
+                  Cover preview
+                </Typography>
+              </Box>
 
-            <FormControl fullWidth>
-              <InputLabel id="status-label">Status</InputLabel>
-              <Select
-                labelId="status-label"
-                label="Status"
-                value={form.status}
-                onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
-              >
-                {statuses.map((status) => (
-                  <MenuItem key={status} value={status}>
-                    {status}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              <Stack spacing={2.25} sx={{ flex: 1, minWidth: 0 }}>
+                <TextField
+                  required
+                  label="Title"
+                  value={form.title}
+                  onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                  fullWidth
+                  sx={fieldSx}
+                />
 
-            <TextField
-              label="External ID"
-              helperText="Optional. Filled by IGDB Fetch, or generated on save."
-              value={form.externalId}
-              onChange={(e) => setForm((prev) => ({ ...prev, externalId: e.target.value }))}
-              fullWidth
-            />
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+                  >
+                    Media type
+                  </Typography>
+                  <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+                    {MEDIA_TYPES.map((type) => {
+                      const selected = form.mediaType === type;
+                      return (
+                        <Box
+                          key={type}
+                          component="button"
+                          type="button"
+                          onClick={() => {
+                            const nextStatuses = STATUSES_BY_TYPE[type];
+                            setForm((prev) => ({
+                              ...prev,
+                              mediaType: type,
+                              status: nextStatuses.includes(prev.status)
+                                ? prev.status
+                                : nextStatuses[0],
+                            }));
+                          }}
+                          sx={{
+                            cursor: 'pointer',
+                            border: selected
+                              ? '1px solid rgba(255,255,255,0.35)'
+                              : '1px solid rgba(255,255,255,0.1)',
+                            backgroundColor: selected
+                              ? 'rgba(255,255,255,0.12)'
+                              : 'rgba(255,255,255,0.03)',
+                            color: selected ? '#fff' : 'text.secondary',
+                            borderRadius: 999,
+                            px: 1.5,
+                            py: 0.6,
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            fontFamily: 'inherit',
+                          }}
+                        >
+                          {type}
+                        </Box>
+                      );
+                    })}
+                  </Stack>
+                </Box>
 
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
-              <TextField
-                label="Poster URL"
-                value={form.posterUrl}
-                onChange={(e) => setForm((prev) => ({ ...prev, posterUrl: e.target.value }))}
-                fullWidth
-                helperText={
-                  form.mediaType === 'Game'
-                    ? 'Use Fetch to pull the cover from IGDB by title.'
-                    : undefined
-                }
-              />
-              <Button
-                variant="outlined"
-                onClick={handleFetchCover}
-                disabled={
-                  form.mediaType !== 'Game' ||
-                  !form.title.trim() ||
-                  igdbState.isFetching ||
-                  isBusy
-                }
-                sx={{ mt: 0.5, whiteSpace: 'nowrap', minWidth: 88 }}
-              >
-                {igdbState.isFetching ? '…' : 'Fetch'}
-              </Button>
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+                  >
+                    Status
+                  </Typography>
+                  <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+                    {statuses.map((status) => {
+                      const colors = getStatusColor(status);
+                      const selected = form.status === status;
+                      return (
+                        <Box
+                          key={status}
+                          component="button"
+                          type="button"
+                          onClick={() => setForm((prev) => ({ ...prev, status }))}
+                          sx={{
+                            cursor: 'pointer',
+                            border: `1px solid ${selected ? colors.border : 'rgba(255,255,255,0.08)'}`,
+                            backgroundColor: selected ? colors.bg : 'rgba(255,255,255,0.03)',
+                            color: selected ? colors.color : 'text.secondary',
+                            borderRadius: 999,
+                            px: 1.5,
+                            py: 0.6,
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            fontFamily: 'inherit',
+                            textTransform: 'capitalize',
+                            transition: 'background-color 0.15s ease, border-color 0.15s ease',
+                          }}
+                        >
+                          {status}
+                        </Box>
+                      );
+                    })}
+                  </Stack>
+                </Box>
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <TextField
+                    label="Started at"
+                    type="date"
+                    value={form.startedAt}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, startedAt: e.target.value }))
+                    }
+                    fullWidth
+                    slotProps={{ inputLabel: { shrink: true } }}
+                    sx={fieldSx}
+                  />
+                  <TextField
+                    label="Finished at"
+                    type="date"
+                    value={form.finishedAt}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, finishedAt: e.target.value }))
+                    }
+                    fullWidth
+                    slotProps={{ inputLabel: { shrink: true } }}
+                    sx={fieldSx}
+                  />
+                </Stack>
+
+                <TextField
+                  label="External ID"
+                  helperText="Optional. Filled by IGDB Fetch, or generated on save."
+                  value={form.externalId}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, externalId: e.target.value }))
+                  }
+                  fullWidth
+                  sx={fieldSx}
+                />
+
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
+                  <TextField
+                    label="Poster URL"
+                    value={form.posterUrl}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, posterUrl: e.target.value }))
+                    }
+                    fullWidth
+                    helperText={
+                      supportsIgdb
+                        ? 'Fetch a cover from IGDB using the title.'
+                        : undefined
+                    }
+                    sx={fieldSx}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={handleFetchCover}
+                    disabled={
+                      !supportsIgdb ||
+                      !form.title.trim() ||
+                      igdbState.isFetching ||
+                      isBusy
+                    }
+                    sx={{
+                      mt: 0.5,
+                      whiteSpace: 'nowrap',
+                      minWidth: 96,
+                      borderRadius: 2,
+                      borderColor: statusStyle.border,
+                      color: statusStyle.color,
+                      '&:hover': {
+                        borderColor: statusStyle.color,
+                        backgroundColor: statusStyle.bg,
+                      },
+                    }}
+                  >
+                    {igdbState.isFetching ? '…' : 'Fetch'}
+                  </Button>
+                </Stack>
+              </Stack>
             </Stack>
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+
+        <DialogActions
+          sx={{
+            px: 3,
+            py: 2,
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            backgroundColor: 'rgba(0,0,0,0.2)',
+          }}
+        >
           {isEdit && item && (
             <Button
               color="error"
+              variant="text"
               onClick={handleDelete}
               disabled={isBusy}
-              sx={{ mr: 'auto' }}
+              sx={{ mr: 'auto', borderRadius: 2 }}
             >
               {deleteState.isLoading ? 'Removing…' : 'Remove'}
             </Button>
           )}
-          <Button onClick={handleClose} disabled={isBusy}>
+          <Button onClick={handleClose} disabled={isBusy} sx={{ borderRadius: 2 }}>
             Cancel
           </Button>
           <Button
             type="submit"
             variant="contained"
             disabled={isBusy || !form.title.trim()}
+            sx={{
+              borderRadius: 2,
+              px: 2.5,
+              backgroundColor: statusStyle.color,
+              color: '#0a0a0a',
+              fontWeight: 700,
+              '&:hover': {
+                backgroundColor: statusStyle.color,
+                filter: 'brightness(1.08)',
+              },
+              '&.Mui-disabled': {
+                backgroundColor: 'rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.3)',
+              },
+            }}
           >
             {createState.isLoading || updateState.isLoading ? 'Saving…' : 'Save'}
           </Button>

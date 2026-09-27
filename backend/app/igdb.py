@@ -18,6 +18,7 @@ _token_expires_at: float = 0.0
 
 
 def _require_credentials() -> tuple[str, str]:
+    """Load Twitch client credentials from environment variables."""
     client_id = os.getenv("TWITCH_CLIENT_ID")
     client_secret = os.getenv("TWITCH_CLIENT_SECRET")
     if not client_id or not client_secret:
@@ -52,10 +53,7 @@ def get_access_token() -> str:
 
 
 def fetch_cover_by_name(name: str) -> dict[str, Any]:
-    """
-    Search IGDB for a game by name and return cover URL + external id.
-    Raises LookupError when no match / no cover is found.
-    """
+    """Search IGDB for a game by name and return cover URL + external id."""
     trimmed = name.strip()
     if not trimmed:
         raise ValueError("Game name is required")
@@ -96,5 +94,5 @@ def fetch_cover_by_name(name: str) -> dict[str, Any]:
     return {
         "name": game.get("name", trimmed),
         "external_id": f"igdb_{game['id']}",
-        "cover_url": COVER_URL_TEMPLATE.format(image_id=image_id),
+        "poster_path": COVER_URL_TEMPLATE.format(image_id=image_id),
     }

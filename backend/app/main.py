@@ -1,3 +1,5 @@
+"""FastAPI application entrypoint for MediaVault."""
+
 from fastapi import FastAPI, Depends, HTTPException, status, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -12,6 +14,17 @@ from app import igdb as igdb_service
 # Create all tables in PostgreSQL that inherit from Base
 Base.metadata.create_all(bind=engine)
 
+# create_all does not alter existing tables; sync date columns.
+with engine.begin() as connection:
+    connection.execute(text("ALTER TABLE media_entries DROP COLUMN IF EXISTS created_at"))
+    connection.execute(text("ALTER TABLE media_entries DROP COLUMN IF EXISTS watched_at"))
+    connection.execute(
+        text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ")
+    )
+    connection.execute(
+        text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS finished_at TIMESTAMPTZ")
+    )
+
 app = FastAPI(title="Media Tracker API")
 
 app.add_middleware(
@@ -22,22 +35,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def root():
-    """Root endpoint that returns a welcome message."""
+    """Return a simple welcome payload for the API root."""
     return {"message": "Willkommen zur Media Tracker API!"}
+
 
 @app.get("/ping-db")
 def ping_db(db: Session = Depends(get_db)):
-    """Endpoint to check the database connection."""
+    """Verify the PostgreSQL connection with a trivial SELECT."""
     try:
         db.execute(text("SELECT 1"))
         return {"status": "success", "message": "Erfolgreich mit PostgreSQL verbunden!"}
     except Exception as e:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"Datenbankverbindung fehlgeschlagen: {str(e)}"
         )
+
 
 @app.get("/api/v1/igdb/cover")
 def get_igdb_cover(name: str = Query(..., min_length=1)):
@@ -54,43 +70,41 @@ def get_igdb_cover(name: str = Query(..., min_length=1)):
             detail=f"IGDB request failed: {e}",
         )
 
+
 @app.post(
-    "/api/v1/entries", 
-    response_model=schemas.MediaEntryResponse, 
-    status_code=status.HTTP_201_CREATED
+    "/api/v1/entries",
+    response_model=schemas.MediaEntryResponse,
+    status_code=status.HTTP_201_CREATED,
 )
 def create_entry(
-    entry_in: schemas.MediaEntryCreate, 
-    db: Session = Depends(get_db)
+    entry_in: schemas.MediaEntryCreate,
+    db: Session = Depends(get_db),
 ):
-    """Create a new media entry."""
-
-    # Convert Pydantic data to a SQLAlchemy database object
+    """Create a new media entry and persist it to PostgreSQL."""
     db_entry = models.MediaEntry(
         title=entry_in.title,
         media_type=entry_in.media_type,
         status=entry_in.status,
         external_id=entry_in.external_id,
-        poster_path=entry_in.poster_path
+        poster_path=entry_in.poster_path,
+        started_at=entry_in.started_at,
+        finished_at=entry_in.finished_at,
     )
-    
-    # Add to the database
+
     db.add(db_entry)
     db.commit()
     db.refresh(db_entry)
-    
     return db_entry
 
+
 @app.get(
-    "/api/v1/entries", 
-    response_model=List[schemas.MediaEntryResponse]
+    "/api/v1/entries",
+    response_model=List[schemas.MediaEntryResponse],
 )
 def get_entries(db: Session = Depends(get_db)):
-    """Get all media entries."""
+    """Return all media entries from the database."""
+    return db.query(models.MediaEntry).all()
 
-    # Retrieve all entry objects
-    entries = db.query(models.MediaEntry).all()
-    return entries
 
 @app.put(
     "/api/v1/entries/{entry_id}",
@@ -101,7 +115,7 @@ def update_entry(
     entry_in: schemas.MediaEntryCreate,
     db: Session = Depends(get_db),
 ):
-    """Update an existing media entry by its ID."""
+    """Update an existing media entry by its primary key."""
     entry = db.query(models.MediaEntry).filter(models.MediaEntry.id == entry_id).first()
     if entry is None:
         raise HTTPException(status_code=404, detail="Entry not found")
@@ -111,17 +125,20 @@ def update_entry(
     entry.status = entry_in.status
     entry.external_id = entry_in.external_id
     entry.poster_path = entry_in.poster_path
+    entry.started_at = entry_in.started_at
+    entry.finished_at = entry_in.finished_at
 
     db.commit()
     db.refresh(entry)
     return entry
 
+
 @app.delete(
-    "/api/v1/entries/{entry_id}", 
-    status_code=status.HTTP_204_NO_CONTENT
+    "/api/v1/entries/{entry_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_entry(entry_id: int, db: Session = Depends(get_db)):
-    """Delete a media entry by its ID."""
+    """Delete a media entry by its primary key."""
     entry = db.query(models.MediaEntry).filter(models.MediaEntry.id == entry_id).first()
     if entry is None:
         raise HTTPException(status_code=404, detail="Entry not found")

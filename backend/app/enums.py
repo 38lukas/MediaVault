@@ -1,12 +1,17 @@
+"""Media type/status enums and allowed status combinations."""
+
 from enum import Enum
 
 class MediaType(str, Enum):
+    """Supported media categories stored in media_entries.media_type."""
     MOVIE = "Movie"
     SERIES = "Series"
     ANIME = "Anime"
     GAME = "Game"
+    DLC = "DLC"
 
 class MediaStatus(str, Enum):
+    """Supported progress labels stored in media_entries.status."""
     WATCHING = "Watching"
     PLAYING = "Playing"
     FINISHED = "Finished"
@@ -16,15 +21,18 @@ class MediaStatus(str, Enum):
     WISHLIST = "Wishlist"
     WATCHLIST = "Watchlist"
 
+_GAME_STATUSES = {
+    MediaStatus.PLAYING,
+    MediaStatus.FINISHED,
+    MediaStatus.DROPPED,
+    MediaStatus.SHELVED,
+    MediaStatus.BACKLOG,
+    MediaStatus.WISHLIST,
+}
+
 ALLOWED_STATUSES = {
-    MediaType.GAME: {
-        MediaStatus.PLAYING,
-        MediaStatus.FINISHED,
-        MediaStatus.DROPPED,
-        MediaStatus.SHELVED,
-        MediaStatus.BACKLOG,
-        MediaStatus.WISHLIST,
-    },
+    MediaType.GAME: _GAME_STATUSES,
+    MediaType.DLC: _GAME_STATUSES,
     MediaType.MOVIE: {
         MediaStatus.WATCHING,
         MediaStatus.FINISHED,

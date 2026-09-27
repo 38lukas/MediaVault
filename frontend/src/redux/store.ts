@@ -1,14 +1,18 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { mediaApi } from './api';
+import { mediaApi } from './mediaApi';
+import libraryUiReducer from './libraryUiSlice';
 
+/**
+ * Creates the Redux store for a Next.js client tree.
+ * @returns Configured store with RTK Query + library UI slice.
+ */
 export const makeStore = () =>
   configureStore({
     reducer: {
-      // RTK Query reducer: cached responses, request status, and errors.
       [mediaApi.reducerPath]: mediaApi.reducer,
+      libraryUi: libraryUiReducer,
     },
     middleware: (getDefaultMiddleware) =>
-      // API middleware handles cache lifetimes, polling, and invalidation.
       getDefaultMiddleware().concat(mediaApi.middleware),
   });
 
