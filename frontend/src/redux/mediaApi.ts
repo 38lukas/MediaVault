@@ -10,6 +10,7 @@ export type { MediaEntryPayload };
 export const mediaApi = createApi({
   reducerPath: 'mediaApi',
   baseQuery: fetchBaseQuery({
+    // Baked in at build time for static export; falls back for local `next dev`.
     baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1',
   }),
   tagTypes: ['MediaEntries'],
