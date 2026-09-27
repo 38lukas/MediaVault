@@ -64,5 +64,5 @@ uvicorn app.main:app --reload
 On Render you need **two services**: a Static Site for `frontend/out` and a
 separate Web Service for FastAPI (`uvicorn app.main:app --host 0.0.0.0 --port $PORT`).
 Set the frontend build env `NEXT_PUBLIC_API_URL` to the Web Service URL + `/api/v1`
-(not the Static Site hostname). Optionally set `FRONTEND_ORIGIN` on the backend
-to your Static Site URL for CORS.
+(not the Static Site hostname). The API allows all origins (`CORSMiddleware` with
+`allow_origins=["*"]`); redeploy the Web Service after pulling CORS changes.

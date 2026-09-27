@@ -25,15 +25,13 @@ with engine.begin() as connection:
 # redirect_slashes=True (default): /entries and /entries/ both resolve cleanly.
 app = FastAPI(title="Media Tracker API", redirect_slashes=True)
 
-# Allow the Render static frontend and local Next.js dev server.
+# CORS: allow browser calls from the static frontend (and local Next.js).
+# Using "*" avoids missing Access-Control-Allow-Origin after Render deploys.
+# credentials must be False when origins is "*".
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://mediavault-1-capb.onrender.com",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
