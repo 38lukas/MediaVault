@@ -32,4 +32,4 @@ frontend/*.tsbuildinfo
 frontend/next-env.d.ts
 
 # Scratch / local notes
-.PROJECT_EXPLAINATION.md
+PROJECT_EXPLAINER.md
