@@ -8,11 +8,11 @@ import type {
 } from '@/types/media';
 
 interface LibraryUiState {
-  viewMode: ViewMode;
-  typeFilter: TypeFilter;
-  sortField: SortField;
-  sortDirection: SortDirection;
-  groupByFinishedMonth: boolean;
+  viewMode: ViewMode; // cards, list
+  typeFilter: TypeFilter; // All, Movie, Series, Anime, Game, DLC
+  sortField: SortField; // status, title, release_date, finished_date
+  sortDirection: SortDirection; // asc, desc
+  groupByFinishedMonth: boolean; 
   isMediaModalOpen: boolean;
   editingItem: MediaItem | null;
 }
@@ -20,17 +20,14 @@ interface LibraryUiState {
 const initialState: LibraryUiState = {
   viewMode: 'cards',
   typeFilter: 'All',
-  sortField: 'title',
+  sortField: 'status',
   sortDirection: 'asc',
   groupByFinishedMonth: false,
   isMediaModalOpen: false,
   editingItem: null,
 };
 
-/**
- * UI state for the library page (filters, sort, modal).
- * Server data stays in RTK Query (`mediaApi`).
- */
+// UI state for the library page with methods to update the state.
 const libraryUiSlice = createSlice({
   name: 'libraryUi',
   initialState,
@@ -65,6 +62,7 @@ const libraryUiSlice = createSlice({
   },
 });
 
+// Export the methods to be used in the components.
 export const {
   setViewMode,
   setTypeFilter,
@@ -76,4 +74,5 @@ export const {
   closeMediaModal,
 } = libraryUiSlice.actions;
 
+// Export the reducer to be used in the store.
 export default libraryUiSlice.reducer;

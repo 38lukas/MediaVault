@@ -1,4 +1,4 @@
-/** Shared media domain types — aligned with the FastAPI MediaEntry schema. */
+// Shared media domain types aligned with the FastAPI MediaEntry schema
 export interface MediaItem {
   id: number;
   title: string;
@@ -10,7 +10,7 @@ export interface MediaItem {
   finished_at?: string | null;
 }
 
-/** Payload for creating/updating entries (same fields as the API body). */
+// Payload for creating/updating entries
 export type MediaEntryPayload = Omit<MediaItem, 'id'>;
 
 export type ViewMode = 'cards' | 'list';

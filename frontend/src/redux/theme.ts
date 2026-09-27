@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material';
 
-/** Dark MUI theme so Dialogs, Buttons, and form fields match the page. */
+// Dark MUI theme so Dialogs, Buttons, and form fields match the page.
 export const darkTheme = createTheme({
   palette: {
     mode: 'dark',

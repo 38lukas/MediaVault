@@ -3,63 +3,55 @@ import type { MediaEntryPayload, MediaItem } from '@/types/media';
 
 export type { MediaEntryPayload };
 
-/**
- * Resolves the RTK Query base URL from env, with a local fallback.
- * Strips trailing slashes and collapses accidental duplicated origins
- * (e.g. https://host/https://host/api/v1 → https://host/api/v1).
- * @returns Absolute API base URL without a trailing slash.
+/** Resolves the RTK Query base URL from env, with a local fallback
+ *  Strips trailing slashes and collapses accidental duplicated origins
+ * 
+ * @returns Absolute API base URL without a trailing slash
  */
 function resolveApiBaseUrl(): string {
   let raw = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1').trim();
 
-  // Unwrap accidental markdown-link or quoted values from env dashboards.
+  // Remove markdown links
   const markdownLink = raw.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
   if (markdownLink) {
-    raw = markdownLink[1] || markdownLink[2];
+    raw = markdownLink[1] || markdownLink[2]; 
   }
-  raw = raw.replace(/^['"]|['"]$/g, '');
-
-  // Remove trailing slashes so `/entries` joins cleanly once.
-  raw = raw.replace(/\/+$/, '');
-
-  // Fix duplicated origin baked into NEXT_PUBLIC_API_URL at build time.
-  raw = raw.replace(/^(https?:\/\/[^/]+)\/\1(?=\/|$)/i, '$1');
+  raw = raw.replace(/^['"]|['"]$/g, ''); // Remove quotes
+  raw = raw.replace(/\/+$/, ''); // Remove trailing slashes so `/entries` joins cleanly once
+  raw = raw.replace(/^(https?:\/\/[^/]+)\/\1(?=\/|$)/i, '$1'); // Fix duplicated origin baked into NEXT_PUBLIC_API_URL at build time
 
   return raw;
 }
 
-/**
- * RTK Query API slice for media entries and IGDB cover lookup.
- * Field names match the FastAPI MediaEntry schema 1:1.
- */
+// RTK Query API slice for media entries and IGDB cover lookup
 export const mediaApi = createApi({
-  reducerPath: 'mediaApi',
-  baseQuery: fetchBaseQuery({
-    // Baked in at build time for static export; falls back for local `next dev`.
-    baseUrl: resolveApiBaseUrl(),
-  }),
-  tagTypes: ['MediaEntries'],
+
+  reducerPath: 'mediaApi', 
+  baseQuery: fetchBaseQuery({baseUrl: resolveApiBaseUrl()}), 
+  tagTypes: ['MediaEntries'], 
+
+  // Endpoints for the API 
   endpoints: (builder) => ({
+
+    // Get all media entries
     getMediaEntries: builder.query<MediaItem[], void>({
-      // Relative path only — never put the host here (avoids baseUrl duplication).
       query: () => '/entries',
-      /**
-       * Sorts API entries newest-first by id (no field renaming needed).
-       * @param response - Raw entry list from GET /entries.
-       * @returns MediaItem list for the library UI.
-       */
       transformResponse: (response: MediaItem[]): MediaItem[] =>
         [...response].sort((a, b) => b.id - a.id),
       providesTags: ['MediaEntries'],
     }),
+
+    // Create a new media entry
     createMediaEntry: builder.mutation<MediaItem, MediaEntryPayload>({
       query: (body) => ({
         url: '/entries',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['MediaEntries'],
+      invalidatesTags: ['MediaEntries'], // Updates the cache for the media entries
     }),
+
+    // Update a media entry
     updateMediaEntry: builder.mutation<
       MediaItem,
       { id: number; body: MediaEntryPayload }
@@ -71,6 +63,8 @@ export const mediaApi = createApi({
       }),
       invalidatesTags: ['MediaEntries'],
     }),
+
+    // Delete a media entry
     deleteMediaEntry: builder.mutation<void, number>({
       query: (id) => ({
         url: `/entries/${id}`,
@@ -78,6 +72,8 @@ export const mediaApi = createApi({
       }),
       invalidatesTags: ['MediaEntries'],
     }),
+
+    // Fetch the IGDB cover for a media entry
     fetchIgdbCover: builder.query<
       { name: string; external_id: string; poster_path: string },
       string
@@ -90,6 +86,7 @@ export const mediaApi = createApi({
   }),
 });
 
+// Export the hooks from the mediaApi slice
 export const {
   useGetMediaEntriesQuery,
   useCreateMediaEntryMutation,
