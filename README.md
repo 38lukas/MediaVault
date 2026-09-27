@@ -57,7 +57,12 @@ uvicorn app.main:app --reload
 ```
 
 * **API Server:** http://127.0.0.1:8000
+* **Healthcheck:** http://127.0.0.1:8000/health
 * **Interactive API Docs (Swagger UI):** http://127.0.0.1:8000/docs
 * **Alternative API Docs (ReDoc):** http://127.0.0.1:8000/redoc
 
----
+On Render you need **two services**: a Static Site for `frontend/out` and a
+separate Web Service for FastAPI (`uvicorn app.main:app --host 0.0.0.0 --port $PORT`).
+Set the frontend build env `NEXT_PUBLIC_API_URL` to the Web Service URL + `/api/v1`
+(not the Static Site hostname). Optionally set `FRONTEND_ORIGIN` on the backend
+to your Static Site URL for CORS.
