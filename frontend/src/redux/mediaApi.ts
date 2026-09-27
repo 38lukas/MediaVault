@@ -4,6 +4,31 @@ import type { MediaEntryPayload, MediaItem } from '@/types/media';
 export type { MediaEntryPayload };
 
 /**
+ * Resolves the RTK Query base URL from env, with a local fallback.
+ * Strips trailing slashes and collapses accidental duplicated origins
+ * (e.g. https://host/https://host/api/v1 → https://host/api/v1).
+ * @returns Absolute API base URL without a trailing slash.
+ */
+function resolveApiBaseUrl(): string {
+  let raw = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1').trim();
+
+  // Unwrap accidental markdown-link or quoted values from env dashboards.
+  const markdownLink = raw.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+  if (markdownLink) {
+    raw = markdownLink[1] || markdownLink[2];
+  }
+  raw = raw.replace(/^['"]|['"]$/g, '');
+
+  // Remove trailing slashes so `/entries` joins cleanly once.
+  raw = raw.replace(/\/+$/, '');
+
+  // Fix duplicated origin baked into NEXT_PUBLIC_API_URL at build time.
+  raw = raw.replace(/^(https?:\/\/[^/]+)\/\1(?=\/|$)/i, '$1');
+
+  return raw;
+}
+
+/**
  * RTK Query API slice for media entries and IGDB cover lookup.
  * Field names match the FastAPI MediaEntry schema 1:1.
  */
@@ -11,11 +36,12 @@ export const mediaApi = createApi({
   reducerPath: 'mediaApi',
   baseQuery: fetchBaseQuery({
     // Baked in at build time for static export; falls back for local `next dev`.
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1',
+    baseUrl: resolveApiBaseUrl(),
   }),
   tagTypes: ['MediaEntries'],
   endpoints: (builder) => ({
     getMediaEntries: builder.query<MediaItem[], void>({
+      // Relative path only — never put the host here (avoids baseUrl duplication).
       query: () => '/entries',
       /**
        * Sorts API entries newest-first by id (no field renaming needed).
