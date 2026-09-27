@@ -7,7 +7,7 @@ import { MediaList } from '@/components/MediaList';
 import { MonthDivider } from '@/components/MonthDivider';
 import { LibraryToolbar } from '@/components/LibraryToolbar';
 import { groupByFinishedMonth } from '@/lib/mediaGrouping';
-import { compareMediaItems } from '@/lib/mediaSort';
+import { sortMediaItems } from '@/lib/mediaSort';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openEditMediaModal } from '@/redux/libraryUiSlice';
 import { useGetMediaEntriesQuery } from '@/redux/mediaApi';
@@ -30,7 +30,7 @@ export function LibraryView() {
         : items.filter((item) => item.media_type === typeFilter);
 
     return filtered.sort((a, b) =>
-      compareMediaItems(a, b, sortField, sortDirection)
+      sortMediaItems(a, b, sortField, sortDirection)
     );
   }, [items, typeFilter, sortField, sortDirection]);
 

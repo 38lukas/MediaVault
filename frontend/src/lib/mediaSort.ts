@@ -1,36 +1,35 @@
 import type { MediaItem, SortDirection, SortField } from '@/types/media';
 import { dateValue } from '@/lib/dateUtils';
 
-/** Playing → Backlog → Wishlist → Finished; other statuses fall after. */
 const STATUS_RANK: Record<string, number> = {
   Playing: 0,
   Watching: 0,
-  Backlog: 1,
-  Wishlist: 2,
-  Watchlist: 2,
-  Finished: 3,
-  Shelved: 4,
-  Dropped: 5,
+  Finished: 1,
+  Dropped: 2,
+  Shelved: 3,
+  Backlog: 4,
+  Wishlist: 5,
+  Watchlist: 5,
 };
 
-/**
- * Maps a status label to a sort rank.
- * @param status - Media status string.
- * @returns Numeric rank used for status sorting.
+/** Maps a status label to a sort rank.
+ * 
+ *  @param status - Media status string.
+ *  @returns Numeric rank used for status sorting.
  */
-function statusRank(status: string): number {
+function getStatusRank(status: string): number {
   return STATUS_RANK[status] ?? 99;
 }
 
-/**
- * Compares two media items for the library sort controls.
- * @param a - Left item.
- * @param b - Right item.
- * @param field - Active sort field.
- * @param direction - Ascending or descending.
- * @returns Negative/zero/positive comparator result.
+/** Sorts two media items for the library sort controls.
+ * 
+ *  @param a - Left media item.
+ *  @param b - Right media item.
+ *  @param field - Active sort field.
+ *  @param direction - Ascending or descending.
+ *  @returns Negative/zero/positive result.
  */
-export function compareMediaItems(
+export function sortMediaItems(
   a: MediaItem,
   b: MediaItem,
   field: SortField,
@@ -38,10 +37,14 @@ export function compareMediaItems(
 ): number {
   let result = 0;
 
+  // Sort by title
   if (field === 'title') {
     result = a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
-  } else if (field === 'status') {
-    result = statusRank(a.status) - statusRank(b.status);
+  }
+
+  // Sort by status
+  else if (field === 'status') {
+    result = getStatusRank(a.status) - getStatusRank(b.status);
     if (result !== 0) {
       return direction === 'asc' ? result : -result;
     }

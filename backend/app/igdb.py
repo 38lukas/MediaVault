@@ -23,7 +23,7 @@ def _require_credentials() -> tuple[str, str]:
     client_secret = os.getenv("TWITCH_CLIENT_SECRET")
     if not client_id or not client_secret:
         raise ValueError(
-            "Missing TWITCH_CLIENT_ID or TWITCH_CLIENT_SECRET in backend/.env"
+            "Missing TWITCH_CLIENT_ID or TWITCH_CLIENT_SECRET in root .env"
         )
     return client_id, client_secret
 

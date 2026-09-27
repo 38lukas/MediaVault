@@ -203,7 +203,7 @@ Feldnamen sind durchgängig `snake_case` (`media_type`, `poster_path`, …) — 
 | **SQLAlchemy** | `database.py`, `models.py` | Engine, Sessions, ORM-Modell |
 | **Pydantic** | `schemas.py`, `enums.py` | Request/Response-Validierung |
 | **httpx** | `igdb.py` | HTTP-Calls zu Twitch & IGDB |
-| **python-dotenv** | `database.py` / Env | Lädt `backend/.env` |
+| **python-dotenv** | `database.py` / Env | Lädt die gemeinsame Root-`.env` |
 
 Abhängigkeiten stehen in `backend/requirements.txt` (`fastapi`, `uvicorn`, `sqlalchemy`, `psycopg`, `pydantic`, `httpx`, …).
 

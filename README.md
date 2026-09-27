@@ -38,17 +38,21 @@ pip install -r requirements.txt
 
 ### 3. Environment Variables
 
-Create a `.env` file in the `backend/` directory and add your PostgreSQL connection string
-plus Twitch credentials for IGDB cover lookups:
+Copy `.env.example` to a single `.env` in the **repo root** (not `frontend/` or `backend/`):
+
+```bash
+cp .env.example .env
+```
 
 ```env
-DATABASE_URL=postgresql://neondb_owner:npg_RjzJ2X5PLArQ@ep-curly-hill-b4keuhny-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/neondb?sslmode=require
 TWITCH_CLIENT_ID=your_twitch_client_id
 TWITCH_CLIENT_SECRET=your_twitch_client_secret
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api/v1
 ```
 
 IGDB uses Twitch developer credentials. Create an app at https://dev.twitch.tv/console/apps
-(Confidential client type), generate a Client Secret, then paste both values into `.env`.
+(Confidential client type), generate a Client Secret, then paste both values into the root `.env`.
 
 ### 4. Run the Backend Server
 
