@@ -15,19 +15,13 @@ Base.metadata.create_all(bind=engine)
 with engine.begin() as connection:
     connection.execute(text("ALTER TABLE media_entries DROP COLUMN IF EXISTS created_at"))
     connection.execute(text("ALTER TABLE media_entries DROP COLUMN IF EXISTS watched_at"))
-    connection.execute(
-        text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ")
-    )
-    connection.execute(
-        text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS finished_at TIMESTAMPTZ")
-    )
+    connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ"))
+    connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS finished_at TIMESTAMPTZ"))
 
-# redirect_slashes=True (default): /entries and /entries/ both resolve cleanly.
+# /entries and /entries/ both resolve cleanly.
 app = FastAPI(title="Media Tracker API", redirect_slashes=True)
 
 # CORS: allow browser calls from the static frontend (and local Next.js).
-# Using "*" avoids missing Access-Control-Allow-Origin after Render deploys.
-# credentials must be False when origins is "*".
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

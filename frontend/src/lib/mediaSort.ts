@@ -59,8 +59,12 @@ export function sortMediaItems(
     if (bDate === null) return -1;
     return bDate - aDate;
   } else {
-    const aDate = dateValue(field === 'started_at' ? a.started_at : a.finished_at);
-    const bDate = dateValue(field === 'started_at' ? b.started_at : b.finished_at);
+
+    // started_at, finished_at, and months all sort by a date field.
+    const dateField = field === 'started_at' ? a.started_at : a.finished_at;
+    const dateFieldB = field === 'started_at' ? b.started_at : b.finished_at;
+    const aDate = dateValue(dateField);
+    const bDate = dateValue(dateFieldB);
 
     // Empty dates stay at the end in both asc and desc.
     if (aDate === null && bDate === null) return 0;

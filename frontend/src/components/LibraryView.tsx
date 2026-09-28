@@ -20,7 +20,7 @@ import type { MediaItem } from '@/types/media';
 export function LibraryView() {
   const dispatch = useAppDispatch();
   const { data: items = [], isLoading, isError, error } = useGetMediaEntriesQuery();
-  const { viewMode, typeFilter, sortField, sortDirection, groupByFinishedMonth: groupMonths } =
+  const { viewMode, typeFilter, sortField, sortDirection } =
     useAppSelector((state) => state.libraryUi);
 
   const visibleItems = useMemo(() => {
@@ -35,8 +35,11 @@ export function LibraryView() {
   }, [items, typeFilter, sortField, sortDirection]);
 
   const monthSections = useMemo(
-    () => (groupMonths ? groupByFinishedMonth(visibleItems) : null),
-    [visibleItems, groupMonths]
+    () =>
+      sortField === 'months'
+        ? groupByFinishedMonth(visibleItems, sortDirection)
+        : null,
+    [visibleItems, sortField, sortDirection]
   );
 
   const errorMessage =

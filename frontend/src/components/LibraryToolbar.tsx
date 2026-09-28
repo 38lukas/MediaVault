@@ -14,19 +14,16 @@ import {
   setSortDirection,
   setSortField,
   setTypeFilter,
-  toggleGroupByFinishedMonth,
 } from '@/redux/libraryUiSlice';
 import { TYPE_FILTERS, type SortDirection, type SortField, type TypeFilter } from '@/types/media';
 
 /**
- * Type filter, sort field/direction, and month-grouping controls.
+ * Type filter and sort field/direction controls.
  * @returns Toolbar bound to Redux library UI state.
  */
 export function LibraryToolbar() {
   const dispatch = useAppDispatch();
-  const { typeFilter, sortField, sortDirection, groupByFinishedMonth } = useAppSelector(
-    (state) => state.libraryUi
-  );
+  const { typeFilter, sortField, sortDirection } = useAppSelector((state) => state.libraryUi);
 
   return (
     <>
@@ -71,6 +68,7 @@ export function LibraryToolbar() {
             <MenuItem value="status">Status</MenuItem>
             <MenuItem value="started_at">Started at</MenuItem>
             <MenuItem value="finished_at">Finished at</MenuItem>
+            <MenuItem value="months">Months</MenuItem>
           </Select>
         </FormControl>
 
@@ -90,16 +88,6 @@ export function LibraryToolbar() {
             Desc
           </ToggleButton>
         </ToggleButtonGroup>
-
-        <ToggleButton
-          size="small"
-          value="months"
-          selected={groupByFinishedMonth}
-          onChange={() => dispatch(toggleGroupByFinishedMonth())}
-          aria-label="Group by finished month"
-        >
-          Months
-        </ToggleButton>
       </Box>
     </>
   );

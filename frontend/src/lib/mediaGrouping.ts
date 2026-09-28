@@ -39,11 +39,15 @@ export function formatFinishedMonthLabel(key: string): string {
 }
 
 /**
- * Groups media items by finished month (newest months first).
+ * Groups media items by finished month.
  * @param items - Already filtered/sorted media list.
+ * @param direction - Asc = oldest months first; desc = newest first.
  * @returns Ordered month sections for divider rendering.
  */
-export function groupByFinishedMonth(items: MediaItem[]): MonthSection[] {
+export function groupByFinishedMonth(
+  items: MediaItem[],
+  direction: 'asc' | 'desc' = 'desc'
+): MonthSection[] {
   const groups = new Map<string, MediaItem[]>();
 
   for (const item of items) {
@@ -57,7 +61,8 @@ export function groupByFinishedMonth(items: MediaItem[]): MonthSection[] {
     .sort(([a], [b]) => {
       if (a === NO_FINISH_KEY) return 1;
       if (b === NO_FINISH_KEY) return -1;
-      return b.localeCompare(a);
+      const cmp = a.localeCompare(b);
+      return direction === 'asc' ? cmp : -cmp;
     })
     .map(([key, sectionItems]) => ({
       key,

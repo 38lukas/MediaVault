@@ -10,9 +10,8 @@ import type {
 interface LibraryUiState {
   viewMode: ViewMode; // cards, list
   typeFilter: TypeFilter; // All, Movie, Series, Anime, Game, DLC
-  sortField: SortField; // status, title, release_date, finished_date
+  sortField: SortField; // title, status, started_at, finished_at, months
   sortDirection: SortDirection; // asc, desc
-  groupByFinishedMonth: boolean; 
   isMediaModalOpen: boolean;
   editingItem: MediaItem | null;
 }
@@ -22,7 +21,6 @@ const initialState: LibraryUiState = {
   typeFilter: 'All',
   sortField: 'status',
   sortDirection: 'asc',
-  groupByFinishedMonth: false,
   isMediaModalOpen: false,
   editingItem: null,
 };
@@ -43,9 +41,6 @@ const libraryUiSlice = createSlice({
     },
     setSortDirection(state, action: PayloadAction<SortDirection>) {
       state.sortDirection = action.payload;
-    },
-    toggleGroupByFinishedMonth(state) {
-      state.groupByFinishedMonth = !state.groupByFinishedMonth;
     },
     openCreateMediaModal(state) {
       state.editingItem = null;
@@ -68,7 +63,6 @@ export const {
   setTypeFilter,
   setSortField,
   setSortDirection,
-  toggleGroupByFinishedMonth,
   openCreateMediaModal,
   openEditMediaModal,
   closeMediaModal,
