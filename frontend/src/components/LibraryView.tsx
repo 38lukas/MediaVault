@@ -24,7 +24,11 @@ import { matchesTypeFilter, type MediaItem } from '@/types/media';
  */
 export function LibraryView() {
   const dispatch = useAppDispatch();
-  const { data: items = [], isLoading, isError, error } = useGetMediaEntriesQuery();
+  const username = useAppSelector((state) => state.auth.username);
+  const { data: items = [], isLoading, isError, error } = useGetMediaEntriesQuery(
+    undefined,
+    { skip: !username }
+  );
   const { viewMode, typeFilter, sortField, sortDirection } =
     useAppSelector((state) => state.libraryUi);
 

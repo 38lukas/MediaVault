@@ -1,6 +1,7 @@
 // Shared media domain types aligned with the FastAPI MediaEntry schema
 export interface MediaItem {
   id: number;
+  username: string;
   title: string;
   media_type: string;
   status: string;
@@ -10,8 +11,8 @@ export interface MediaItem {
   finished_at?: string | null;
 }
 
-// Payload for creating/updating entries
-export type MediaEntryPayload = Omit<MediaItem, 'id'>;
+// Payload for creating/updating entries (username is set by the backend)
+export type MediaEntryPayload = Omit<MediaItem, 'id' | 'username'>;
 
 export type ViewMode = 'cards' | 'list';
 export type TypeFilter = 'All' | 'Game/DLC' | 'Movie' | 'Series' | 'Anime';
@@ -26,7 +27,7 @@ export const TYPE_FILTERS: TypeFilter[] = [
   'Anime',
 ];
 
-/** Maps a type filter to matching media_type values. */
+// Maps a type filter to matching media_type values. 
 export function matchesTypeFilter(mediaType: string, filter: TypeFilter): boolean {
   if (filter === 'All') return true;
   if (filter === 'Game/DLC') return mediaType === 'Game' || mediaType === 'DLC';

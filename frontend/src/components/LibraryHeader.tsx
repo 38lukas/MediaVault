@@ -2,16 +2,27 @@
 
 import { Box, Button, SvgIcon, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { clearUsername } from '@/redux/authSlice';
 import { openCreateMediaModal, setViewMode } from '@/redux/libraryUiSlice';
+import { mediaApi } from '@/redux/mediaApi';
 import type { ViewMode } from '@/types/media';
 
 /**
- * Library page header with title, layout toggle, and add button.
- * @returns Header toolbar bound to Redux library UI state.
+ * Library page header with title, layout toggle, add button, and logout.
+ * @returns Header toolbar bound to Redux library UI + auth state.
  */
 export function LibraryHeader() {
   const dispatch = useAppDispatch();
   const viewMode = useAppSelector((state) => state.libraryUi.viewMode);
+  const username = useAppSelector((state) => state.auth.username);
+
+  /**
+   * Clears the session and drops cached media entries for the next login.
+   */
+  const handleLogout = () => {
+    dispatch(clearUsername());
+    dispatch(mediaApi.util.resetApiState());
+  };
 
   return (
     <Box
@@ -29,7 +40,9 @@ export function LibraryHeader() {
           MediaVault
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Manage your movies, series, anime and games in one place.
+          {username
+            ? `Signed in as ${username}`
+            : 'Manage your movies, series, anime and games in one place.'}
         </Typography>
       </Box>
 
@@ -70,6 +83,10 @@ export function LibraryHeader() {
           sx={{ whiteSpace: 'nowrap' }}
         >
           Add Game / Media
+        </Button>
+
+        <Button variant="outlined" onClick={handleLogout} sx={{ whiteSpace: 'nowrap' }}>
+          Log out
         </Button>
       </Box>
     </Box>

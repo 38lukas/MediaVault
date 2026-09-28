@@ -1,7 +1,21 @@
 """SQLAlchemy models for MediaVault."""
-
-from sqlalchemy import Column, Integer, String, DateTime
+from datetime import datetime, timezone
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from app.database import Base
+
+
+class User(Base):
+    """Persisted account row in the user table."""
+
+    __tablename__ = "user"
+
+    username = Column(String, primary_key=True)
+    password = Column(String, nullable=False)
+    joined_date = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
 
 
 class MediaEntry(Base):
@@ -10,6 +24,7 @@ class MediaEntry(Base):
     __tablename__ = "media_entries"
 
     id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, ForeignKey("user.username"), nullable=False, index=True)
     title = Column(String, nullable=False)
     media_type = Column(String, nullable=False)
     status = Column(String, nullable=False)

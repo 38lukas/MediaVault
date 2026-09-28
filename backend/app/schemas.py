@@ -1,9 +1,25 @@
-"""Pydantic request/response schemas for media entries."""
+"""Pydantic request/response schemas for media entries and auth."""
 
 from pydantic import BaseModel, ConfigDict, model_validator
 from datetime import datetime
 from typing import Optional
 from app.enums import MediaType, MediaStatus, ALLOWED_STATUSES
+
+
+class LoginRequest(BaseModel):
+    """Credentials submitted on the login form."""
+
+    username: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    """Public user payload returned after a successful login."""
+
+    username: str
+    joined_date: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MediaEntryBase(BaseModel):
@@ -35,6 +51,7 @@ class MediaEntryCreate(MediaEntryBase):
 class MediaEntryResponse(MediaEntryBase):
     """Schema for the response of the API (used in GET requests)."""
     id: int
+    username: str
 
     # Configuration to allow Pydantic to read data directly from SQLAlchemy models
     model_config = ConfigDict(from_attributes=True)

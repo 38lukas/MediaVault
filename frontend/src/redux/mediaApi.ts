@@ -3,6 +3,12 @@ import type { MediaEntryPayload, MediaItem } from '@/types/media';
 
 export type { MediaEntryPayload };
 
+/** User payload returned by POST /auth/login. */
+export interface AuthUser {
+  username: string;
+  joined_date: string;
+}
+
 /** Resolves the RTK Query base URL from env, with a local fallback
  *  Strips trailing slashes and collapses accidental duplicated origins
  * 
@@ -27,13 +33,28 @@ function resolveApiBaseUrl(): string {
 export const mediaApi = createApi({
 
   reducerPath: 'mediaApi', 
-  baseQuery: fetchBaseQuery({baseUrl: resolveApiBaseUrl()}), 
+  baseQuery: fetchBaseQuery({
+    baseUrl: resolveApiBaseUrl(),
+    prepareHeaders: (headers, { getState }) => {
+      const username = (getState() as { auth: { username: string | null } }).auth
+        .username;
+      if (username) {
+        headers.set('X-Username', username);
+      }
+      return headers;
+    },
+  }), 
   tagTypes: ['MediaEntries'], 
 
   // Endpoints for the API 
   endpoints: (builder) => ({
 
-    // Get all media entries
+    // Log in (creates the user on first use)
+    login: builder.mutation<AuthUser, { username: string; password: string }>({
+      query: (body) => ({url: '/auth/login', method: 'POST', body,}),
+    }),
+
+    // Get all media entries for the logged-in user
     getMediaEntries: builder.query<MediaItem[], void>({
       query: () => '/entries',
       transformResponse: (response: MediaItem[]): MediaItem[] =>
@@ -88,6 +109,7 @@ export const mediaApi = createApi({
 
 // Export the hooks from the mediaApi slice
 export const {
+  useLoginMutation,
   useGetMediaEntriesQuery,
   useCreateMediaEntryMutation,
   useUpdateMediaEntryMutation,

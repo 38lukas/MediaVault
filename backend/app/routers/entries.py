@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies import get_current_username
 from app import models, schemas
 
 router = APIRouter(prefix="/entries", tags=["entries"])
@@ -13,9 +14,16 @@ router = APIRouter(prefix="/entries", tags=["entries"])
 
 @router.get("", response_model=List[schemas.MediaEntryResponse])
 @router.get("/", response_model=List[schemas.MediaEntryResponse], include_in_schema=False)
-def get_entries(db: Session = Depends(get_db)):
-    """Return all media entries from the database."""
-    return db.query(models.MediaEntry).all()
+def get_entries(
+    db: Session = Depends(get_db),
+    username: str = Depends(get_current_username),
+):
+    """Return media entries belonging to the logged-in user."""
+    return (
+        db.query(models.MediaEntry)
+        .filter(models.MediaEntry.username == username)
+        .all()
+    )
 
 
 @router.post(
@@ -32,9 +40,11 @@ def get_entries(db: Session = Depends(get_db)):
 def create_entry(
     entry_in: schemas.MediaEntryCreate,
     db: Session = Depends(get_db),
+    username: str = Depends(get_current_username),
 ):
-    """Create a new media entry and persist it to PostgreSQL."""
+    """Create a new media entry owned by the logged-in user."""
     db_entry = models.MediaEntry(
+        username=username,
         title=entry_in.title,
         media_type=entry_in.media_type,
         status=entry_in.status,
@@ -55,9 +65,17 @@ def update_entry(
     entry_id: int,
     entry_in: schemas.MediaEntryCreate,
     db: Session = Depends(get_db),
+    username: str = Depends(get_current_username),
 ):
-    """Update an existing media entry by its primary key."""
-    entry = db.query(models.MediaEntry).filter(models.MediaEntry.id == entry_id).first()
+    """Update one of the logged-in user's media entries by primary key."""
+    entry = (
+        db.query(models.MediaEntry)
+        .filter(
+            models.MediaEntry.id == entry_id,
+            models.MediaEntry.username == username,
+        )
+        .first()
+    )
     if entry is None:
         raise HTTPException(status_code=404, detail="Entry not found")
 
@@ -75,9 +93,20 @@ def update_entry(
 
 
 @router.delete("/{entry_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_entry(entry_id: int, db: Session = Depends(get_db)):
-    """Delete a media entry by its primary key."""
-    entry = db.query(models.MediaEntry).filter(models.MediaEntry.id == entry_id).first()
+def delete_entry(
+    entry_id: int,
+    db: Session = Depends(get_db),
+    username: str = Depends(get_current_username),
+):
+    """Delete one of the logged-in user's media entries by primary key."""
+    entry = (
+        db.query(models.MediaEntry)
+        .filter(
+            models.MediaEntry.id == entry_id,
+            models.MediaEntry.username == username,
+        )
+        .first()
+    )
     if entry is None:
         raise HTTPException(status_code=404, detail="Entry not found")
 
