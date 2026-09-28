@@ -16,7 +16,7 @@ import { sortMediaItems } from '@/lib/mediaSort';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openEditMediaModal } from '@/redux/libraryUiSlice';
 import { useGetMediaEntriesQuery } from '@/redux/mediaApi';
-import type { MediaItem } from '@/types/media';
+import { matchesTypeFilter, type MediaItem } from '@/types/media';
 
 /**
  * Loads media entries and renders filtered/sorted card or list content.
@@ -29,10 +29,7 @@ export function LibraryView() {
     useAppSelector((state) => state.libraryUi);
 
   const visibleItems = useMemo(() => {
-    const filtered =
-      typeFilter === 'All'
-        ? [...items]
-        : items.filter((item) => item.media_type === typeFilter);
+    const filtered = items.filter((item) => matchesTypeFilter(item.media_type, typeFilter));
 
     return filtered.sort((a, b) =>
       sortMediaItems(a, b, sortField, sortDirection)

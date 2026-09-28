@@ -14,15 +14,21 @@ export interface MediaItem {
 export type MediaEntryPayload = Omit<MediaItem, 'id'>;
 
 export type ViewMode = 'cards' | 'list';
-export type TypeFilter = 'All' | 'Game' | 'DLC' | 'Movie' | 'Series' | 'Anime';
+export type TypeFilter = 'All' | 'Game/DLC' | 'Movie' | 'Series' | 'Anime';
 export type SortField = 'title' | 'status' | 'started_at' | 'finished_at' | 'months';
 export type SortDirection = 'asc' | 'desc';
 
 export const TYPE_FILTERS: TypeFilter[] = [
   'All',
-  'Game',
-  'DLC',
+  'Game/DLC',
   'Movie',
   'Series',
   'Anime',
 ];
+
+/** Maps a type filter to matching media_type values. */
+export function matchesTypeFilter(mediaType: string, filter: TypeFilter): boolean {
+  if (filter === 'All') return true;
+  if (filter === 'Game/DLC') return mediaType === 'Game' || mediaType === 'DLC';
+  return mediaType === filter;
+}

@@ -9,7 +9,7 @@ import type {
 
 interface LibraryUiState {
   viewMode: ViewMode; // cards, list
-  typeFilter: TypeFilter; // All, Movie, Series, Anime, Game, DLC
+  typeFilter: TypeFilter; // All, Game/DLC, Movie, Series, Anime
   sortField: SortField; // title, status, started_at, finished_at, months
   sortDirection: SortDirection; // asc, desc
   isMediaModalOpen: boolean;
