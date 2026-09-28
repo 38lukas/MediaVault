@@ -42,46 +42,57 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
     >
       <Box
         sx={{
-          position: 'relative',
-          aspectRatio: '2 / 3',
           borderRadius: 2,
-          overflow: 'hidden',
-          boxShadow: 3,
-          backgroundColor: '#1e1e1e',
+          // Hairline + soft bloom sit outside the clipped image so the glow is visible.
+          boxShadow: `
+            0 0 0 1px ${statusStyle.color}40,
+            0 0 6px ${statusStyle.color}28,
+            0 4px 14px rgba(0, 0, 0, 0.35)
+          `,
         }}
       >
-        <Image
-          src={item.poster_path || fallbackImage}
-          alt={item.title}
-          fill
-          sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 20vw"
-          style={{ objectFit: 'cover' }}
-        />
-
         <Box
-          className="media-card-overlay"
           sx={{
-            position: 'absolute',
-            inset: 0,
-            background:
-              'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-end',
-            p: 1.5,
-            opacity: 0,
-            transition: 'opacity 0.2s ease-in-out',
+            position: 'relative',
+            aspectRatio: '2 / 3',
+            borderRadius: 2,
+            overflow: 'hidden',
+            backgroundColor: '#1e1e1e',
           }}
         >
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 'bold', color: 'white', lineHeight: 1.2 }}
+          <Image
+            src={item.poster_path || fallbackImage}
+            alt={item.title}
+            fill
+            sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 20vw"
+            style={{ objectFit: 'cover' }}
+          />
+
+          <Box
+            className="media-card-overlay"
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              background:
+                'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              p: 1.5,
+              opacity: 0,
+              transition: 'opacity 0.2s ease-in-out',
+            }}
           >
-            {item.title}
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'grey.400', mt: 0.5 }}>
-            {item.media_type}
-          </Typography>
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 'bold', color: 'white', lineHeight: 1.2 }}
+            >
+              {item.title}
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'grey.400', mt: 0.5 }}>
+              {item.media_type}
+            </Typography>
+          </Box>
         </Box>
       </Box>
 
