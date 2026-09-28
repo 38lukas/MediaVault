@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 import { getStatusColor } from '@/lib/mediaStatus';
+import { palette } from '@/lib/palette';
 import { toDateInputValue, toIsoDateOrNull } from '@/lib/dateUtils';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { closeMediaModal } from '@/redux/libraryUiSlice';
@@ -50,7 +51,7 @@ const INITIAL_FORM = {
 const fieldSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: palette.fieldBg,
   },
 };
 
@@ -228,8 +229,8 @@ export function AddMediaModal() {
             borderRadius: 3,
             overflow: 'hidden',
             backgroundImage: 'none',
-            backgroundColor: '#141414',
-            border: '1px solid rgba(255,255,255,0.08)',
+            backgroundColor: palette.surface,
+            border: `1px solid ${palette.border}`,
           },
         },
       }}
@@ -241,7 +242,7 @@ export function AddMediaModal() {
             px: 3,
             pt: 2.5,
             pb: 2,
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: `1px solid ${palette.borderSubtle}`,
             background: `linear-gradient(135deg, ${statusStyle.bg} 0%, transparent 70%)`,
           }}
         >
@@ -298,7 +299,7 @@ export function AddMediaModal() {
                     aspectRatio: '2 / 3',
                     borderRadius: 2.5,
                     overflow: 'hidden',
-                    backgroundColor: '#1a1a1a',
+                    backgroundColor: palette.surfaceElevated,
                     border: `1px solid ${statusStyle.border}`,
                     boxShadow: `0 12px 32px ${statusStyle.bg}`,
                   }}
@@ -361,12 +362,12 @@ export function AddMediaModal() {
                           sx={{
                             cursor: 'pointer',
                             border: selected
-                              ? '1px solid rgba(255,255,255,0.35)'
-                              : '1px solid rgba(255,255,255,0.1)',
+                              ? `1px solid ${palette.borderSelected}`
+                              : `1px solid ${palette.borderMuted}`,
                             backgroundColor: selected
-                              ? 'rgba(255,255,255,0.12)'
-                              : 'rgba(255,255,255,0.03)',
-                            color: selected ? '#fff' : 'text.secondary',
+                              ? palette.selectedBg
+                              : palette.fieldBg,
+                            color: selected ? palette.textOnDark : 'text.secondary',
                             borderRadius: 999,
                             px: 1.5,
                             py: 0.6,
@@ -401,8 +402,8 @@ export function AddMediaModal() {
                           onClick={() => setForm((prev) => ({ ...prev, status }))}
                           sx={{
                             cursor: 'pointer',
-                            border: `1px solid ${selected ? colors.border : 'rgba(255,255,255,0.08)'}`,
-                            backgroundColor: selected ? colors.bg : 'rgba(255,255,255,0.03)',
+                            border: `1px solid ${selected ? colors.border : palette.border}`,
+                            backgroundColor: selected ? colors.bg : palette.fieldBg,
                             color: selected ? colors.color : 'text.secondary',
                             borderRadius: 999,
                             px: 1.5,
@@ -506,8 +507,8 @@ export function AddMediaModal() {
           sx={{
             px: 3,
             py: 2,
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            backgroundColor: 'rgba(0,0,0,0.2)',
+            borderTop: `1px solid ${palette.borderSubtle}`,
+            backgroundColor: palette.footerBg,
           }}
         >
           {isEdit && item && (
@@ -532,15 +533,15 @@ export function AddMediaModal() {
               borderRadius: 2,
               px: 2.5,
               backgroundColor: statusStyle.color,
-              color: '#0a0a0a',
+              color: palette.primaryContrast,
               fontWeight: 700,
               '&:hover': {
                 backgroundColor: statusStyle.color,
                 filter: 'brightness(1.08)',
               },
               '&.Mui-disabled': {
-                backgroundColor: 'rgba(255,255,255,0.12)',
-                color: 'rgba(255,255,255,0.3)',
+                backgroundColor: palette.selectedBg,
+                color: palette.textDisabled,
               },
             }}
           >

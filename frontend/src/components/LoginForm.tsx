@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { Alert, Box, Button, Paper, Stack, TextField, Typography } from '@mui/material';
+import { palette } from '@/lib/palette';
 import { useAppDispatch } from '@/redux/hooks';
 import { setUsername } from '@/redux/authSlice';
 import { useLoginMutation } from '@/redux/mediaApi';
@@ -64,8 +65,8 @@ export function LoginForm() {
           p: 4,
           borderRadius: 3,
           backgroundImage: 'none',
-          backgroundColor: '#141414',
-          border: '1px solid rgba(255,255,255,0.08)',
+          backgroundColor: palette.surface,
+          border: `1px solid ${palette.border}`,
         }}
       >
         <Stack spacing={2.5}>

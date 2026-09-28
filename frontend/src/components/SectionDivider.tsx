@@ -1,6 +1,7 @@
 'use client';
 
 import { Box, Typography } from '@mui/material';
+import { palette } from '@/lib/palette';
 
 interface SectionDividerProps {
   label: string;
@@ -20,7 +21,7 @@ export function SectionDivider({ label }: SectionDividerProps) {
       >
         {label}
       </Typography>
-      <Box sx={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.16)' }} />
+      <Box sx={{ flex: 1, height: '1px', backgroundColor: palette.borderStrong }} />
     </Box>
   );
 }

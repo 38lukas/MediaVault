@@ -15,6 +15,7 @@ import {
 import Image from 'next/image';
 import type { MediaItem } from '@/types/media';
 import { getStatusColor } from '@/lib/mediaStatus';
+import { palette } from '@/lib/palette';
 import { formatDisplayDate } from '@/lib/dateUtils';
 
 interface MediaListProps {
@@ -77,7 +78,7 @@ export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick }) => {
                       height: 60,
                       borderRadius: 1,
                       overflow: 'hidden',
-                      backgroundColor: '#1e1e1e',
+                      backgroundColor: palette.paper,
                     }}
                   >
                     <Image

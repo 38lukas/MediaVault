@@ -5,6 +5,7 @@ import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 import type { MediaItem } from '@/types/media';
 import { getStatusColor } from '@/lib/mediaStatus';
+import { palette } from '@/lib/palette';
 
 export type { MediaItem };
 
@@ -57,7 +58,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
             aspectRatio: '2 / 3',
             borderRadius: 2,
             overflow: 'hidden',
-            backgroundColor: '#1e1e1e',
+            backgroundColor: palette.paper,
           }}
         >
           <Image
