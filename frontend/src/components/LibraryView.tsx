@@ -4,9 +4,14 @@ import { useMemo } from 'react';
 import { Alert, Box, CircularProgress, Stack } from '@mui/material';
 import { MediaGrid } from '@/components/MediaGrid';
 import { MediaList } from '@/components/MediaList';
-import { MonthDivider } from '@/components/MonthDivider';
+import { SectionDivider } from '@/components/SectionDivider';
 import { LibraryToolbar } from '@/components/LibraryToolbar';
-import { groupByFinishedMonth } from '@/lib/mediaGrouping';
+import {
+  finishedMonthKey,
+  formatFinishedMonthLabel,
+  groupConsecutive,
+  statusSectionKey,
+} from '@/lib/mediaGrouping';
 import { sortMediaItems } from '@/lib/mediaSort';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openEditMediaModal } from '@/redux/libraryUiSlice';
@@ -34,13 +39,15 @@ export function LibraryView() {
     );
   }, [items, typeFilter, sortField, sortDirection]);
 
-  const monthSections = useMemo(
-    () =>
-      sortField === 'months'
-        ? groupByFinishedMonth(visibleItems, sortDirection)
-        : null,
-    [visibleItems, sortField, sortDirection]
-  );
+  const sections = useMemo(() => {
+    if (sortField === 'status') {
+      return groupConsecutive(visibleItems, statusSectionKey);
+    }
+    if (sortField === 'months') {
+      return groupConsecutive(visibleItems, finishedMonthKey, formatFinishedMonthLabel);
+    }
+    return null;
+  }, [visibleItems, sortField]);
 
   const errorMessage =
     error && 'status' in error
@@ -88,11 +95,11 @@ export function LibraryView() {
   return (
     <>
       <LibraryToolbar />
-      {monthSections && monthSections.length > 0 ? (
+      {sections && sections.length > 0 ? (
         <Stack spacing={3}>
-          {monthSections.map((section) => (
+          {sections.map((section) => (
             <Box key={section.key}>
-              <MonthDivider label={section.label} />
+              <SectionDivider label={section.label} />
               {renderLibrary(section.items)}
             </Box>
           ))}

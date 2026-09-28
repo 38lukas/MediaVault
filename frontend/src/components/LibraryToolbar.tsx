@@ -64,8 +64,8 @@ export function LibraryToolbar() {
             value={sortField}
             onChange={(e) => dispatch(setSortField(e.target.value as SortField))}
           >
-            <MenuItem value="title">Title</MenuItem>
             <MenuItem value="status">Status</MenuItem>
+            <MenuItem value="title">Title</MenuItem>
             <MenuItem value="started_at">Started at</MenuItem>
             <MenuItem value="finished_at">Finished at</MenuItem>
             <MenuItem value="months">Months</MenuItem>

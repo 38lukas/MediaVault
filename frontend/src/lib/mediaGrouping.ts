@@ -3,10 +3,34 @@ import { dateValue } from '@/lib/dateUtils';
 
 export const NO_FINISH_KEY = 'none';
 
-export interface MonthSection {
+export interface LibrarySection {
   key: string;
   label: string;
   items: MediaItem[];
+}
+
+/**
+ * Groups already-sorted items into consecutive sections.
+ * @param items - Sorted media list.
+ * @param keyOf - Section key for each item.
+ * @param labelOf - Optional label formatter (defaults to the key).
+ * @returns Ordered sections for divider rendering.
+ */
+export function groupConsecutive(
+  items: MediaItem[],
+  keyOf: (item: MediaItem) => string,
+  labelOf: (key: string) => string = (key) => key
+): LibrarySection[] {
+  const sections: LibrarySection[] = [];
+
+  for (const item of items) {
+    const key = keyOf(item);
+    const last = sections.at(-1);
+    if (last?.key === key) last.items.push(item);
+    else sections.push({ key, label: labelOf(key), items: [item] });
+  }
+
+  return sections;
 }
 
 /**
@@ -38,35 +62,9 @@ export function formatFinishedMonthLabel(key: string): string {
   });
 }
 
-/**
- * Groups media items by finished month.
- * @param items - Already filtered/sorted media list.
- * @param direction - Asc = oldest months first; desc = newest first.
- * @returns Ordered month sections for divider rendering.
- */
-export function groupByFinishedMonth(
-  items: MediaItem[],
-  direction: 'asc' | 'desc' = 'desc'
-): MonthSection[] {
-  const groups = new Map<string, MediaItem[]>();
-
-  for (const item of items) {
-    const key = finishedMonthKey(item);
-    const bucket = groups.get(key);
-    if (bucket) bucket.push(item);
-    else groups.set(key, [item]);
-  }
-
-  return [...groups.entries()]
-    .sort(([a], [b]) => {
-      if (a === NO_FINISH_KEY) return 1;
-      if (b === NO_FINISH_KEY) return -1;
-      const cmp = a.localeCompare(b);
-      return direction === 'asc' ? cmp : -cmp;
-    })
-    .map(([key, sectionItems]) => ({
-      key,
-      label: formatFinishedMonthLabel(key),
-      items: sectionItems,
-    }));
+/** Section key/label so Playing and Watching share one divider. */
+export function statusSectionKey(item: MediaItem): string {
+  return item.status === 'Playing' || item.status === 'Watching'
+    ? 'Playing / Watching'
+    : item.status;
 }
