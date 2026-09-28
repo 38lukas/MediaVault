@@ -15,6 +15,7 @@ class MediaStatus(str, Enum):
     WATCHING = "Watching"
     PLAYING = "Playing"
     FINISHED = "Finished"
+    WATCHED = "Watched"
     DROPPED = "Dropped"
     SHELVED = "Shelved"
     BACKLOG = "Backlog"
@@ -35,19 +36,19 @@ ALLOWED_STATUSES = {
     MediaType.DLC: _GAME_STATUSES,
     MediaType.MOVIE: {
         MediaStatus.WATCHING,
-        MediaStatus.FINISHED,
+        MediaStatus.WATCHED,
         MediaStatus.DROPPED,
         MediaStatus.WATCHLIST,
     },
     MediaType.SERIES: {
         MediaStatus.WATCHING,
-        MediaStatus.FINISHED,
+        MediaStatus.WATCHED,
         MediaStatus.DROPPED,
         MediaStatus.WATCHLIST,
     },
     MediaType.ANIME: {
         MediaStatus.WATCHING,
-        MediaStatus.FINISHED,
+        MediaStatus.WATCHED,
         MediaStatus.DROPPED,
         MediaStatus.WATCHLIST,
     },

@@ -62,9 +62,13 @@ export function formatFinishedMonthLabel(key: string): string {
   });
 }
 
-/** Section key/label so Playing and Watching share one divider. */
+/** Section key so equivalent statuses share one divider.
+ * 
+ * @param item - Media entry.
+ * @returns Section key.
+ */
 export function statusSectionKey(item: MediaItem): string {
-  return item.status === 'Playing' || item.status === 'Watching'
-    ? 'Playing / Watching'
-    : item.status;
+  if (item.status === 'Playing' || item.status === 'Watching') return 'Playing / Watching';
+  if (item.status === 'Finished' || item.status === 'Watched') return 'Finished / Watched';
+  return item.status;
 }

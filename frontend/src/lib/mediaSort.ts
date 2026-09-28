@@ -5,6 +5,7 @@ const STATUS_RANK: Record<string, number> = {
   Playing: 0,
   Watching: 0,
   Finished: 1,
+  Watched: 1,
   Dropped: 2,
   Shelved: 3,
   Backlog: 4,

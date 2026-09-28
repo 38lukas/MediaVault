@@ -30,9 +30,9 @@ const MEDIA_TYPES = ['Game', 'DLC', 'Movie', 'Series', 'Anime'] as const;
 const STATUSES_BY_TYPE: Record<(typeof MEDIA_TYPES)[number], string[]> = {
   Game: ['Playing', 'Finished', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
   DLC: ['Playing', 'Finished', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
-  Movie: ['Watching', 'Finished', 'Dropped', 'Watchlist'],
-  Series: ['Watching', 'Finished', 'Dropped', 'Watchlist'],
-  Anime: ['Watching', 'Finished', 'Dropped', 'Watchlist'],
+  Movie: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
+  Series: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
+  Anime: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
 };
 
 type MediaType = (typeof MEDIA_TYPES)[number];

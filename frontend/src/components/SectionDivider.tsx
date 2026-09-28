@@ -6,8 +6,8 @@ interface SectionDividerProps {
   label: string;
 }
 
-/**
- * Section divider above grouped library items.
+/** Section divider above grouped library items.
+ * 
  * @param props.label - Section title (e.g. status or month).
  * @returns Divider row with label and horizontal rule.
  */

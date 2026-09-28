@@ -13,6 +13,7 @@ export function getStatusColor(status: string) {
         color: '#90caf9',
       };
     case 'finished':
+    case 'watched':
       return {
         bg: 'rgba(46, 125, 50, 0.18)',
         border: 'rgba(46, 125, 50, 0.35)',
