@@ -227,6 +227,9 @@ export function AddMediaModal() {
         paper: {
           sx: {
             borderRadius: 3,
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
             overflow: 'hidden',
             backgroundImage: 'none',
             backgroundColor: palette.surface,
@@ -235,15 +238,26 @@ export function AddMediaModal() {
         },
       }}
     >
-      <form onSubmit={handleSubmit}>
-        {/* Header tinted by the currently selected status */}
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+          maxHeight: '90vh',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Dark header — status colors stay on chips / cover only */}
         <Box
           sx={{
             px: 3,
             pt: 2.5,
             pb: 2,
+            flexShrink: 0,
             borderBottom: `1px solid ${palette.borderSubtle}`,
-            background: `linear-gradient(135deg, ${statusStyle.bg} 0%, transparent 70%)`,
+            backgroundColor: palette.surface,
           }}
         >
           <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: 1.2 }}>
@@ -257,25 +271,18 @@ export function AddMediaModal() {
             <Typography variant="h5" sx={{ fontWeight: 700, flex: 1, minWidth: 0 }}>
               {form.title.trim() || (isEdit ? 'Edit media' : 'Add media')}
             </Typography>
-            <Box
-              sx={{
-                px: 1.5,
-                py: 0.5,
-                borderRadius: 999,
-                backgroundColor: statusStyle.bg,
-                border: `1px solid ${statusStyle.border}`,
-                color: statusStyle.color,
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                textTransform: 'capitalize',
-              }}
-            >
-              {form.status}
-            </Box>
           </Stack>
         </Box>
 
-        <DialogContent sx={{ px: 3, py: 3 }}>
+        <DialogContent
+          sx={{
+            px: 3,
+            py: 3,
+            flex: '1 1 auto',
+            minHeight: 0,
+            overflowY: 'auto',
+          }}
+        >
           <Stack spacing={2.5}>
             {isError && <Alert severity="error">{errorMessage}</Alert>}
             {fetchError && <Alert severity="error">{fetchError}</Alert>}
@@ -309,19 +316,12 @@ export function AddMediaModal() {
                       form.posterUrl.trim() ||
                       'https://via.placeholder.com/300x450?text=No+Cover'
                     }
-                    alt={form.title || 'Cover preview'}
+                    alt={form.title || 'Cover preview'} 
                     fill
                     sizes="148px"
                     style={{ objectFit: 'cover' }}
                   />
                 </Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', textAlign: 'center', mt: 1 }}
-                >
-                  Cover preview
-                </Typography>
               </Box>
 
               <Stack spacing={2.25} sx={{ flex: 1, minWidth: 0 }}>
@@ -362,12 +362,12 @@ export function AddMediaModal() {
                           sx={{
                             cursor: 'pointer',
                             border: selected
-                              ? `1px solid ${palette.borderSelected}`
+                              ? `1px solid ${palette.primary}`
                               : `1px solid ${palette.borderMuted}`,
                             backgroundColor: selected
-                              ? palette.selectedBg
+                              ? palette.primary
                               : palette.fieldBg,
-                            color: selected ? palette.textOnDark : 'text.secondary',
+                            color: selected ? palette.primaryContrast : 'text.secondary',
                             borderRadius: 999,
                             px: 1.5,
                             py: 0.6,
@@ -475,6 +475,7 @@ export function AddMediaModal() {
                   />
                   <Button
                     variant="outlined"
+                    color="primary"
                     onClick={handleFetchCover}
                     disabled={
                       !supportsIgdb ||
@@ -487,12 +488,6 @@ export function AddMediaModal() {
                       whiteSpace: 'nowrap',
                       minWidth: 96,
                       borderRadius: 2,
-                      borderColor: statusStyle.border,
-                      color: statusStyle.color,
-                      '&:hover': {
-                        borderColor: statusStyle.color,
-                        backgroundColor: statusStyle.bg,
-                      },
                     }}
                   >
                     {igdbState.isFetching ? '…' : 'Fetch'}
@@ -507,6 +502,7 @@ export function AddMediaModal() {
           sx={{
             px: 3,
             py: 2,
+            flexShrink: 0,
             borderTop: `1px solid ${palette.borderSubtle}`,
             backgroundColor: palette.footerBg,
           }}
@@ -528,27 +524,18 @@ export function AddMediaModal() {
           <Button
             type="submit"
             variant="contained"
+            color="primary"
             disabled={isBusy || !form.title.trim()}
             sx={{
               borderRadius: 2,
               px: 2.5,
-              backgroundColor: statusStyle.color,
-              color: palette.primaryContrast,
               fontWeight: 700,
-              '&:hover': {
-                backgroundColor: statusStyle.color,
-                filter: 'brightness(1.08)',
-              },
-              '&.Mui-disabled': {
-                backgroundColor: palette.selectedBg,
-                color: palette.textDisabled,
-              },
             }}
           >
             {createState.isLoading || updateState.isLoading ? 'Saving…' : 'Save'}
           </Button>
         </DialogActions>
-      </form>
+      </Box>
     </Dialog>
   );
 }

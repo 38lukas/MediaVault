@@ -5,7 +5,7 @@ export const palette = {
   surface: '#141414',
   surfaceElevated: '#1a1a1a',
   paper: '#1e1e1e',
-  primary: 'rgba(31, 179, 117, 0.9)', // for buttons and links
+  primary: 'rgba(255, 187, 61, 0.8)', // for buttons and links
   primaryContrast: '#0a0a0a',
   border: 'rgba(255,255,255,0.08)',
   borderSubtle: 'rgba(255,255,255,0.06)',

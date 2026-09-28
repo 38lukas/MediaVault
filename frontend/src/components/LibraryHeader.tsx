@@ -1,6 +1,7 @@
 'use client';
 
 import { Box, Button, SvgIcon, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { clearUsername } from '@/redux/authSlice';
 import { openCreateMediaModal, setViewMode } from '@/redux/libraryUiSlice';
@@ -63,12 +64,68 @@ export function LibraryHeader() {
             if (next) dispatch(setViewMode(next));
           }}
           aria-label="Library layout"
+          sx={{
+            gap: 0.75,
+            '& .MuiToggleButtonGroup-grouped': {
+              border: `1px solid ${palette.borderMuted} !important`,
+              borderRadius: '10px !important',
+              margin: 0,
+              px: 1.5,
+              py: 1.1,
+              backgroundColor: 'transparent',
+              transition: 'background-color 0.15s ease',
+              '&:hover': {
+                backgroundColor: palette.fieldBg,
+              },
+              '&:active': {
+                backgroundColor: 'transparent',
+              },
+              '&.Mui-selected': {
+                backgroundColor: 'transparent',
+                borderColor: `${palette.primary} !important`,
+                '&:hover': {
+                  backgroundColor: palette.fieldBg,
+                },
+                '&:active': {
+                  backgroundColor: 'transparent',
+                },
+              },
+            },
+          }}
         >
-          <ToggleButton value="cards" aria-label="Card view">
-            Cards
+          <ToggleButton value="cards" aria-label="Card view" disableRipple>
+            <Box
+              sx={{
+                width: 28,
+                height: 28,
+                backgroundColor: palette.primary,
+                maskImage: 'url(/card_layout.png)',
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center',
+                WebkitMaskImage: 'url(/card_layout.png)',
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+              }}
+            />
           </ToggleButton>
-          <ToggleButton value="list" aria-label="List view">
-            List
+          <ToggleButton value="list" aria-label="List view" disableRipple>
+            <Box
+              sx={{
+                width: 28,
+                height: 28,
+                backgroundColor: palette.primary,
+                maskImage: 'url(/list_layout.png)',
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center',
+                WebkitMaskImage: 'url(/list_layout.png)',
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+              }}
+            />
           </ToggleButton>
         </ToggleButtonGroup>
 
