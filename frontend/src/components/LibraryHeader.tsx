@@ -37,7 +37,11 @@ export function LibraryHeader() {
       }}
     >
       <Box>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{ fontWeight: 'bold', color: palette.primary }}
+        >
           MediaVault
         </Typography>
         <Typography variant="body2" color="text.secondary">

@@ -56,58 +56,72 @@ export function LoginForm() {
         justifyContent: 'center',
       }}
     >
-      <Paper
-        component="form"
-        onSubmit={handleSubmit}
-        sx={{
-          width: '100%',
-          maxWidth: 400,
-          p: 4,
-          borderRadius: 3,
-          backgroundImage: 'none',
-          backgroundColor: palette.surface,
-          border: `1px solid ${palette.border}`,
-        }}
-      >
-        <Stack spacing={2.5}>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Sign in
-            </Typography>
-          </Box>
+      <Stack spacing={3} sx={{ width: '100%', maxWidth: 400, alignItems: 'center' }}>
+        <Typography
+          variant="h3"
+          component="h1"
+          sx={{
+            fontWeight: 800,
+            color: palette.primary,
+            textAlign: 'center',
+            letterSpacing: 0.5,
+          }}
+        >
+          MediaVault
+        </Typography>
 
-          {loginState.isError && <Alert severity="error">{errorMessage}</Alert>}
+        <Paper
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            width: '100%',
+            p: 4,
+            borderRadius: 3,
+            backgroundImage: 'none',
+            backgroundColor: palette.surface,
+            border: `1px solid ${palette.border}`,
+          }}
+        >
+          <Stack spacing={2.5}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Sign in
+              </Typography>
+            </Box>
 
-          <TextField
-            required
-            label="Username"
-            value={username}
-            onChange={(e) => setUsernameField(e.target.value)}
-            autoComplete="username"
-            autoFocus
-            fullWidth
-          />
-          <TextField
-            required
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-            fullWidth
-          />
+            {loginState.isError && <Alert severity="error">{errorMessage}</Alert>}
 
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={loginState.isLoading || !username.trim() || !password}
-            fullWidth
-            sx={{ py: 1.25, fontWeight: 700 }}
-          >
-            {loginState.isLoading ? 'Signing in…' : 'Sign in'}
-          </Button>
-        </Stack>
-      </Paper>
+            <TextField
+              required
+              label="Username"
+              value={username}
+              onChange={(e) => setUsernameField(e.target.value)}
+              autoComplete="username"
+              autoFocus
+              fullWidth
+            />
+            <TextField
+              required
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              fullWidth
+            />
+
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={loginState.isLoading || !username.trim() || !password}
+              fullWidth
+              sx={{ py: 1.25, fontWeight: 700 }}
+            >
+              {loginState.isLoading ? 'Signing in…' : 'Sign in'}
+            </Button>
+          </Stack>
+        </Paper>
+      </Stack>
     </Box>
   );
 }
