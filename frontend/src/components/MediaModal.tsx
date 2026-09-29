@@ -5,6 +5,7 @@ import {
   Alert,
   Box,
   Button,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -12,6 +13,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Image from 'next/image';
 import { StarRating } from '@/components/StarRating';
 import { palette } from '@/lib/palette';
@@ -78,6 +80,7 @@ export function MediaModal() {
   const [fetchIgdbCover, igdbState] = useLazyFetchIgdbCoverQuery();
   const [form, setForm] = useState(INITIAL_FORM);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [moreOptionsOpen, setMoreOptionsOpen] = useState(false);
 
   const isBusy =
     createState.isLoading ||
@@ -120,6 +123,7 @@ export function MediaModal() {
       createState.reset();
     }
     setFetchError(null);
+    setMoreOptionsOpen(false);
     // Only re-seed when the dialog opens or the edited item changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, item]);
@@ -316,16 +320,15 @@ export function MediaModal() {
                     boxShadow: `0 12px 32px ${statusStyle.bg}`,
                   }}
                 >
-                  <Image
-                    src={
-                      form.posterUrl.trim() ||
-                      'https://via.placeholder.com/300x450?text=No+Cover'
-                    }
-                    alt={form.title || 'Cover preview'} 
-                    fill
-                    sizes="148px"
-                    style={{ objectFit: 'cover' }}
-                  />
+                  {form.posterUrl.trim() ? (
+                    <Image
+                      src={form.posterUrl.trim()}
+                      alt={form.title || 'Cover preview'}
+                      fill
+                      sizes="148px"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  ) : null}
                 </Box>
               </Box>
 
@@ -467,52 +470,88 @@ export function MediaModal() {
                   />
                 </Stack>
 
-                <TextField
-                  label="External ID"
-                  helperText="Optional. Filled by IGDB Fetch, or generated on save."
-                  value={form.externalId}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, externalId: e.target.value }))
-                  }
-                  fullWidth
-                  sx={fieldSx}
-                />
-
-                <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
-                  <TextField
-                    label="Poster URL"
-                    value={form.posterUrl}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, posterUrl: e.target.value }))
-                    }
-                    fullWidth
-                    helperText={
-                      supportsIgdb
-                        ? 'Fetch a cover from IGDB using the title.'
-                        : undefined
-                    }
-                    sx={fieldSx}
-                  />
+                <Box>
                   <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={handleFetchCover}
-                    disabled={
-                      !supportsIgdb ||
-                      !form.title.trim() ||
-                      igdbState.isFetching ||
-                      isBusy
+                    type="button"
+                    onClick={() => setMoreOptionsOpen((prev) => !prev)}
+                    endIcon={
+                      <ExpandMoreIcon
+                        sx={{
+                          transform: moreOptionsOpen ? 'rotate(180deg)' : 'none',
+                          transition: 'transform 0.2s ease',
+                        }}
+                      />
                     }
                     sx={{
-                      mt: 0.5,
-                      whiteSpace: 'nowrap',
-                      minWidth: 96,
-                      borderRadius: 2,
+                      color: 'text.secondary',
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      textTransform: 'none',
+                      px: 0,
+                      minWidth: 0,
+                      '&:hover': {
+                        backgroundColor: 'transparent',
+                        color: 'text.primary',
+                      },
                     }}
                   >
-                    {igdbState.isFetching ? '…' : 'Fetch'}
+                    More Options
                   </Button>
-                </Stack>
+                  <Collapse in={moreOptionsOpen}>
+                    <Stack spacing={2} sx={{ pt: 1.5 }}>
+                      <TextField
+                        label="External ID"
+                        helperText="Optional. Filled by IGDB Fetch, or generated on save."
+                        value={form.externalId}
+                        onChange={(e) =>
+                          setForm((prev) => ({ ...prev, externalId: e.target.value }))
+                        }
+                        fullWidth
+                        sx={fieldSx}
+                      />
+
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{ alignItems: 'flex-start' }}
+                      >
+                        <TextField
+                          label="Poster URL"
+                          value={form.posterUrl}
+                          onChange={(e) =>
+                            setForm((prev) => ({ ...prev, posterUrl: e.target.value }))
+                          }
+                          fullWidth
+                          helperText={
+                            supportsIgdb
+                              ? 'Fetch a cover from IGDB using the title.'
+                              : undefined
+                          }
+                          sx={fieldSx}
+                        />
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          onClick={handleFetchCover}
+                          disabled={
+                            !supportsIgdb ||
+                            !form.title.trim() ||
+                            igdbState.isFetching ||
+                            isBusy
+                          }
+                          sx={{
+                            mt: 0.5,
+                            whiteSpace: 'nowrap',
+                            minWidth: 96,
+                            borderRadius: 2,
+                          }}
+                        >
+                          {igdbState.isFetching ? '…' : 'Fetch'}
+                        </Button>
+                      </Stack>
+                    </Stack>
+                  </Collapse>
+                </Box>
               </Stack>
             </Stack>
           </Stack>
