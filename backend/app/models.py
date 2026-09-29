@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from app.database import Base
 
-
+# This represents the user table in the database.
 class User(Base):
     """Persisted account row in the user table."""
 
@@ -17,7 +17,7 @@ class User(Base):
         default=lambda: datetime.now(timezone.utc),
     )
 
-
+# This represents the media_entries table in the database.
 class MediaEntry(Base):
     """Persisted media entry row in the media_entries table."""
 
@@ -32,3 +32,4 @@ class MediaEntry(Base):
     poster_path = Column(String, nullable=True)
     started_at = Column(DateTime(timezone=True), nullable=True)
     finished_at = Column(DateTime(timezone=True), nullable=True)
+    rating = Column(Integer, nullable=True)

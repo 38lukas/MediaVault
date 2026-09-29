@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { Box, CircularProgress, Container } from '@mui/material';
-import { AddMediaModal } from '@/components/AddMediaModal';
+import { MediaModal } from '@/components/MediaModal';
 import { LibraryHeader } from '@/components/LibraryHeader';
 import { LibraryView } from '@/components/LibraryView';
 import { LoginForm } from '@/components/LoginForm';
@@ -42,7 +42,7 @@ export default function HomePage() {
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <LibraryHeader />
-      <AddMediaModal />
+      <MediaModal />
       <LibraryView />
     </Container>
   );

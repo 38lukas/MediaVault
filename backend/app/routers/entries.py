@@ -52,6 +52,7 @@ def create_entry(
         poster_path=entry_in.poster_path,
         started_at=entry_in.started_at,
         finished_at=entry_in.finished_at,
+        rating=entry_in.rating,
     )
 
     db.add(db_entry)
@@ -86,6 +87,7 @@ def update_entry(
     entry.poster_path = entry_in.poster_path
     entry.started_at = entry_in.started_at
     entry.finished_at = entry_in.finished_at
+    entry.rating = entry_in.rating
 
     db.commit()
     db.refresh(entry)

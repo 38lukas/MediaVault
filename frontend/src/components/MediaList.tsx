@@ -14,9 +14,9 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 import type { MediaItem } from '@/types/media';
-import { getStatusColor } from '@/lib/mediaStatus';
 import { palette } from '@/lib/palette';
-import { formatDisplayDate } from '@/lib/dateUtils';
+import { formatDisplayDate } from '@/utils/date';
+import { getStatusColor } from '@/utils/mediaStatus';
 
 interface MediaListProps {
   items: MediaItem[];

@@ -1,5 +1,5 @@
 import type { MediaItem, SortDirection, SortField } from '@/types/media';
-import { dateValue } from '@/lib/dateUtils';
+import { dateValue } from '@/utils/date';
 
 const STATUS_RANK: Record<string, number> = {
   Playing: 0,

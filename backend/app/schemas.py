@@ -1,6 +1,6 @@
 """Pydantic request/response schemas for media entries and auth."""
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from datetime import datetime
 from typing import Optional
 from app.enums import MediaType, MediaStatus, ALLOWED_STATUSES
@@ -31,6 +31,7 @@ class MediaEntryBase(BaseModel):
     poster_path: Optional[str] = None
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
+    rating: Optional[int] = Field(default=None, ge=1, le=10) # Null = unrated; when set, must be an integer 1–10.
 
     @model_validator(mode='after')
     def validate_status_for_media_type(self):

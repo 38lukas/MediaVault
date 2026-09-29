@@ -1,5 +1,5 @@
 import type { MediaItem } from '@/types/media';
-import { dateValue } from '@/lib/dateUtils';
+import { dateValue } from '@/utils/date';
 
 export const NO_FINISH_KEY = 'none';
 

@@ -4,8 +4,8 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 import type { MediaItem } from '@/types/media';
-import { getStatusColor } from '@/lib/mediaStatus';
 import { palette } from '@/lib/palette';
+import { getStatusColor } from '@/utils/mediaStatus';
 
 export type { MediaItem };
 

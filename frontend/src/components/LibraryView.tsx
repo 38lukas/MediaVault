@@ -11,8 +11,8 @@ import {
   formatFinishedMonthLabel,
   groupConsecutive,
   statusSectionKey,
-} from '@/lib/mediaGrouping';
-import { sortMediaItems } from '@/lib/mediaSort';
+} from '@/utils/mediaGrouping';
+import { sortMediaItems } from '@/utils/mediaSort';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openEditMediaModal } from '@/redux/libraryUiSlice';
 import { useGetMediaEntriesQuery } from '@/redux/mediaApi';

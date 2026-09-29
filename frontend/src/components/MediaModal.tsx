@@ -13,9 +13,11 @@ import {
   Typography,
 } from '@mui/material';
 import Image from 'next/image';
-import { getStatusColor } from '@/lib/mediaStatus';
+import { StarRating } from '@/components/StarRating';
 import { palette } from '@/lib/palette';
-import { toDateInputValue, toIsoDateOrNull } from '@/lib/dateUtils';
+import { toDateInputValue, toIsoDateOrNull } from '@/utils/date';
+import { getStatusColor } from '@/utils/mediaStatus';
+import { toDbRating } from '@/utils/rating';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { closeMediaModal } from '@/redux/libraryUiSlice';
 import {
@@ -46,6 +48,7 @@ const INITIAL_FORM = {
   posterUrl: '',
   startedAt: '',
   finishedAt: '',
+  rating: null as number | null, // DB 1–10, or null when unrated
 };
 
 const fieldSx = {
@@ -64,7 +67,7 @@ function isMediaType(value: string): value is MediaType {
  * Open state and editing item come from Redux; form fields stay local.
  * @returns Media entry dialog bound to library UI + RTK Query mutations.
  */
-export function AddMediaModal() {
+export function MediaModal() {
   const dispatch = useAppDispatch();
   const open = useAppSelector((state) => state.libraryUi.isMediaModalOpen);
   const item = useAppSelector((state) => state.libraryUi.editingItem);
@@ -108,6 +111,7 @@ export function AddMediaModal() {
         posterUrl: item.poster_path ?? '',
         startedAt: toDateInputValue(item.started_at),
         finishedAt: toDateInputValue(item.finished_at),
+        rating: item.rating ?? null,
       });
       updateState.reset();
       deleteState.reset();
@@ -189,6 +193,7 @@ export function AddMediaModal() {
       poster_path: form.posterUrl.trim() || null,
       started_at: toIsoDateOrNull(form.startedAt),
       finished_at: toIsoDateOrNull(form.finishedAt),
+      rating: form.rating,
     };
 
     try {
@@ -420,6 +425,21 @@ export function AddMediaModal() {
                       );
                     })}
                   </Stack>
+                </Box>
+
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+                  >
+                    Rating
+                  </Typography>
+                  <StarRating
+                    value={form.rating}
+                    onChange={(stars) =>
+                      setForm((prev) => ({ ...prev, rating: toDbRating(stars) }))
+                    }
+                  />
                 </Box>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>

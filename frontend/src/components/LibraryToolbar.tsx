@@ -17,9 +17,9 @@ import {
 } from '@/redux/libraryUiSlice';
 import { TYPE_FILTERS, type SortDirection, type SortField, type TypeFilter } from '@/types/media';
 
-/**
- * Type filter and sort field/direction controls.
- * @returns Toolbar bound to Redux library UI state.
+/** Type filter and sort field/direction controls.
+ * 
+ *  @returns Toolbar bound to Redux library UI state.
  */
 export function LibraryToolbar() {
   const dispatch = useAppDispatch();

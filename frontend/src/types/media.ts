@@ -9,6 +9,7 @@ export interface MediaItem {
   poster_path?: string | null;
   started_at?: string | null;
   finished_at?: string | null;
+  rating?: number | null; // 1–10, or null when unrated
 }
 
 // Payload for creating/updating entries (username is set by the backend)
