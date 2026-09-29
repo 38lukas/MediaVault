@@ -31,18 +31,19 @@ export function getStatusColor(status: string) {
         border: 'rgba(245, 124, 0, 0.42)',
         color: '#ffb74d',
       };
-    case 'backlog':
+    case 'played':
       return {
         bg: 'rgba(156, 39, 176, 0.2)',
         border: 'rgba(156, 39, 176, 0.4)',
         color: '#ba68c8',
       };
+    case 'backlog':
     case 'wishlist':
     case 'watchlist':
       return {
-        bg: 'rgba(63, 81, 181, 0.2)',
-        border: 'rgba(63, 81, 181, 0.4)',
-        color: '#7986cb',
+        bg: 'rgba(158, 158, 158, 0.16)',
+        border: 'rgba(158, 158, 158, 0.32)',
+        color: '#9e9e9e',
       };
     default:
       return {

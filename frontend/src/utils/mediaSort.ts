@@ -16,11 +16,12 @@ const STATUS_RANK: Record<string, number> = {
   Watching: 0,
   Finished: 1,
   Watched: 1,
-  Dropped: 2,
-  Shelved: 3,
-  Backlog: 4,
-  Wishlist: 5,
-  Watchlist: 5,
+  Played: 2,
+  Dropped: 3,
+  Shelved: 4,
+  Backlog: 5,
+  Wishlist: 6,
+  Watchlist: 6,
 };
 
 /** Maps a status label to a sort rank.

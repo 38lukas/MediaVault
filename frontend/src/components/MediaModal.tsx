@@ -41,8 +41,8 @@ const AUTO_FETCH_MIN_TITLE_LENGTH = 3;
 
 /** Statuses allowed per media type (mirrors backend ALLOWED_STATUSES). */
 const STATUSES_BY_TYPE: Record<(typeof MEDIA_TYPES)[number], string[]> = {
-  Game: ['Playing', 'Finished', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
-  DLC: ['Playing', 'Finished', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
+  Game: ['Playing', 'Finished', 'Played', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
+  DLC: ['Playing', 'Finished', 'Played', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
   Movie: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
   Series: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
   Anime: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
