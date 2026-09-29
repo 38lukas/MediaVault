@@ -1,12 +1,31 @@
 'use client';
 
-import { Box, Button, SvgIcon, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Box, Button, IconButton, SvgIcon, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { clearUsername } from '@/redux/authSlice';
-import { openCreateMediaModal, setViewMode } from '@/redux/libraryUiSlice';
+import { openCreateMediaModal, setCardSize, setViewMode } from '@/redux/libraryUiSlice';
 import { mediaApi } from '@/redux/mediaApi';
-import type { ViewMode } from '@/types/media';
+import type { CardSize, ViewMode } from '@/types/media';
+
+const SIZE_BUTTON_SX = {
+  border: `1px solid ${palette.borderMuted}`,
+  borderRadius: '10px',
+  width: 44,
+  height: 44,
+  color: palette.primary,
+  backgroundColor: 'transparent',
+  transition: 'background-color 0.15s ease',
+  '&:hover': {
+    backgroundColor: palette.fieldBg,
+  },
+  '&.Mui-disabled': {
+    color: palette.textDisabled,
+    borderColor: palette.borderMuted,
+  },
+} as const;
 
 /**
  * Library page header with title, layout toggle, add button, and logout.
@@ -15,7 +34,9 @@ import type { ViewMode } from '@/types/media';
 export function LibraryHeader() {
   const dispatch = useAppDispatch();
   const viewMode = useAppSelector((state) => state.libraryUi.viewMode);
+  const cardSize = useAppSelector((state) => state.libraryUi.cardSize);
   const username = useAppSelector((state) => state.auth.username);
+  const showCardSizeControls = viewMode === 'cards';
 
   /**
    * Clears the session and drops cached media entries for the next login.
@@ -23,6 +44,15 @@ export function LibraryHeader() {
   const handleLogout = () => {
     dispatch(clearUsername());
     dispatch(mediaApi.util.resetApiState());
+  };
+
+  /**
+   * Steps card size toward denser or larger cards.
+   * @param delta - −1 to enlarge, +1 to shrink.
+   */
+  const adjustCardSize = (delta: -1 | 1) => {
+    const next = Math.min(3, Math.max(0, cardSize + delta)) as CardSize;
+    if (next !== cardSize) dispatch(setCardSize(next));
   };
 
   return (
@@ -60,6 +90,29 @@ export function LibraryHeader() {
           justifyContent: { xs: 'stretch', sm: 'flex-end' },
         }}
       >
+        {showCardSizeControls && (
+          <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
+            <IconButton
+              aria-label="Larger cards"
+              disableRipple
+              disabled={cardSize <= 0}
+              onClick={() => adjustCardSize(-1)}
+              sx={SIZE_BUTTON_SX}
+            >
+              <AddIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              aria-label="Smaller cards"
+              disableRipple
+              disabled={cardSize >= 3}
+              onClick={() => adjustCardSize(1)}
+              sx={SIZE_BUTTON_SX}
+            >
+              <RemoveIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
+
         <ToggleButtonGroup
           exclusive
           size="small"

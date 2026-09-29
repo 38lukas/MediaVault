@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException, Query
 import httpx
 
-from app import igdb as igdb_service
+from app.services import igdb as igdb_service
 
 router = APIRouter(prefix="/igdb", tags=["igdb"])
 

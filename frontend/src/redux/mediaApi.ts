@@ -29,7 +29,7 @@ function resolveApiBaseUrl(): string {
   return raw;
 }
 
-// RTK Query API slice for media entries and IGDB cover lookup
+// RTK Query API slice for media entries and cover lookups (IGDB / TMDB)
 export const mediaApi = createApi({
 
   reducerPath: 'mediaApi', 
@@ -108,6 +108,17 @@ export const mediaApi = createApi({
         params: { name },
       }),
     }),
+
+    // Fetch the TMDB poster for a movie, series, or anime
+    fetchTmdbCover: builder.query<
+      { name: string; external_id: string; poster_path: string },
+      { name: string; mediaType: 'Movie' | 'Series' | 'Anime' }
+    >({
+      query: ({ name, mediaType }) => ({
+        url: '/tmdb/cover',
+        params: { name, media_type: mediaType },
+      }),
+    }),
   }),
 });
 
@@ -119,4 +130,5 @@ export const {
   useUpdateMediaEntryMutation,
   useDeleteMediaEntryMutation,
   useLazyFetchIgdbCoverQuery,
+  useLazyFetchTmdbCoverQuery,
 } = mediaApi;

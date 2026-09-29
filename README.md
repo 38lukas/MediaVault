@@ -48,11 +48,15 @@ cp .env.example .env
 DATABASE_URL=postgresql://USER:PASSWORD@HOST/neondb?sslmode=require
 TWITCH_CLIENT_ID=your_twitch_client_id
 TWITCH_CLIENT_SECRET=your_twitch_client_secret
+TMDB_ACCESS_TOKEN=your_tmdb_read_access_token
 NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
 ```
 
 IGDB uses Twitch developer credentials. Create an app at https://dev.twitch.tv/console/apps
 (Confidential client type), generate a Client Secret, then paste both values into the root `.env`.
+
+TMDB cover lookup uses the **API Read Access Token** (Bearer), not the v3 API key.
+Copy it from https://www.themoviedb.org/settings/api into `TMDB_ACCESS_TOKEN`.
 
 ### 4. Run the Backend Server
 

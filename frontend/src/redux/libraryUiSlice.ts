@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type {
+  CardSize,
   MediaItem,
   SortDirection,
   SortField,
@@ -10,6 +11,7 @@ import { SORT_FIELD_DEFAULT_DIRECTION } from '@/utils/mediaSort';
 
 interface LibraryUiState {
   viewMode: ViewMode; // cards, list
+  cardSize: CardSize; // 0 largest … 3 smallest (cards view only)
   typeFilter: TypeFilter; // All, Game/DLC, Movie, Series, Anime
   sortField: SortField; // title, status, rating, started_at, finished_at, months
   sortDirection: SortDirection; // asc, desc
@@ -21,6 +23,7 @@ const initialSortField: SortField = 'status';
 
 const initialState: LibraryUiState = {
   viewMode: 'cards',
+  cardSize: 1,
   typeFilter: 'All',
   sortField: initialSortField,
   sortDirection: SORT_FIELD_DEFAULT_DIRECTION[initialSortField],
@@ -35,6 +38,9 @@ const libraryUiSlice = createSlice({
   reducers: {
     setViewMode(state, action: PayloadAction<ViewMode>) {
       state.viewMode = action.payload;
+    },
+    setCardSize(state, action: PayloadAction<CardSize>) {
+      state.cardSize = action.payload;
     },
     setTypeFilter(state, action: PayloadAction<TypeFilter>) {
       state.typeFilter = action.payload;
@@ -65,6 +71,7 @@ const libraryUiSlice = createSlice({
 // Export the methods to be used in the components.
 export const {
   setViewMode,
+  setCardSize,
   setTypeFilter,
   setSortField,
   setSortDirection,

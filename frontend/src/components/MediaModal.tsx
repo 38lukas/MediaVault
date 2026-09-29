@@ -1,14 +1,16 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Box,
   Button,
+  CircularProgress,
   Collapse,
   Dialog,
   DialogActions,
   DialogContent,
+  InputAdornment,
   Stack,
   TextField,
   Typography,
@@ -26,10 +28,16 @@ import {
   useCreateMediaEntryMutation,
   useDeleteMediaEntryMutation,
   useLazyFetchIgdbCoverQuery,
+  useLazyFetchTmdbCoverQuery,
   useUpdateMediaEntryMutation,
 } from '@/redux/mediaApi';
 
 const MEDIA_TYPES = ['Game', 'DLC', 'Movie', 'Series', 'Anime'] as const;
+
+/** Wait for typing to settle before auto-fetching a cover. */
+const AUTO_FETCH_DEBOUNCE_MS = 650;
+/** Ignore short / incomplete titles for auto-fetch. */
+const AUTO_FETCH_MIN_TITLE_LENGTH = 3;
 
 /** Statuses allowed per media type (mirrors backend ALLOWED_STATUSES). */
 const STATUSES_BY_TYPE: Record<(typeof MEDIA_TYPES)[number], string[]> = {
@@ -65,6 +73,47 @@ function isMediaType(value: string): value is MediaType {
 }
 
 /**
+ * Builds a short cover-fetch error from an RTK / HTTP failure.
+ *
+ * @param err - Error thrown by a lazy query unwrap.
+ * @param provider - IGDB or TMDB label for the message.
+ * @returns Short user-facing error text.
+ */
+function coverFetchErrorMessage(err: unknown, provider: string): string {
+  const status: number | string | null =
+    err && typeof err === 'object' && 'status' in err
+      ? ((err as { status: number | string }).status ?? null)
+      : null;
+
+  if (status === 404) return `No ${provider} cover found`;
+  if (status === 400) return `${provider} is not configured`;
+  if (status === 502) return `${provider} unavailable`;
+  if (status === 'FETCH_ERROR' || status === 'TIMEOUT_ERROR') {
+    return 'Network error';
+  }
+
+  const detail =
+    err && typeof err === 'object' && 'data' in err && err.data
+      ? typeof err.data === 'string'
+        ? err.data
+        : typeof err.data === 'object' &&
+            err.data !== null &&
+            'detail' in err.data
+          ? String((err.data as { detail: unknown }).detail)
+          : null
+      : null;
+
+  if (detail && detail.length <= 80) return detail;
+
+  return `${provider} cover fetch failed`;
+}
+
+/** Cache key for a title + media-type cover lookup. */
+function coverQueryKey(title: string, mediaType: MediaType): string {
+  return `${mediaType}:${title.trim().toLowerCase()}`;
+}
+
+/**
  * Create/edit media dialog.
  * Open state and editing item come from Redux; form fields stay local.
  * @returns Media entry dialog bound to library UI + RTK Query mutations.
@@ -78,15 +127,19 @@ export function MediaModal() {
   const [updateMediaEntry, updateState] = useUpdateMediaEntryMutation();
   const [deleteMediaEntry, deleteState] = useDeleteMediaEntryMutation();
   const [fetchIgdbCover, igdbState] = useLazyFetchIgdbCoverQuery();
+  const [fetchTmdbCover, tmdbState] = useLazyFetchTmdbCoverQuery();
   const [form, setForm] = useState(INITIAL_FORM);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [moreOptionsOpen, setMoreOptionsOpen] = useState(false);
+  // Skip repeat auto-fetches for the same title + media type.
+  const lastCoverQueryKeyRef = useRef<string | null>(null);
 
+  const isFetchingCover = igdbState.isFetching || tmdbState.isFetching;
   const isBusy =
     createState.isLoading ||
     updateState.isLoading ||
     deleteState.isLoading ||
-    igdbState.isFetching;
+    isFetchingCover;
   const isError =
     (isEdit ? updateState.isError : createState.isError) || deleteState.isError;
   const error = deleteState.isError
@@ -95,7 +148,14 @@ export function MediaModal() {
       ? updateState.error
       : createState.error;
 
-  const supportsIgdb = form.mediaType === 'Game' || form.mediaType === 'DLC';
+  // Cover provider by media type: IGDB for games, TMDB for film/TV
+  const usesIgdb = form.mediaType === 'Game' || form.mediaType === 'DLC';
+  const usesTmdb =
+    form.mediaType === 'Movie' ||
+    form.mediaType === 'Series' ||
+    form.mediaType === 'Anime';
+  const supportsCoverFetch = usesIgdb || usesTmdb;
+  const coverProvider = usesIgdb ? 'IGDB' : usesTmdb ? 'TMDB' : null;
   const statusStyle = getStatusColor(form.status);
   const statuses = useMemo(() => STATUSES_BY_TYPE[form.mediaType], [form.mediaType]);
 
@@ -116,10 +176,13 @@ export function MediaModal() {
         finishedAt: toDateInputValue(item.finished_at),
         rating: item.rating ?? null,
       });
+      // Editing: do not auto-refetch the cover already on the entry.
+      lastCoverQueryKeyRef.current = coverQueryKey(item.title, mediaType);
       updateState.reset();
       deleteState.reset();
     } else {
       setForm(INITIAL_FORM);
+      lastCoverQueryKeyRef.current = null;
       createState.reset();
     }
     setFetchError(null);
@@ -149,38 +212,94 @@ export function MediaModal() {
   };
 
   /**
-   * Resolves poster URL + IGDB external id from the current title.
-   * @returns Promise that settles when the IGDB lookup finishes.
+   * Resolves poster URL + external id from the title via IGDB or TMDB.
+   *
+   * @param options - Optional overrides for auto-fetch (title, media type, cache).
+   * @returns Promise that settles when the cover lookup finishes.
    */
-  const handleFetchCover = async () => {
-    const title = form.title.trim();
-    if (!title || !supportsIgdb) return;
+  const handleFetchCover = async (options?: {
+    title?: string;
+    mediaType?: MediaType;
+    preferCacheValue?: boolean;
+  }) => {
+    const title = (options?.title ?? form.title).trim();
+    const mediaType = options?.mediaType ?? form.mediaType;
+    const preferCacheValue = options?.preferCacheValue ?? false;
+    const igdb = mediaType === 'Game' || mediaType === 'DLC';
+    const tmdb =
+      mediaType === 'Movie' || mediaType === 'Series' || mediaType === 'Anime';
+    const provider = igdb ? 'IGDB' : tmdb ? 'TMDB' : null;
 
+    if (!title || !provider) return;
+
+    const queryKey = coverQueryKey(title, mediaType);
     setFetchError(null);
+
     try {
-      const result = await fetchIgdbCover(title).unwrap();
-      setForm((prev) => ({
-        ...prev,
-        posterUrl: result.poster_path,
-        externalId:
-          !prev.externalId.trim() || prev.externalId.startsWith('manual_')
-            ? result.external_id
-            : prev.externalId,
-      }));
+      const result = igdb
+        ? await fetchIgdbCover(title, preferCacheValue).unwrap()
+        : await fetchTmdbCover(
+            { name: title, mediaType: mediaType as 'Movie' | 'Series' | 'Anime' },
+            preferCacheValue,
+          ).unwrap();
+
+      lastCoverQueryKeyRef.current = queryKey;
+      setForm((prev) => {
+        // Drop stale responses if the user kept typing or changed type.
+        if (
+          prev.title.trim().toLowerCase() !== title.toLowerCase() ||
+          prev.mediaType !== mediaType
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          posterUrl: result.poster_path,
+          externalId:
+            !prev.externalId.trim() || prev.externalId.startsWith('manual_')
+              ? result.external_id
+              : prev.externalId,
+        };
+      });
     } catch (err) {
-      const message =
-        err && typeof err === 'object' && 'data' in err && err.data
-          ? typeof err.data === 'string'
-            ? err.data
-            : typeof err.data === 'object' &&
-                err.data !== null &&
-                'detail' in err.data
-              ? String((err.data as { detail: unknown }).detail)
-              : 'Failed to fetch cover from IGDB'
-          : 'Failed to fetch cover from IGDB';
-      setFetchError(message);
+      // Ignore aborted / superseded lazy requests.
+      if (
+        err &&
+        typeof err === 'object' &&
+        'name' in err &&
+        (err as { name: string }).name === 'AbortError'
+      ) {
+        return;
+      }
+      setFetchError(coverFetchErrorMessage(err, provider));
     }
   };
+
+  // Debounced auto-fetch when the title looks complete for the selected type.
+  useEffect(() => {
+    if (!open || !supportsCoverFetch || !coverProvider) return;
+
+    const title = form.title.trim();
+    if (title.length < AUTO_FETCH_MIN_TITLE_LENGTH) {
+      setFetchError(null);
+      return;
+    }
+
+    const queryKey = coverQueryKey(title, form.mediaType);
+    if (queryKey === lastCoverQueryKeyRef.current) return;
+
+    const timer = window.setTimeout(() => {
+      void handleFetchCover({
+        title,
+        mediaType: form.mediaType,
+        preferCacheValue: true,
+      });
+    }, AUTO_FETCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timer);
+    // handleFetchCover closes over latest lazy triggers; deps are the inputs that matter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, form.title, form.mediaType, supportsCoverFetch, coverProvider]);
 
   /**
    * Creates or updates the entry, then closes the modal.
@@ -340,6 +459,15 @@ export function MediaModal() {
                   onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
                   fullWidth
                   sx={fieldSx}
+                  slotProps={{
+                    input: {
+                      endAdornment: isFetchingCover ? (
+                        <InputAdornment position="end">
+                          <CircularProgress size={16} thickness={5} color="inherit" />
+                        </InputAdornment>
+                      ) : null,
+                    },
+                  }}
                 />
 
                 <Box>
@@ -501,7 +629,11 @@ export function MediaModal() {
                     <Stack spacing={2} sx={{ pt: 1.5 }}>
                       <TextField
                         label="External ID"
-                        helperText="Optional. Filled by IGDB Fetch, or generated on save."
+                        helperText={
+                          coverProvider
+                            ? `Optional. Filled by ${coverProvider} Fetch, or generated on save.`
+                            : 'Optional. Generated on save if empty.'
+                        }
                         value={form.externalId}
                         onChange={(e) =>
                           setForm((prev) => ({ ...prev, externalId: e.target.value }))
@@ -523,8 +655,8 @@ export function MediaModal() {
                           }
                           fullWidth
                           helperText={
-                            supportsIgdb
-                              ? 'Fetch a cover from IGDB using the title.'
+                            coverProvider
+                              ? `Auto-fetches from ${coverProvider} after you finish the title.`
                               : undefined
                           }
                           sx={fieldSx}
@@ -532,11 +664,11 @@ export function MediaModal() {
                         <Button
                           variant="outlined"
                           color="primary"
-                          onClick={handleFetchCover}
+                          onClick={() => void handleFetchCover()}
                           disabled={
-                            !supportsIgdb ||
+                            !supportsCoverFetch ||
                             !form.title.trim() ||
-                            igdbState.isFetching ||
+                            isFetchingCover ||
                             isBusy
                           }
                           sx={{
@@ -546,7 +678,7 @@ export function MediaModal() {
                             borderRadius: 2,
                           }}
                         >
-                          {igdbState.isFetching ? '…' : 'Fetch'}
+                          {isFetchingCover ? '…' : 'Fetch'}
                         </Button>
                       </Stack>
                     </Stack>
