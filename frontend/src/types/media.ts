@@ -16,8 +16,11 @@ export interface MediaItem {
 export type MediaEntryPayload = Omit<MediaItem, 'id' | 'username'>;
 
 export type ViewMode = 'cards' | 'list';
-/** Card grid density: 0 = largest cards, 3 = smallest. */
-export type CardSize = 0 | 1 | 2 | 3;
+/** Card grid density: 0 = extra large … 2 = medium … 4 = extra small. */
+export type CardSize = 0 | 1 | 2 | 3 | 4;
+export const CARD_SIZE_MIN = 0 as const;
+export const CARD_SIZE_MAX = 4 as const;
+export const CARD_SIZE_DEFAULT = 2 as const; // medium (= former densest size)
 export type TypeFilter = 'All' | 'Game/DLC' | 'Movie' | 'Series' | 'Anime';
 export type SortField =
   | 'title'

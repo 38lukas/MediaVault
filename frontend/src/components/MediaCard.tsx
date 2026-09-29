@@ -16,7 +16,7 @@ interface MediaCardProps {
 }
 
 /**
- * Poster card with hover overlay and full-width status bar.
+ * Poster card with hover overlay and status-colored outline glow.
  * @param props.item - Media entry to render.
  * @param props.onClick - Optional click handler (opens edit modal).
  * @returns Interactive media card.
@@ -47,8 +47,9 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
           borderRadius: 2,
           // Hairline + soft bloom sit outside the clipped image so the glow is visible.
           boxShadow: `
-            0 0 0 1px ${statusStyle.color}40,
-            0 0 6px ${statusStyle.color}28,
+            0 0 0 1.5px ${statusStyle.color}55,
+            0 0 10px ${statusStyle.color}40,
+            0 0 22px ${statusStyle.color}28,
             0 4px 14px rgba(0, 0, 0, 0.35)
           `,
         }}
@@ -91,9 +92,36 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
             >
               {item.title}
             </Typography>
-            <Typography variant="caption" sx={{ color: 'grey.400', mt: 0.5 }}>
-              {item.media_type}
-            </Typography>
+            <Box
+              sx={{
+                mt: 0.5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Typography variant="caption" sx={{ color: 'grey.400' }}>
+                {item.media_type}
+              </Typography>
+              <Box
+                sx={{
+                  py: 0.15,
+                  px: 0.55,
+                  borderRadius: 1,
+                  backgroundColor: statusStyle.bg,
+                  border: `1px solid ${statusStyle.border}`,
+                  color: statusStyle.color,
+                  fontWeight: 600,
+                  fontSize: '0.6rem',
+                  letterSpacing: '0.02em',
+                  textTransform: 'capitalize',
+                  lineHeight: 1.2,
+                }}
+              >
+                {item.status}
+              </Box>
+            </Box>
             {item.rating != null && (
               <Box sx={{ mt: 0.75 }}>
                 <StarRating value={item.rating} readOnly size="small" />
@@ -101,27 +129,6 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
             )}
           </Box>
         </Box>
-      </Box>
-
-      <Box
-        sx={{
-          mt: 1,
-          width: '100%',
-          py: 0.6,
-          px: 1,
-          borderRadius: 1.5,
-          backgroundColor: statusStyle.bg,
-          border: `1px solid ${statusStyle.border}`,
-          color: statusStyle.color,
-          textAlign: 'center',
-          fontWeight: 600,
-          fontSize: '0.7rem',
-          letterSpacing: '0.02em',
-          textTransform: 'capitalize',
-          lineHeight: 1.2,
-        }}
-      >
-        {item.status}
       </Box>
     </Box>
   );

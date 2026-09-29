@@ -9,6 +9,7 @@ import { clearUsername } from '@/redux/authSlice';
 import { openCreateMediaModal, setCardSize, setViewMode } from '@/redux/libraryUiSlice';
 import { mediaApi } from '@/redux/mediaApi';
 import type { CardSize, ViewMode } from '@/types/media';
+import { CARD_SIZE_MAX, CARD_SIZE_MIN } from '@/types/media';
 
 const SIZE_BUTTON_SX = {
   border: `1px solid ${palette.borderMuted}`,
@@ -51,7 +52,7 @@ export function LibraryHeader() {
    * @param delta - −1 to enlarge, +1 to shrink.
    */
   const adjustCardSize = (delta: -1 | 1) => {
-    const next = Math.min(3, Math.max(0, cardSize + delta)) as CardSize;
+    const next = Math.min(CARD_SIZE_MAX, Math.max(CARD_SIZE_MIN, cardSize + delta)) as CardSize;
     if (next !== cardSize) dispatch(setCardSize(next));
   };
 
@@ -95,7 +96,7 @@ export function LibraryHeader() {
             <IconButton
               aria-label="Larger cards"
               disableRipple
-              disabled={cardSize <= 0}
+              disabled={cardSize <= CARD_SIZE_MIN}
               onClick={() => adjustCardSize(-1)}
               sx={SIZE_BUTTON_SX}
             >
@@ -104,7 +105,7 @@ export function LibraryHeader() {
             <IconButton
               aria-label="Smaller cards"
               disableRipple
-              disabled={cardSize >= 3}
+              disabled={cardSize >= CARD_SIZE_MAX}
               onClick={() => adjustCardSize(1)}
               sx={SIZE_BUTTON_SX}
             >

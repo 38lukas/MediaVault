@@ -7,11 +7,12 @@ import type {
   TypeFilter,
   ViewMode,
 } from '@/types/media';
+import { CARD_SIZE_DEFAULT } from '@/types/media';
 import { SORT_FIELD_DEFAULT_DIRECTION } from '@/utils/mediaSort';
 
 interface LibraryUiState {
   viewMode: ViewMode; // cards, list
-  cardSize: CardSize; // 0 largest … 3 smallest (cards view only)
+  cardSize: CardSize; // 0 XL … 2 medium … 4 XS (cards view only)
   typeFilter: TypeFilter; // All, Game/DLC, Movie, Series, Anime
   sortField: SortField; // title, status, rating, started_at, finished_at, months
   sortDirection: SortDirection; // asc, desc
@@ -24,7 +25,7 @@ const initialSortField: SortField = 'status';
 
 const initialState: LibraryUiState = {
   viewMode: 'cards',
-  cardSize: 1,
+  cardSize: CARD_SIZE_DEFAULT,
   typeFilter: 'All',
   sortField: initialSortField,
   sortDirection: SORT_FIELD_DEFAULT_DIRECTION[initialSortField],

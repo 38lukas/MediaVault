@@ -67,6 +67,8 @@ export function LibraryView() {
         ? error.message
         : 'Failed to fetch media entries';
 
+  const hideStatus = sortField === 'status';
+
   /** Opens the edit modal for a selected media item.
    * 
    * @param item - Clicked library entry.
@@ -84,7 +86,11 @@ export function LibraryView() {
     viewMode === 'cards' ? (
       <MediaGrid items={sectionItems} onItemClick={handleItemClick} />
     ) : (
-      <MediaList items={sectionItems} onItemClick={handleItemClick} />
+      <MediaList
+        items={sectionItems}
+        hideStatus={hideStatus}
+        onItemClick={handleItemClick}
+      />
     );
 
   if (isLoading) {
@@ -110,7 +116,11 @@ export function LibraryView() {
         <Stack spacing={3}>
           {sections.map((section) => (
             <Box key={section.key}>
-              <SectionDivider label={section.label} rating={section.rating} />
+              <SectionDivider
+                label={section.label}
+                rating={section.rating}
+                statusStyle={hideStatus}
+              />
               {renderLibrary(section.items)}
             </Box>
           ))}

@@ -22,15 +22,18 @@ import { StarRating } from '@/components/StarRating';
 interface MediaListProps {
   items: MediaItem[];
   onItemClick?: (item: MediaItem) => void;
+  /** Hide the Status column (status shown in section dividers). */
+  hideStatus?: boolean;
 }
 
 /**
  * Spreadsheet-style table layout for the library.
  * @param props.items - Media entries to display.
  * @param props.onItemClick - Optional row click handler.
+ * @param props.hideStatus - When true, omit the Status column.
  * @returns Table of media rows, or an empty state.
  */
-export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick }) => {
+export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick, hideStatus = false }) => {
   if (items.length === 0) {
     return (
       <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -56,7 +59,7 @@ export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick }) => {
             <TableCell sx={{ width: 72 }}>Cover</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>Type</TableCell>
-            <TableCell>Status</TableCell>
+            {!hideStatus && <TableCell>Status</TableCell>}
             <TableCell>Rating</TableCell>
             <TableCell>Started</TableCell>
             <TableCell>Finished</TableCell>
@@ -64,7 +67,7 @@ export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick }) => {
         </TableHead>
         <TableBody>
           {items.map((item) => {
-            const statusStyle = getStatusColor(item.status);
+            const statusStyle = hideStatus ? null : getStatusColor(item.status);
             return (
               <TableRow
                 key={item.id}
@@ -101,22 +104,24 @@ export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick }) => {
                   </Typography>
                 </TableCell>
                 <TableCell>{item.media_type}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={item.status}
-                    size="small"
-                    sx={{
-                      backgroundColor: statusStyle.bg,
-                      border: `1px solid ${statusStyle.border}`,
-                      color: statusStyle.color,
-                      fontWeight: 600,
-                      fontSize: '0.7rem',
-                      height: 22,
-                      borderRadius: '6px',
-                      textTransform: 'capitalize',
-                    }}
-                  />
-                </TableCell>
+                {!hideStatus && statusStyle && (
+                  <TableCell>
+                    <Chip
+                      label={item.status}
+                      size="small"
+                      sx={{
+                        backgroundColor: statusStyle.bg,
+                        border: `1px solid ${statusStyle.border}`,
+                        color: statusStyle.color,
+                        fontWeight: 600,
+                        fontSize: '0.7rem',
+                        height: 22,
+                        borderRadius: '6px',
+                        textTransform: 'capitalize',
+                      }}
+                    />
+                  </TableCell>
+                )}
                 <TableCell>
                   {item.rating != null ? (
                     <StarRating value={item.rating} readOnly size="small" />
