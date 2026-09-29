@@ -1,4 +1,4 @@
-"""Media entry CRUD routes under /api/v1."""
+"""Media entry CRUD routes under /api."""
 
 from typing import List
 

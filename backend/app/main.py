@@ -33,10 +33,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Versioned API: /api/v1/entries, /api/v1/auth/login, /api/v1/igdb/cover
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(entries.router, prefix="/api/v1")
-app.include_router(igdb.router, prefix="/api/v1")
+# API routes: /api/entries, /api/auth/login, /api/igdb/cover
+app.include_router(auth.router, prefix="/api")
+app.include_router(entries.router, prefix="/api")
+app.include_router(igdb.router, prefix="/api")
 
 
 @app.get("/")

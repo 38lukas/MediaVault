@@ -15,7 +15,7 @@ export interface AuthUser {
  * @returns Absolute API base URL without a trailing slash
  */
 function resolveApiBaseUrl(): string {
-  let raw = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1').trim();
+  let raw = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api').trim();
 
   // Remove markdown links
   const markdownLink = raw.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
@@ -51,7 +51,11 @@ export const mediaApi = createApi({
 
     // Log in (creates the user on first use)
     login: builder.mutation<AuthUser, { username: string; password: string }>({
-      query: (body) => ({url: '/auth/login', method: 'POST', body,}),
+      query: (body) => ({
+        url: '/auth/login',
+        method: 'POST',
+        body,
+      }),
     }),
 
     // Get all media entries for the logged-in user

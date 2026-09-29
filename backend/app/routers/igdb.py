@@ -1,4 +1,4 @@
-"""IGDB proxy routes under /api/v1."""
+"""IGDB proxy routes under /api."""
 
 from fastapi import APIRouter, HTTPException, Query
 import httpx

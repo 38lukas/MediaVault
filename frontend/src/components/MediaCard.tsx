@@ -96,7 +96,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
             </Typography>
             {item.rating != null && (
               <Box sx={{ mt: 0.75 }}>
-                <StarRating value={item.rating} readOnly size="medium" />
+                <StarRating value={item.rating} readOnly size="small" />
               </Box>
             )}
           </Box>

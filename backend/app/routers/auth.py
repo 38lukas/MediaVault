@@ -1,4 +1,4 @@
-"""Auth routes under /api/v1/auth."""
+"""Auth routes under /api/auth."""
 
 from datetime import datetime, timezone
 
