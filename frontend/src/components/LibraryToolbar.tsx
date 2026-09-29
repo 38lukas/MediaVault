@@ -6,24 +6,26 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
+  setSearchQuery,
   setSortDirection,
   setSortField,
   setTypeFilter,
 } from '@/redux/libraryUiSlice';
 import { TYPE_FILTERS, type SortDirection, type SortField, type TypeFilter } from '@/types/media';
 
-/** Type filter and sort field/direction controls.
- * 
+/** Type filter, title search, and sort field/direction controls.
+ *
  *  @returns Toolbar bound to Redux library UI state.
  */
 export function LibraryToolbar() {
   const dispatch = useAppDispatch();
-  const { typeFilter, sortField, sortDirection } = useAppSelector((state) => state.libraryUi);
+  const { typeFilter, sortField, sortDirection, searchQuery } = useAppSelector((state) => state.libraryUi);
 
   return (
     <>
@@ -56,6 +58,15 @@ export function LibraryToolbar() {
           justifyContent: 'flex-start',
         }}
       >
+        <TextField
+          size="small"
+          label="Search title"
+          value={searchQuery}
+          onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+          sx={{ minWidth: 200, flex: '1 1 200px', maxWidth: 320 }}
+          slotProps={{ htmlInput: { 'aria-label': 'Search by title' } }}
+        />
+
         <FormControl size="small" sx={{ minWidth: 180 }}>
           <InputLabel id="sort-by-label">Sort by</InputLabel>
           <Select
@@ -93,3 +104,4 @@ export function LibraryToolbar() {
     </>
   );
 }
+

@@ -15,6 +15,7 @@ interface LibraryUiState {
   typeFilter: TypeFilter; // All, Game/DLC, Movie, Series, Anime
   sortField: SortField; // title, status, rating, started_at, finished_at, months
   sortDirection: SortDirection; // asc, desc
+  searchQuery: string; // case-insensitive title substring filter
   isMediaModalOpen: boolean;
   editingItem: MediaItem | null;
 }
@@ -27,6 +28,7 @@ const initialState: LibraryUiState = {
   typeFilter: 'All',
   sortField: initialSortField,
   sortDirection: SORT_FIELD_DEFAULT_DIRECTION[initialSortField],
+  searchQuery: '',
   isMediaModalOpen: false,
   editingItem: null,
 };
@@ -53,6 +55,9 @@ const libraryUiSlice = createSlice({
     setSortDirection(state, action: PayloadAction<SortDirection>) {
       state.sortDirection = action.payload;
     },
+    setSearchQuery(state, action: PayloadAction<string>) {
+      state.searchQuery = action.payload;
+    },
     openCreateMediaModal(state) {
       state.editingItem = null;
       state.isMediaModalOpen = true;
@@ -75,6 +80,7 @@ export const {
   setTypeFilter,
   setSortField,
   setSortDirection,
+  setSearchQuery,
   openCreateMediaModal,
   openEditMediaModal,
   closeMediaModal,

@@ -26,8 +26,9 @@ def login(credentials: schemas.LoginRequest, db: Session = Depends(get_db)):
 
     # Check if the user exists
     user = db.query(models.User).filter(models.User.username == username).first()
+
+    # Create the user if he doesn't exist
     if user is None:
-        # Create the user if it doesn't exist
         user = models.User(
             username=username,
             password=password,

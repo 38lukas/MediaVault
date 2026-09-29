@@ -20,8 +20,8 @@ import { openEditMediaModal } from '@/redux/libraryUiSlice';
 import { useGetMediaEntriesQuery } from '@/redux/mediaApi';
 import { matchesTypeFilter, type MediaItem } from '@/types/media';
 
-/**
- * Loads media entries and renders filtered/sorted card or list content.
+/** Loads media entries and renders filtered/sorted card or list content.
+ * 
  * @returns Library body including toolbar, loading, and media sections.
  */
 export function LibraryView() {
@@ -31,16 +31,21 @@ export function LibraryView() {
     undefined,
     { skip: !username }
   );
-  const { viewMode, typeFilter, sortField, sortDirection } =
+  const { viewMode, typeFilter, sortField, sortDirection, searchQuery } =
     useAppSelector((state) => state.libraryUi);
 
   const visibleItems = useMemo(() => {
-    const filtered = items.filter((item) => matchesTypeFilter(item.media_type, typeFilter));
+    const query = searchQuery.trim().toLowerCase();
+    const filtered = items.filter((item) => {
+      if (!matchesTypeFilter(item.media_type, typeFilter)) return false;
+      if (query && !item.title.toLowerCase().includes(query)) return false;
+      return true;
+    });
 
     return filtered.sort((a, b) =>
       sortMediaItems(a, b, sortField, sortDirection)
     );
-  }, [items, typeFilter, sortField, sortDirection]);
+  }, [items, typeFilter, searchQuery, sortField, sortDirection]);
 
   const sections = useMemo(() => {
     if (sortField === 'status') {
