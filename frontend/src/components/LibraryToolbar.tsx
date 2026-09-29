@@ -66,6 +66,7 @@ export function LibraryToolbar() {
           >
             <MenuItem value="status">Status</MenuItem>
             <MenuItem value="title">Title</MenuItem>
+            <MenuItem value="rating">Rating</MenuItem>
             <MenuItem value="started_at">Started at</MenuItem>
             <MenuItem value="finished_at">Finished at</MenuItem>
             <MenuItem value="months">Months</MenuItem>

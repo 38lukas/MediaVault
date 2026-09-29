@@ -1,6 +1,16 @@
 import type { MediaItem, SortDirection, SortField } from '@/types/media';
 import { dateValue } from '@/utils/date';
 
+// Default Asc/Desc applied automatically when a sort field is selected.
+export const SORT_FIELD_DEFAULT_DIRECTION: Record<SortField, SortDirection> = {
+  title: 'asc',
+  status: 'asc',
+  rating: 'desc',
+  started_at: 'desc',
+  finished_at: 'desc',
+  months: 'desc',
+};
+
 const STATUS_RANK: Record<string, number> = {
   Playing: 0,
   Watching: 0,
@@ -59,8 +69,22 @@ export function sortMediaItems(
     if (aDate === null) return 1;
     if (bDate === null) return -1;
     return bDate - aDate;
-  } else {
+  }
 
+  // Sort by rating (DB 1–10); unrated items stay at the end in both directions.
+  else if (field === 'rating') {
+    const aRating = a.rating ?? null;
+    const bRating = b.rating ?? null;
+    if (aRating === null && bRating === null) {
+      return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+    }
+    if (aRating === null) return 1;
+    if (bRating === null) return -1;
+    result = aRating - bRating;
+    if (result === 0) {
+      return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+    }
+  } else {
     // started_at, finished_at, and months all sort by a date field.
     const dateField = field === 'started_at' ? a.started_at : a.finished_at;
     const dateFieldB = field === 'started_at' ? b.started_at : b.finished_at;

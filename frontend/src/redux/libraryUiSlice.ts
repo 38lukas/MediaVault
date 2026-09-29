@@ -6,21 +6,24 @@ import type {
   TypeFilter,
   ViewMode,
 } from '@/types/media';
+import { SORT_FIELD_DEFAULT_DIRECTION } from '@/utils/mediaSort';
 
 interface LibraryUiState {
   viewMode: ViewMode; // cards, list
   typeFilter: TypeFilter; // All, Game/DLC, Movie, Series, Anime
-  sortField: SortField; // title, status, started_at, finished_at, months
+  sortField: SortField; // title, status, rating, started_at, finished_at, months
   sortDirection: SortDirection; // asc, desc
   isMediaModalOpen: boolean;
   editingItem: MediaItem | null;
 }
 
+const initialSortField: SortField = 'status';
+
 const initialState: LibraryUiState = {
   viewMode: 'cards',
   typeFilter: 'All',
-  sortField: 'status',
-  sortDirection: 'asc',
+  sortField: initialSortField,
+  sortDirection: SORT_FIELD_DEFAULT_DIRECTION[initialSortField],
   isMediaModalOpen: false,
   editingItem: null,
 };
@@ -38,6 +41,8 @@ const libraryUiSlice = createSlice({
     },
     setSortField(state, action: PayloadAction<SortField>) {
       state.sortField = action.payload;
+      // Apply the configured default direction for this sort field.
+      state.sortDirection = SORT_FIELD_DEFAULT_DIRECTION[action.payload];
     },
     setSortDirection(state, action: PayloadAction<SortDirection>) {
       state.sortDirection = action.payload;

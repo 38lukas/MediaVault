@@ -9,7 +9,9 @@ import { LibraryToolbar } from '@/components/LibraryToolbar';
 import {
   finishedMonthKey,
   formatFinishedMonthLabel,
+  formatRatingLabel,
   groupConsecutive,
+  ratingSectionKey,
   statusSectionKey,
 } from '@/utils/mediaGrouping';
 import { sortMediaItems } from '@/utils/mediaSort';
@@ -47,6 +49,9 @@ export function LibraryView() {
     if (sortField === 'months') {
       return groupConsecutive(visibleItems, finishedMonthKey, formatFinishedMonthLabel);
     }
+    if (sortField === 'rating') {
+      return groupConsecutive(visibleItems, ratingSectionKey, formatRatingLabel, (item) => item.rating);
+    }
     return null;
   }, [visibleItems, sortField]);
 
@@ -57,16 +62,16 @@ export function LibraryView() {
         ? error.message
         : 'Failed to fetch media entries';
 
-  /**
-   * Opens the edit modal for a selected media item.
+  /** Opens the edit modal for a selected media item.
+   * 
    * @param item - Clicked library entry.
    */
   const handleItemClick = (item: MediaItem) => {
     dispatch(openEditMediaModal(item));
   };
 
-  /**
-   * Renders the active layout for a list of items.
+  /** Renders the active layout for a list of items.
+   * 
    * @param sectionItems - Items for one section (or the full library).
    * @returns Card grid or table list.
    */
@@ -100,7 +105,7 @@ export function LibraryView() {
         <Stack spacing={3}>
           {sections.map((section) => (
             <Box key={section.key}>
-              <SectionDivider label={section.label} />
+              <SectionDivider label={section.label} rating={section.rating} />
               {renderLibrary(section.items)}
             </Box>
           ))}
