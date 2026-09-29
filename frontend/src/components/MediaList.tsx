@@ -17,6 +17,7 @@ import type { MediaItem } from '@/types/media';
 import { palette } from '@/lib/palette';
 import { formatDisplayDate } from '@/utils/date';
 import { getStatusColor } from '@/utils/mediaStatus';
+import { StarRating } from '@/components/StarRating';
 
 interface MediaListProps {
   items: MediaItem[];
@@ -49,13 +50,14 @@ export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick }) => {
         overflowX: 'auto',
       }}
     >
-      <Table size="small" sx={{ minWidth: 720 }}>
+      <Table size="small" sx={{ minWidth: 800 }}>
         <TableHead>
           <TableRow>
             <TableCell sx={{ width: 72 }}>Cover</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>Type</TableCell>
             <TableCell>Status</TableCell>
+            <TableCell>Rating</TableCell>
             <TableCell>Started</TableCell>
             <TableCell>Finished</TableCell>
           </TableRow>
@@ -114,6 +116,15 @@ export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick }) => {
                       textTransform: 'capitalize',
                     }}
                   />
+                </TableCell>
+                <TableCell>
+                  {item.rating != null ? (
+                    <StarRating value={item.rating} readOnly size="small" />
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      —
+                    </Typography>
+                  )}
                 </TableCell>
                 <TableCell>{formatDisplayDate(item.started_at)}</TableCell>
                 <TableCell>{formatDisplayDate(item.finished_at)}</TableCell>

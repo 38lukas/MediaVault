@@ -6,6 +6,7 @@ import Image from 'next/image';
 import type { MediaItem } from '@/types/media';
 import { palette } from '@/lib/palette';
 import { getStatusColor } from '@/utils/mediaStatus';
+import { StarRating } from '@/components/StarRating';
 
 export type { MediaItem };
 
@@ -93,6 +94,11 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
             <Typography variant="caption" sx={{ color: 'grey.400', mt: 0.5 }}>
               {item.media_type}
             </Typography>
+            {item.rating != null && (
+              <Box sx={{ mt: 0.75 }}>
+                <StarRating value={item.rating} readOnly size="medium" />
+              </Box>
+            )}
           </Box>
         </Box>
       </Box>
