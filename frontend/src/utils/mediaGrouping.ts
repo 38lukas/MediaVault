@@ -1,5 +1,5 @@
 import type { MediaItem } from '@/types/media';
-import { dateValue } from '@/utils/date';
+import { maxDateValue } from '@/utils/date';
 import {
   RATING_SECTION_LABELS,
   UNRATED_SECTION_LABEL,
@@ -49,13 +49,14 @@ export function groupConsecutive(
   return sections;
 }
 
-/** Builds a YYYY-MM group key from finished_at.
+/** Builds a YYYY-MM group key from the last played/watched date.
+ * Uses the newer of finished_at and started_at.
  * 
  * @param item - Media entry.
- * @returns Month key, or NO_FINISH_KEY when missing.
+ * @returns Month key, or NO_FINISH_KEY when both dates are missing.
  */
 export function finishedMonthKey(item: MediaItem): string {
-  const time = dateValue(item.finished_at);
+  const time = maxDateValue(item.finished_at, item.started_at);
   if (time === null) return NO_FINISH_KEY;
   const date = new Date(time);
   const year = date.getUTCFullYear();
@@ -69,7 +70,7 @@ export function finishedMonthKey(item: MediaItem): string {
  * @returns Human-readable month label.
  */
 export function formatFinishedMonthLabel(key: string): string {
-  if (key === NO_FINISH_KEY) return 'No finish date';
+  if (key === NO_FINISH_KEY) return 'No date';
   const [year, month] = key.split('-').map(Number);
   return new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(undefined, {
     month: 'long',

@@ -1,5 +1,5 @@
 import type { MediaItem, SortDirection, SortField } from '@/types/media';
-import { dateValue } from '@/utils/date';
+import { dateValue, maxDateValue } from '@/utils/date';
 
 // Default Asc/Desc applied automatically when a sort field is selected.
 export const SORT_FIELD_DEFAULT_DIRECTION: Record<SortField, SortDirection> = {
@@ -61,9 +61,9 @@ export function sortMediaItems(
       return direction === 'asc' ? result : -result;
     }
 
-    // Fixed secondary sort: finished_at descending within the same status.
-    const aDate = dateValue(a.finished_at);
-    const bDate = dateValue(b.finished_at);
+    // Fixed secondary sort: finished_at (else started_at) descending within the same status.
+    const aDate = dateValue(a.finished_at) ?? dateValue(a.started_at);
+    const bDate = dateValue(b.finished_at) ?? dateValue(b.started_at);
     if (aDate === null && bDate === null) {
       return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
     }
@@ -85,12 +85,22 @@ export function sortMediaItems(
     if (result === 0) {
       return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
     }
-  } else {
-    // started_at, finished_at, and months all sort by a date field.
-    const dateField = field === 'started_at' ? a.started_at : a.finished_at;
-    const dateFieldB = field === 'started_at' ? b.started_at : b.finished_at;
-    const aDate = dateValue(dateField);
-    const bDate = dateValue(dateFieldB);
+  }
+
+  // Months: last played/watched date = newer of finished_at and started_at.
+  else if (field === 'months') {
+    const aDate = maxDateValue(a.finished_at, a.started_at);
+    const bDate = maxDateValue(b.finished_at, b.started_at);
+    if (aDate === null && bDate === null) return 0;
+    if (aDate === null) return 1;
+    if (bDate === null) return -1;
+    result = aDate - bDate;
+  }
+
+  // Sort by a single date field (started_at or finished_at).
+  else {
+    const aDate = dateValue(field === 'started_at' ? a.started_at : a.finished_at);
+    const bDate = dateValue(field === 'started_at' ? b.started_at : b.finished_at);
 
     // Empty dates stay at the end in both asc and desc.
     if (aDate === null && bDate === null) return 0;

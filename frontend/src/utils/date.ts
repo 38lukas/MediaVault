@@ -10,6 +10,22 @@ export function dateValue(value?: string | null): number | null {
 }
 
 /**
+ * Returns the latest valid timestamp among the given date strings.
+ * @param values - ISO date/datetime strings (nullish ignored).
+ * @returns Epoch ms of the newest date, or null when none are valid.
+ */
+export function maxDateValue(
+  ...values: Array<string | null | undefined>
+): number | null {
+  let max: number | null = null;
+  for (const value of values) {
+    const time = dateValue(value);
+    if (time !== null && (max === null || time > max)) max = time;
+  }
+  return max;
+}
+
+/**
  * Formats an ISO date for display.
  * @param value - ISO date/datetime or nullish.
  * @returns Localized short date, or an em dash.
