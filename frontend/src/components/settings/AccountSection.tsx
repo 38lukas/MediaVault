@@ -31,24 +31,9 @@ import {
   useGetUserSettingsQuery,
   useUpdateAccountMutation,
 } from '@/redux/mediaApi';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 const PASSWORD_MASK = '******';
-
-/** Extracts a readable message from an RTK Query mutation error.
- *
- * @param error - Unknown mutation error value.
- * @returns Human-readable error string.
- */
-function accountErrorMessage(error: unknown): string {
-  if (error && typeof error === 'object' && 'data' in error && error.data) {
-    const data = error.data;
-    if (typeof data === 'string') return data;
-    if (typeof data === 'object' && data !== null && 'detail' in data) {
-      return String((data as { detail: unknown }).detail);
-    }
-  }
-  return 'Account update failed';
-}
 
 /**
  * Account settings: rename, change password, and log out.
@@ -238,7 +223,9 @@ export function AccountSection() {
       )}
 
       {updateState.isError && (
-        <Alert severity="error">{accountErrorMessage(updateState.error)}</Alert>
+        <Alert severity="error">
+          {getApiErrorMessage(updateState.error, 'Account update failed')}
+        </Alert>
       )}
       {updateState.isSuccess && (
         <Alert severity="success">Account updated successfully.</Alert>

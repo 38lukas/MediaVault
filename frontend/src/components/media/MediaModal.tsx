@@ -17,8 +17,9 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Image from 'next/image';
-import { StarRating } from '@/components/StarRating';
+import { StarRating } from '@/components/media/StarRating';
 import { palette } from '@/lib/palette';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { toDateInputValue, toIsoDateOrNull } from '@/utils/date';
 import { getStatusColor } from '@/utils/mediaStatus';
 import { toDbRating } from '@/utils/rating';
@@ -92,17 +93,7 @@ function coverFetchErrorMessage(err: unknown, provider: string): string {
     return 'Network error';
   }
 
-  const detail =
-    err && typeof err === 'object' && 'data' in err && err.data
-      ? typeof err.data === 'string'
-        ? err.data
-        : typeof err.data === 'object' &&
-            err.data !== null &&
-            'detail' in err.data
-          ? String((err.data as { detail: unknown }).detail)
-          : null
-      : null;
-
+  const detail = getApiErrorMessage(err, '');
   if (detail && detail.length <= 80) return detail;
 
   return `${provider} cover fetch failed`;
@@ -192,16 +183,14 @@ export function MediaModal() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, item]);
 
-  const errorMessage =
-    error && 'data' in error && error.data
-      ? typeof error.data === 'string'
-        ? error.data
-        : JSON.stringify(error.data)
-      : deleteState.isError
-        ? 'Failed to delete media entry'
-        : isEdit
-          ? 'Failed to update media entry'
-          : 'Failed to create media entry';
+  const errorMessage = getApiErrorMessage(
+    error,
+    deleteState.isError
+      ? 'Failed to delete media entry'
+      : isEdit
+        ? 'Failed to update media entry'
+        : 'Failed to create media entry'
+  );
 
   /**
    * Closes the dialog via Redux when no request is in flight.

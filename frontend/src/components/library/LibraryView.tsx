@@ -2,10 +2,10 @@
 
 import { useMemo } from 'react';
 import { Alert, Box, CircularProgress, Stack } from '@mui/material';
-import { MediaGrid } from '@/components/MediaGrid';
-import { MediaList } from '@/components/MediaList';
-import { SectionDivider } from '@/components/SectionDivider';
-import { LibraryToolbar } from '@/components/LibraryToolbar';
+import { MediaGrid } from '@/components/media/MediaGrid';
+import { MediaList } from '@/components/media/MediaList';
+import { SectionDivider } from '@/components/library/SectionDivider';
+import { LibraryToolbar } from '@/components/library/LibraryToolbar';
 import {
   finishedMonthKey,
   formatFinishedMonthLabel,
@@ -14,6 +14,7 @@ import {
   ratingSectionKey,
   statusSectionKey,
 } from '@/utils/mediaGrouping';
+import { getApiErrorMessage } from '@/utils/apiError';
 import { sortMediaItems } from '@/utils/mediaSort';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openEditMediaModal } from '@/redux/libraryUiSlice';
@@ -60,12 +61,7 @@ export function LibraryView() {
     return null;
   }, [visibleItems, sortField]);
 
-  const errorMessage =
-    error && 'status' in error
-      ? `Request failed (${String(error.status)})`
-      : error && 'message' in error && error.message
-        ? error.message
-        : 'Failed to fetch media entries';
+  const errorMessage = getApiErrorMessage(error, 'Failed to fetch media entries');
 
   const hideStatus = sortField === 'status';
 

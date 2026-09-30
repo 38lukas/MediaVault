@@ -17,7 +17,7 @@ import type { MediaItem } from '@/types/media';
 import { palette } from '@/lib/palette';
 import { formatDisplayDate } from '@/utils/date';
 import { getStatusColor } from '@/utils/mediaStatus';
-import { StarRating } from '@/components/StarRating';
+import { StarRating } from '@/components/media/StarRating';
 import { useRatingsEnabled } from '@/redux/hooks';
 
 interface MediaListProps {

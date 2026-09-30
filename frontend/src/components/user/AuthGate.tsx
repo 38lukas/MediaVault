@@ -2,7 +2,7 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { Box, CircularProgress, Container } from '@mui/material';
-import { LoginForm } from '@/components/LoginForm';
+import { LoginForm } from './LoginForm';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { AUTH_STORAGE_KEY, hydrateAuth } from '@/redux/authSlice';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Typography } from '@mui/material';
-import { StarRating } from '@/components/StarRating';
+import { StarRating } from '@/components/media/StarRating';
 import { palette } from '@/lib/palette';
 import { getStatusColor } from '@/utils/mediaStatus';
 

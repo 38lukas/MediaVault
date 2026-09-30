@@ -6,6 +6,7 @@ import { palette } from '@/lib/palette';
 import { useAppDispatch } from '@/redux/hooks';
 import { setUsername } from '@/redux/authSlice';
 import { useLoginMutation } from '@/redux/mediaApi';
+import { getApiErrorMessage } from '@/utils/apiError';
 
 /** Full-page login form shown before the library is accessible.
  *  Creates the user on first successful submit if the username does not exist.
@@ -18,16 +19,7 @@ export function LoginForm() {
   const [username, setUsernameField] = useState('');
   const [password, setPassword] = useState('');
 
-  const errorMessage =
-    loginState.error && 'data' in loginState.error && loginState.error.data
-      ? typeof loginState.error.data === 'string'
-        ? loginState.error.data
-        : typeof loginState.error.data === 'object' &&
-            loginState.error.data !== null &&
-            'detail' in loginState.error.data
-          ? String((loginState.error.data as { detail: unknown }).detail)
-          : 'Login failed'
-      : 'Login failed';
+  const errorMessage = getApiErrorMessage(loginState.error, 'Login failed');
 
   /** Submits credentials to the API and stores the username on success.
    * 

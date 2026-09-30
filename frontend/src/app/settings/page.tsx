@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Container, Paper } from '@mui/material';
-import { AuthGate } from '@/components/AuthGate';
+import { AuthGate } from '@/components/user/AuthGate';
 import { AccountSection } from '@/components/settings/AccountSection';
 import { GeneralSection } from '@/components/settings/GeneralSection';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
