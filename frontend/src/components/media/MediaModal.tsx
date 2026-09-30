@@ -89,9 +89,6 @@ function coverFetchErrorMessage(err: unknown, provider: string): string {
   if (status === 404) return `No ${provider} cover found`;
   if (status === 400) return `${provider} is not configured`;
   if (status === 502) return `${provider} unavailable`;
-  if (status === 'FETCH_ERROR' || status === 'TIMEOUT_ERROR') {
-    return 'Network error';
-  }
 
   const detail = getApiErrorMessage(err, '');
   if (detail && detail.length <= 80) return detail;

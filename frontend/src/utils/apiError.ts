@@ -1,17 +1,23 @@
 import type { SerializedError } from '@reduxjs/toolkit';
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 
+const NETWORK_UNAVAILABLE_MESSAGE = 'Unable to reach the server. Check that the backend is running.';
+
 /** Extracts a user-facing message from an RTK Query / fetchBaseQuery error.
  *
  * @param error - Unknown mutation/query error value.
- * @param fallback - Message when nothing readable can be parsed.
+ * @param fallback - Message when no readable message can be parsed.
  * @returns Human-readable error string.
  */
 export function getApiErrorMessage(error: unknown, fallback: string): string {
-  if (!error || typeof error !== 'object' ) return fallback;
+  if (!error || typeof error !== 'object') return fallback;
 
-  //return if it's a fetch base query error
   if (isFetchBaseQueryError(error)) {
+    // Backend down / CORS / offline — status is FETCH_ERROR, not an HTTP code.
+    if (error.status === 'FETCH_ERROR' || error.status === 'TIMEOUT_ERROR') {
+      return NETWORK_UNAVAILABLE_MESSAGE;
+    }
+
     const fromData = messageFromData(error.data);
     if (fromData) return fromData;
 
@@ -20,13 +26,20 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
     }
   }
 
-  // return if it's a serialized error
   if (isSerializedError(error) && error.message?.trim()) {
+    // Browsers often throw TypeError: Failed to fetch when the API is unreachable.
+    if (isFailedFetchMessage(error.message)) {
+      return NETWORK_UNAVAILABLE_MESSAGE;
+    }
     return error.message;
   }
 
-  // return fallback if no readable message can be parsed
   return fallback;
+}
+
+function isFailedFetchMessage(message: string): boolean {
+  const lower = message.toLowerCase();
+  return lower.includes('failed to fetch') || lower.includes('networkerror');
 }
 
 function isFetchBaseQueryError(error: object): error is FetchBaseQueryError {
