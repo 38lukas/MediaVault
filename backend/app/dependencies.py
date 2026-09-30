@@ -11,18 +11,7 @@ def get_current_username(
     x_username: str = Header(..., alias="X-Username"),
     db: Session = Depends(get_db),
 ) -> str:
-    """Resolve the logged-in username from the X-Username header.
-
-    Args:
-        x_username: Username sent by the frontend after login.
-        db: Request-scoped SQLAlchemy session.
-
-    Returns:
-        The verified username.
-
-    Raises:
-        HTTPException: If the username is missing or unknown.
-    """
+    """Resolves the logged-in username from the X-Username header."""
     username = x_username.strip()
     if not username:
         raise HTTPException(

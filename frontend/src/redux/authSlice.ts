@@ -4,8 +4,7 @@ export const AUTH_STORAGE_KEY = 'mediavault_username';
 
 interface AuthState {
   username: string | null;
-  /** False until localStorage has been read on the client. */
-  hydrated: boolean;
+  hydrated: boolean; // False until localStorage has been read on the client.
 }
 
 const initialState: AuthState = {
@@ -13,13 +12,14 @@ const initialState: AuthState = {
   hydrated: false,
 };
 
-/** Auth slice: logged-in username, persisted in localStorage. */
+// Auth slice: logged-in username, persisted in localStorage.
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    /**
-     * Loads the stored username after the client mounts (avoids SSR mismatch).
+
+    /** Loads the stored username after the client mounts (avoids SSR mismatch).
+     * 
      * @param state - Current auth state.
      * @param action - Username from localStorage, or null.
      */
@@ -27,8 +27,9 @@ const authSlice = createSlice({
       state.username = action.payload;
       state.hydrated = true;
     },
-    /**
-     * Stores the authenticated username in Redux and localStorage.
+
+    /** Stores the authenticated username in Redux and localStorage.
+     * 
      * @param state - Current auth state.
      * @param action - Username returned by the login endpoint.
      */
@@ -39,9 +40,10 @@ const authSlice = createSlice({
         localStorage.setItem(AUTH_STORAGE_KEY, action.payload);
       }
     },
-    /**
-     * Clears the authenticated username from Redux and localStorage.
-     * @param state - Current auth state.
+    
+    /** Clears the authenticated username from Redux and localStorage.
+     * 
+     *  @param state - Current auth state.
      */
     clearUsername(state) {
       state.username = null;
