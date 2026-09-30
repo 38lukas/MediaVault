@@ -2,8 +2,11 @@
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 from app.enums import MediaType, MediaStatus, ALLOWED_STATUSES
+
+# Must match the frontend SortField union.
+SortField = Literal["title", "status", "rating", "started_at", "finished_at", "months"]
 
 
 class LoginRequest(BaseModel):
@@ -20,6 +23,32 @@ class UserResponse(BaseModel):
     joined_date: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserSettingsResponse(BaseModel):
+    """Account info plus general settings of the current user."""
+
+    username: str
+    joined_date: datetime
+    ratings_enabled: bool
+    default_sort_field: SortField
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserSettingsUpdate(BaseModel):
+    """Partial update of the general settings; omitted fields stay unchanged."""
+
+    ratings_enabled: Optional[bool] = None
+    default_sort_field: Optional[SortField] = None
+
+
+class UserAccountUpdate(BaseModel):
+    """Username and/or password change. Password changes require current_password."""
+
+    current_password: Optional[str] = None
+    new_username: Optional[str] = Field(default=None, min_length=1)
+    new_password: Optional[str] = Field(default=None, min_length=1)
 
 
 class MediaEntryBase(BaseModel):

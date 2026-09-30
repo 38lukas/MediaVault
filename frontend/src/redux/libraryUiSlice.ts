@@ -9,6 +9,8 @@ import type {
 } from '@/types/media';
 import { CARD_SIZE_DEFAULT } from '@/types/media';
 import { SORT_FIELD_DEFAULT_DIRECTION } from '@/utils/mediaSort';
+import { clearUsername } from './authSlice';
+import { mediaApi } from './mediaApi';
 
 interface LibraryUiState {
   viewMode: ViewMode; // cards, list
@@ -19,6 +21,7 @@ interface LibraryUiState {
   searchQuery: string; // case-insensitive title substring filter
   isMediaModalOpen: boolean;
   editingItem: MediaItem | null;
+  defaultSortApplied: boolean; // true after first getUserSettings applies default_sort_field
 }
 
 const initialSortField: SortField = 'status';
@@ -32,6 +35,7 @@ const initialState: LibraryUiState = {
   searchQuery: '',
   isMediaModalOpen: false,
   editingItem: null,
+  defaultSortApplied: false,
 };
 
 // UI state for the library page with methods to update the state.
@@ -71,6 +75,33 @@ const libraryUiSlice = createSlice({
       state.isMediaModalOpen = false;
       state.editingItem = null;
     },
+  },
+  extraReducers: (builder) => {
+    // Let the next login apply that user's default sort.
+    // addCase must come before addMatcher (RTK builder rule).
+    builder.addCase(clearUsername, (state) => {
+      state.defaultSortApplied = false;
+    });
+
+    // Apply the user's default sort once; keep sort valid when ratings are off.
+    builder.addMatcher(
+      mediaApi.endpoints.getUserSettings.matchFulfilled,
+      (state, action) => {
+        const { default_sort_field, ratings_enabled } = action.payload;
+
+        if (!state.defaultSortApplied) {
+          state.sortField = default_sort_field;
+          state.sortDirection = SORT_FIELD_DEFAULT_DIRECTION[default_sort_field];
+          state.defaultSortApplied = true;
+        }
+
+        // Drop rating sort whenever ratings are disabled.
+        if (!ratings_enabled && state.sortField === 'rating') {
+          state.sortField = 'status';
+          state.sortDirection = SORT_FIELD_DEFAULT_DIRECTION.status;
+        }
+      },
+    );
   },
 });
 

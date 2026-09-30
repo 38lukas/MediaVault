@@ -18,6 +18,7 @@ import { palette } from '@/lib/palette';
 import { formatDisplayDate } from '@/utils/date';
 import { getStatusColor } from '@/utils/mediaStatus';
 import { StarRating } from '@/components/StarRating';
+import { useRatingsEnabled } from '@/redux/hooks';
 
 interface MediaListProps {
   items: MediaItem[];
@@ -34,6 +35,8 @@ interface MediaListProps {
  * @returns Table of media rows, or an empty state.
  */
 export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick, hideStatus = false }) => {
+  const ratingsEnabled = useRatingsEnabled();
+
   if (items.length === 0) {
     return (
       <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -60,7 +63,7 @@ export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick, hideSt
             <TableCell>Name</TableCell>
             <TableCell>Type</TableCell>
             {!hideStatus && <TableCell>Status</TableCell>}
-            <TableCell>Rating</TableCell>
+            {ratingsEnabled && <TableCell>Rating</TableCell>}
             <TableCell>Started</TableCell>
             <TableCell>Finished</TableCell>
           </TableRow>
@@ -122,15 +125,17 @@ export const MediaList: React.FC<MediaListProps> = ({ items, onItemClick, hideSt
                     />
                   </TableCell>
                 )}
-                <TableCell>
-                  {item.rating != null ? (
-                    <StarRating value={item.rating} readOnly size="small" />
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      —
-                    </Typography>
-                  )}
-                </TableCell>
+                {ratingsEnabled && (
+                  <TableCell>
+                    {item.rating != null ? (
+                      <StarRating value={item.rating} readOnly size="small" />
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        —
+                      </Typography>
+                    )}
+                  </TableCell>
+                )}
                 <TableCell>{formatDisplayDate(item.started_at)}</TableCell>
                 <TableCell>{formatDisplayDate(item.finished_at)}</TableCell>
               </TableRow>

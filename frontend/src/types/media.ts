@@ -31,6 +31,27 @@ export type SortField =
   | 'rating';
 export type SortDirection = 'asc' | 'desc';
 
+// Shared sort options for the library toolbar and settings.
+export const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
+  { value: 'status', label: 'Status' },
+  { value: 'title', label: 'Title' },
+  { value: 'rating', label: 'Rating' },
+  { value: 'started_at', label: 'Started at' },
+  { value: 'finished_at', label: 'Finished at' },
+  { value: 'months', label: 'Months' },
+];
+
+// Settings sidebar section keys.
+export type SettingsSection = 'account' | 'general';
+
+// Current-user account info and general settings from GET /api/users/me.
+export interface UserSettings {
+  username: string;
+  joined_date: string;
+  ratings_enabled: boolean;
+  default_sort_field: SortField;
+}
+
 export const TYPE_FILTERS: TypeFilter[] = [
   'All',
   'Game/DLC',

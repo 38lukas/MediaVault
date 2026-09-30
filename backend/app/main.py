@@ -7,12 +7,12 @@ from sqlalchemy import text
 
 from app.database import get_db, engine, Base
 from app import models  # noqa: F401 — register models on Base.metadata
-from app.routers import auth, entries, igdb, tmdb
+from app.routers import auth, entries, igdb, tmdb, users
 
 # Create all tables in PostgreSQL that inherit from Base
 Base.metadata.create_all(bind=engine)
 
-# create_all does not alter existing tables; sync columns.
+# Sync columns after changes to the models
 with engine.begin() as connection:
     connection.execute(text("ALTER TABLE media_entries DROP COLUMN IF EXISTS created_at"))
     connection.execute(text("ALTER TABLE media_entries DROP COLUMN IF EXISTS watched_at"))
@@ -20,6 +20,16 @@ with engine.begin() as connection:
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS finished_at TIMESTAMPTZ"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS username VARCHAR"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS rating INTEGER"))
+    connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS ratings_enabled BOOLEAN NOT NULL DEFAULT TRUE'))
+    connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_sort_field VARCHAR NOT NULL DEFAULT 'status'"""))
+    # Recreate the username FK so renaming a user cascades into media_entries.
+    connection.execute(text("ALTER TABLE media_entries DROP CONSTRAINT IF EXISTS media_entries_username_fkey"))
+    connection.execute(text(
+        'ALTER TABLE media_entries '
+        'ADD CONSTRAINT media_entries_username_fkey '
+        'FOREIGN KEY (username) REFERENCES "user"(username) '
+        'ON UPDATE CASCADE'
+    ))
 
 # /entries and /entries/ both resolve cleanly.
 app = FastAPI(title="Media Tracker API", redirect_slashes=True)
@@ -33,9 +43,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API routes: /api/entries, /api/auth/login, /api/igdb/cover, /api/tmdb/cover
+# API routes
 app.include_router(auth.router, prefix="/api")
 app.include_router(entries.router, prefix="/api")
+app.include_router(users.router, prefix="/api")
 app.include_router(igdb.router, prefix="/api")
 app.include_router(tmdb.router, prefix="/api")
 

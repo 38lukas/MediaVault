@@ -1,6 +1,6 @@
 """SQLAlchemy models for MediaVault."""
 from datetime import datetime, timezone
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from app.database import Base
 
 # This represents the user table in the database.
@@ -9,6 +9,7 @@ class User(Base):
 
     __tablename__ = "user"
 
+    # User information
     username = Column(String, primary_key=True)
     password = Column(String, nullable=False)
     joined_date = Column(
@@ -17,6 +18,10 @@ class User(Base):
         default=lambda: datetime.now(timezone.utc),
     )
 
+    # User settings
+    ratings_enabled = Column(Boolean, nullable=False, default=True)
+    default_sort_field = Column(String, nullable=False, default="status")
+
 # This represents the media_entries table in the database.
 class MediaEntry(Base):
     """Persisted media entry row in the media_entries table."""
@@ -24,7 +29,12 @@ class MediaEntry(Base):
     __tablename__ = "media_entries"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, ForeignKey("user.username"), nullable=False, index=True)
+    username = Column(
+        String,
+        ForeignKey("user.username", onupdate="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     title = Column(String, nullable=False)
     media_type = Column(String, nullable=False)
     status = Column(String, nullable=False)

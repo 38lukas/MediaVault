@@ -7,6 +7,7 @@ import type { MediaItem } from '@/types/media';
 import { palette } from '@/lib/palette';
 import { getStatusColor } from '@/utils/mediaStatus';
 import { StarRating } from '@/components/StarRating';
+import { useRatingsEnabled } from '@/redux/hooks';
 
 export type { MediaItem };
 
@@ -24,6 +25,7 @@ interface MediaCardProps {
 export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
   const fallbackImage = 'https://via.placeholder.com/300x450?text=No+Cover';
   const statusStyle = getStatusColor(item.status);
+  const ratingsEnabled = useRatingsEnabled();
 
   return (
     <Box
@@ -122,7 +124,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
                 {item.status}
               </Box>
             </Box>
-            {item.rating != null && (
+            {ratingsEnabled && item.rating != null && (
               <Box sx={{ mt: 0.75 }}>
                 <StarRating value={item.rating} readOnly size="small" />
               </Box>

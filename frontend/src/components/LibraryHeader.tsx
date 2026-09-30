@@ -1,13 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { Box, Button, IconButton, SvgIcon, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { clearUsername } from '@/redux/authSlice';
 import { openCreateMediaModal, setCardSize, setViewMode } from '@/redux/libraryUiSlice';
-import { mediaApi } from '@/redux/mediaApi';
 import type { CardSize, ViewMode } from '@/types/media';
 import { CARD_SIZE_MAX, CARD_SIZE_MIN } from '@/types/media';
 
@@ -29,7 +29,7 @@ const SIZE_BUTTON_SX = {
 } as const;
 
 /**
- * Library page header with title, layout toggle, add button, and logout.
+ * Library page header with title, layout toggle, add button, and settings link.
  * @returns Header toolbar bound to Redux library UI + auth state.
  */
 export function LibraryHeader() {
@@ -38,14 +38,6 @@ export function LibraryHeader() {
   const cardSize = useAppSelector((state) => state.libraryUi.cardSize);
   const username = useAppSelector((state) => state.auth.username);
   const showCardSizeControls = viewMode === 'cards';
-
-  /**
-   * Clears the session and drops cached media entries for the next login.
-   */
-  const handleLogout = () => {
-    dispatch(clearUsername());
-    dispatch(mediaApi.util.resetApiState());
-  };
 
   /**
    * Steps card size toward denser or larger cards.
@@ -200,8 +192,14 @@ export function LibraryHeader() {
           Add Game / Media
         </Button>
 
-        <Button variant="outlined" onClick={handleLogout} sx={{ whiteSpace: 'nowrap' }}>
-          Log out
+        <Button
+          variant="outlined"
+          component={Link}
+          href="/settings"
+          startIcon={<SettingsIcon />}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          Settings
         </Button>
       </Box>
     </Box>

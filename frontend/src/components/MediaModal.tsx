@@ -22,7 +22,7 @@ import { palette } from '@/lib/palette';
 import { toDateInputValue, toIsoDateOrNull } from '@/utils/date';
 import { getStatusColor } from '@/utils/mediaStatus';
 import { toDbRating } from '@/utils/rating';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector, useRatingsEnabled } from '@/redux/hooks';
 import { closeMediaModal } from '@/redux/libraryUiSlice';
 import {
   useCreateMediaEntryMutation,
@@ -123,6 +123,7 @@ export function MediaModal() {
   const open = useAppSelector((state) => state.libraryUi.isMediaModalOpen);
   const item = useAppSelector((state) => state.libraryUi.editingItem);
   const isEdit = item != null;
+  const ratingsEnabled = useRatingsEnabled();
   const [createMediaEntry, createState] = useCreateMediaEntryMutation();
   const [updateMediaEntry, updateState] = useUpdateMediaEntryMutation();
   const [deleteMediaEntry, deleteState] = useDeleteMediaEntryMutation();
@@ -558,20 +559,22 @@ export function MediaModal() {
                   </Stack>
                 </Box>
 
-                <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
-                  >
-                    Rating
-                  </Typography>
-                  <StarRating
-                    value={form.rating}
-                    onChange={(stars) =>
-                      setForm((prev) => ({ ...prev, rating: toDbRating(stars) }))
-                    }
-                  />
-                </Box>
+                {ratingsEnabled && (
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+                    >
+                      Rating
+                    </Typography>
+                    <StarRating
+                      value={form.rating}
+                      onChange={(stars) =>
+                        setForm((prev) => ({ ...prev, rating: toDbRating(stars) }))
+                      }
+                    />
+                  </Box>
+                )}
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField

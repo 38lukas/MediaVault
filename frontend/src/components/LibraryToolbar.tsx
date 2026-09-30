@@ -10,14 +10,20 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector, useRatingsEnabled } from '@/redux/hooks';
 import {
   setSearchQuery,
   setSortDirection,
   setSortField,
   setTypeFilter,
 } from '@/redux/libraryUiSlice';
-import { TYPE_FILTERS, type SortDirection, type SortField, type TypeFilter } from '@/types/media';
+import {
+  SORT_FIELD_OPTIONS,
+  TYPE_FILTERS,
+  type SortDirection,
+  type SortField,
+  type TypeFilter,
+} from '@/types/media';
 
 /** Type filter, title search, and sort field/direction controls.
  *
@@ -26,6 +32,10 @@ import { TYPE_FILTERS, type SortDirection, type SortField, type TypeFilter } fro
 export function LibraryToolbar() {
   const dispatch = useAppDispatch();
   const { typeFilter, sortField, sortDirection, searchQuery } = useAppSelector((state) => state.libraryUi);
+  const ratingsEnabled = useRatingsEnabled();
+  const sortOptions = SORT_FIELD_OPTIONS.filter(
+    (opt) => ratingsEnabled || opt.value !== 'rating',
+  );
 
   return (
     <>
@@ -75,12 +85,11 @@ export function LibraryToolbar() {
             value={sortField}
             onChange={(e) => dispatch(setSortField(e.target.value as SortField))}
           >
-            <MenuItem value="status">Status</MenuItem>
-            <MenuItem value="title">Title</MenuItem>
-            <MenuItem value="rating">Rating</MenuItem>
-            <MenuItem value="started_at">Started at</MenuItem>
-            <MenuItem value="finished_at">Finished at</MenuItem>
-            <MenuItem value="months">Months</MenuItem>
+            {sortOptions.map((opt) => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 

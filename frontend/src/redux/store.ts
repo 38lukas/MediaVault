@@ -2,10 +2,11 @@ import { configureStore } from '@reduxjs/toolkit';
 import { mediaApi } from './mediaApi';
 import authReducer from './authSlice';
 import libraryUiReducer from './libraryUiSlice';
+import settingsReducer from './settingsSlice';
 
 /** Creates the Redux store for a Next.js client tree
  * 
- * @returns Configured store with RTK Query + auth + library UI slice
+ * @returns Configured store
  */
 export const makeStore = () =>
   configureStore({
@@ -13,6 +14,7 @@ export const makeStore = () =>
       [mediaApi.reducerPath]: mediaApi.reducer,
       auth: authReducer,
       libraryUi: libraryUiReducer,
+      settings: settingsReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(mediaApi.middleware),
