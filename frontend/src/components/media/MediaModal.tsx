@@ -57,7 +57,8 @@ const INITIAL_FORM = {
   title: '',
   mediaType: 'Game' as MediaType,
   status: 'Playing',
-  playtime: '',
+  playtimeHours: '',
+  playtimeMinutes: '',
   externalId: '',
   posterUrl: '',
   startedAt: '',
@@ -176,7 +177,10 @@ export function MediaModal() {
         title: item.title,
         mediaType,
         status: nextStatuses.includes(item.status) ? item.status : nextStatuses[0],
-        playtime: item.playtime?.toString() ?? '',
+        playtimeHours:
+          item.playtime == null ? '' : String(Math.floor(item.playtime / 60)),
+        playtimeMinutes:
+          item.playtime == null ? '' : String(item.playtime % 60),
         externalId: item.external_id ?? '',
         posterUrl: item.poster_path ?? '',
         startedAt: toDateInputValue(item.started_at),
@@ -320,7 +324,11 @@ export function MediaModal() {
       title: form.title.trim(),
       media_type: form.mediaType,
       status: form.status,
-      playtime: form.playtime ? parseInt(form.playtime, 10) : null,
+      playtime:
+        supportsPlaytime &&
+        (form.playtimeHours !== '' || form.playtimeMinutes !== '')
+          ? Number(form.playtimeHours || 0) * 60 + Number(form.playtimeMinutes || 0)
+          : null,
       external_id: form.externalId.trim() || `manual_${Date.now()}`,
       poster_path: form.posterUrl.trim() || null,
       started_at: toIsoDateOrNull(form.startedAt),
@@ -499,8 +507,14 @@ export function MediaModal() {
                             setForm((prev) => ({
                               ...prev,
                               mediaType: type,
-                              playtime:
-                                type === 'Game' || type === 'DLC' ? prev.playtime : '',
+                              playtimeHours:
+                                type === 'Game' || type === 'DLC'
+                                  ? prev.playtimeHours
+                                  : '',
+                              playtimeMinutes:
+                                type === 'Game' || type === 'DLC'
+                                  ? prev.playtimeMinutes
+                                  : '',
                               status: nextStatuses.includes(prev.status)
                                 ? prev.status
                                 : nextStatuses[0],
@@ -570,17 +584,36 @@ export function MediaModal() {
                 </Box>
 
                 {supportsPlaytime && (
-                  <TextField
-                    label="Playtime (minutes)"
-                    type="number"
-                    value={form.playtime}
-                    onChange={(event) =>
-                      setForm((prev) => ({ ...prev, playtime: event.target.value }))
-                    }
-                    slotProps={{ htmlInput: { min: 0, step: 1 } }}
-                    fullWidth
-                    sx={fieldSx}
-                  />
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <TextField
+                      label="Playtime hours"
+                      type="number"
+                      value={form.playtimeHours}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          playtimeHours: event.target.value,
+                        }))
+                      }
+                      slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                      fullWidth
+                      sx={fieldSx}
+                    />
+                    <TextField
+                      label="Playtime minutes"
+                      type="number"
+                      value={form.playtimeMinutes}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          playtimeMinutes: event.target.value,
+                        }))
+                      }
+                      slotProps={{ htmlInput: { min: 0, max: 59, step: 1 } }}
+                      fullWidth
+                      sx={fieldSx}
+                    />
+                  </Stack>
                 )}
 
                 {ratingsEnabled && (
