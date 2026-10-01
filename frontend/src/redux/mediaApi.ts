@@ -5,6 +5,7 @@ import type {
   SortField,
   UserSettings,
 } from '@/types/media';
+import type { ProfileStats } from '@/types/profile';
 
 export type { MediaEntryPayload };
 
@@ -59,7 +60,7 @@ export const mediaApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ['MediaEntries', 'UserSettings'],
+  tagTypes: ['MediaEntries', 'UserSettings', 'ProfileStats'],
 
   endpoints: (builder) => ({
 
@@ -70,7 +71,7 @@ export const mediaApi = createApi({
 
     updateAccount: builder.mutation<UserSettings, AccountUpdate>({
       query: (body) => ({ url: '/users/me/account', method: 'PATCH', body }),
-      invalidatesTags: ['UserSettings', 'MediaEntries'],
+      invalidatesTags: ['UserSettings', 'MediaEntries', 'ProfileStats'],
     }),
 
     // 2. USER SETTINGS
@@ -94,20 +95,26 @@ export const mediaApi = createApi({
 
     createMediaEntry: builder.mutation<MediaItem, MediaEntryPayload>({
       query: (body) => ({ url: '/entries', method: 'POST', body }),
-      invalidatesTags: ['MediaEntries'],
+      invalidatesTags: ['MediaEntries', 'ProfileStats'],
     }),
 
     updateMediaEntry: builder.mutation<MediaItem, { id: number; body: MediaEntryPayload }>({
       query: ({ id, body }) => ({ url: `/entries/${id}`, method: 'PUT', body }),
-      invalidatesTags: ['MediaEntries'],
+      invalidatesTags: ['MediaEntries', 'ProfileStats'],
     }),
 
     deleteMediaEntry: builder.mutation<void, number>({
       query: (id) => ({ url: `/entries/${id}`, method: 'DELETE' }),
-      invalidatesTags: ['MediaEntries'],
+      invalidatesTags: ['MediaEntries', 'ProfileStats'],
     }),
 
-    // 4. EXTERNAL COVER LOOKUPS (IGDB / TMDB / OpenLibrary)
+    // 4. PROFILE STATS
+    getProfileStats: builder.query<ProfileStats, void>({
+      query: () => '/profile/stats',
+      providesTags: ['ProfileStats'],
+    }),
+
+    // 5. EXTERNAL COVER LOOKUPS (IGDB / TMDB / OpenLibrary)
     fetchIgdbCover: builder.query<
       { name: string; external_id: string; poster_path: string },
       string
@@ -144,6 +151,7 @@ export const {
   useCreateMediaEntryMutation,
   useUpdateMediaEntryMutation,
   useDeleteMediaEntryMutation,
+  useGetProfileStatsQuery,
   useLazyFetchIgdbCoverQuery,
   useLazyFetchTmdbCoverQuery,
   useLazyFetchOpenLibraryCoverQuery,

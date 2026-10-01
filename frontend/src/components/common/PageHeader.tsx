@@ -7,12 +7,11 @@ import { palette } from '@/lib/palette';
 
 interface PageHeaderProps {
   title: string;
-  /** Optional text shown in parentheses next to the title. */
-  subtitle?: string;
+  subtitle?: string; // Optional text shown in parentheses next to the title
 }
 
-/**
- * Shared subpage header with a back link to the library and a page title.
+/** Shared subpage header with a back link to the library and a page title.
+ * 
  * @param props.title - Heading shown next to the back button.
  * @param props.subtitle - Optional parenthetical next to the title.
  * @returns Header row used by Settings, Profile, and similar pages.
