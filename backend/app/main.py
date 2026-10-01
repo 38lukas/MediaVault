@@ -7,7 +7,7 @@ from sqlalchemy import text
 
 from app.database import get_db, engine, Base
 from app import models  # noqa: F401 — register models on Base.metadata
-from app.routers import auth, entries, igdb, openlibrary, tmdb, users
+from app.routers import auth, entries, igdb, openlibrary, profile, tmdb, users
 
 # Create all tables in PostgreSQL that inherit from Base
 Base.metadata.create_all(bind=engine)
@@ -47,6 +47,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api")
 app.include_router(entries.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
+app.include_router(profile.router, prefix="/api")
 app.include_router(igdb.router, prefix="/api")
 app.include_router(openlibrary.router, prefix="/api")
 app.include_router(tmdb.router, prefix="/api")
