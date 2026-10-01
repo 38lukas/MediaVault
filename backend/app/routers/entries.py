@@ -48,6 +48,7 @@ def create_entry(
         title=entry_in.title,
         media_type=entry_in.media_type,
         status=entry_in.status,
+        playtime=entry_in.playtime,
         external_id=entry_in.external_id,
         poster_path=entry_in.poster_path,
         started_at=entry_in.started_at,
@@ -83,6 +84,7 @@ def update_entry(
     entry.title = entry_in.title
     entry.media_type = entry_in.media_type
     entry.status = entry_in.status
+    entry.playtime = entry_in.playtime
     entry.external_id = entry_in.external_id
     entry.poster_path = entry_in.poster_path
     entry.started_at = entry_in.started_at

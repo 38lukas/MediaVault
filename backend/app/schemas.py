@@ -56,6 +56,7 @@ class MediaEntryBase(BaseModel):
     title: str
     media_type: MediaType
     status: MediaStatus
+    playtime: Optional[int] = Field(default=None, ge=0)  # Playtime in minutes; must be non-negative if set.
     external_id: str
     poster_path: Optional[str] = None
     started_at: Optional[datetime] = None
@@ -72,6 +73,8 @@ class MediaEntryBase(BaseModel):
                 f"The status '{self.status.value}' is not allowed for the type '{self.media_type.value}'. "
                 f"Allowed statuses: {allowed_names}"
             )
+        if self.playtime is not None and self.media_type not in {MediaType.GAME, MediaType.DLC}:
+            raise ValueError(f"Playtime is only allowed for games and DLCs, but the current media type is '{self.media_type.value}'.")
         return self
 
 class MediaEntryCreate(MediaEntryBase):
