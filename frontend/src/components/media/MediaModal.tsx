@@ -33,7 +33,7 @@ import {
   useUpdateMediaEntryMutation,
 } from '@/redux/mediaApi';
 
-const MEDIA_TYPES = ['Game', 'DLC', 'Movie', 'Series', 'Anime'] as const;
+const MEDIA_TYPES = ['Game', 'DLC', 'Movie', 'Series', 'Anime', 'Book'] as const;
 
 /** Wait for typing to settle before auto-fetching a cover. */
 const AUTO_FETCH_DEBOUNCE_MS = 650;
@@ -47,6 +47,7 @@ const STATUSES_BY_TYPE: Record<(typeof MEDIA_TYPES)[number], string[]> = {
   Movie: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
   Series: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
   Anime: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
+  Book: ['Reading', 'Read', 'Dropped', 'Backlog']
 };
 
 type MediaType = (typeof MEDIA_TYPES)[number];
