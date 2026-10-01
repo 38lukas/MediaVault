@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Image from 'next/image';
-import { StarRating } from '@/components/media/StarRating';
+import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { toDateInputValue, toIsoDateOrNull } from '@/utils/date';

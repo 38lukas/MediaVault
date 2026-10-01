@@ -6,7 +6,7 @@ import Image from 'next/image';
 import type { MediaItem } from '@/types/media';
 import { palette } from '@/lib/palette';
 import { getStatusColor } from '@/utils/mediaStatus';
-import { StarRating } from '@/components/media/StarRating';
+import { StarRating } from '@/components/common/StarRating';
 import { useRatingsEnabled } from '@/redux/hooks';
 
 export type { MediaItem };
