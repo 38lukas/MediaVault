@@ -71,7 +71,20 @@ const fieldSx = {
     borderRadius: 2,
     backgroundColor: palette.fieldBg,
   },
+  '& .MuiInputBase-input[type="number"]': {
+    MozAppearance: 'textfield',
+    '&::-webkit-outer-spin-button': {
+      WebkitAppearance: 'none',
+      margin: 0,
+    },
+    '&::-webkit-inner-spin-button': {
+      WebkitAppearance: 'none',
+      margin: 0,
+    },
+  },
 };
+
+const sanitizeIntegerInput = (value: string) => value.replace(/\D/g, '');
 
 function isMediaType(value: string): value is MediaType {
   return (MEDIA_TYPES as readonly string[]).includes(value);
@@ -487,61 +500,138 @@ export function MediaModal() {
                   }}
                 />
 
-                <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
-                  >
-                    Media type
-                  </Typography>
-                  <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
-                    {MEDIA_TYPES.map((type) => {
-                      const selected = form.mediaType === type;
-                      return (
-                        <Box
-                          key={type}
-                          component="button"
-                          type="button"
-                          onClick={() => {
-                            const nextStatuses = STATUSES_BY_TYPE[type];
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    gap: 2,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Box sx={{ flex: 1, minWidth: 220 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+                    >
+                      Media type
+                    </Typography>
+                    <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+                      {MEDIA_TYPES.map((type) => {
+                        const selected = form.mediaType === type;
+                        return (
+                          <Box
+                            key={type}
+                            component="button"
+                            type="button"
+                            onClick={() => {
+                              const nextStatuses = STATUSES_BY_TYPE[type];
+                              setForm((prev) => ({
+                                ...prev,
+                                mediaType: type,
+                                playtimeHours:
+                                  type === 'Game' || type === 'DLC'
+                                    ? prev.playtimeHours
+                                    : '',
+                                playtimeMinutes:
+                                  type === 'Game' || type === 'DLC'
+                                    ? prev.playtimeMinutes
+                                    : '',
+                                status: nextStatuses.includes(prev.status)
+                                  ? prev.status
+                                  : nextStatuses[0],
+                              }));
+                            }}
+                            sx={{
+                              cursor: 'pointer',
+                              border: selected
+                                ? `1px solid ${palette.primary}`
+                                : `1px solid ${palette.borderMuted}`,
+                              backgroundColor: selected
+                                ? palette.primary
+                                : palette.fieldBg,
+                              color: selected ? palette.primaryContrast : 'text.secondary',
+                              borderRadius: 999,
+                              px: 1.5,
+                              py: 0.6,
+                              fontSize: '0.8rem',
+                              fontWeight: 600,
+                              fontFamily: 'inherit',
+                            }}
+                          >
+                            {type}
+                          </Box>
+                        );
+                      })}
+                    </Stack>
+                  </Box>
+
+                  {supportsPlaytime && (
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+                      >
+                        Playtime
+                      </Typography>
+                      <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center' }}>
+                        <TextField
+                          label="hrs"
+                          type="text"
+                          size="small"
+                          value={form.playtimeHours}
+                          onKeyDown={(event) => {
+                            if (['e', 'E', '+', '-', '.', ','].includes(event.key)) {
+                              event.preventDefault();
+                            }
+                          }}
+                          onChange={(event) => {
+                            const nextValue = sanitizeIntegerInput(event.target.value);
                             setForm((prev) => ({
                               ...prev,
-                              mediaType: type,
-                              playtimeHours:
-                                type === 'Game' || type === 'DLC'
-                                  ? prev.playtimeHours
-                                  : '',
-                              playtimeMinutes:
-                                type === 'Game' || type === 'DLC'
-                                  ? prev.playtimeMinutes
-                                  : '',
-                              status: nextStatuses.includes(prev.status)
-                                ? prev.status
-                                : nextStatuses[0],
+                              playtimeHours: nextValue,
                             }));
                           }}
-                          sx={{
-                            cursor: 'pointer',
-                            border: selected
-                              ? `1px solid ${palette.primary}`
-                              : `1px solid ${palette.borderMuted}`,
-                            backgroundColor: selected
-                              ? palette.primary
-                              : palette.fieldBg,
-                            color: selected ? palette.primaryContrast : 'text.secondary',
-                            borderRadius: 999,
-                            px: 1.5,
-                            py: 0.6,
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
-                            fontFamily: 'inherit',
+                          slotProps={{
+                            htmlInput: {
+                              inputMode: 'numeric',
+                              pattern: '[0-9]*',
+                              min: 0,
+                              step: 1,
+                            },
                           }}
-                        >
-                          {type}
-                        </Box>
-                      );
-                    })}
-                  </Stack>
+                          sx={{ ...fieldSx, width: 96 }}
+                        />
+                        <TextField
+                          label="mins"
+                          type="text"
+                          size="small"
+                          value={form.playtimeMinutes}
+                          onKeyDown={(event) => {
+                            if (['e', 'E', '+', '-', '.', ','].includes(event.key)) {
+                              event.preventDefault();
+                            }
+                          }}
+                          onChange={(event) => {
+                            const nextValue = sanitizeIntegerInput(event.target.value);
+                            setForm((prev) => ({
+                              ...prev,
+                              playtimeMinutes: nextValue,
+                            }));
+                          }}
+                          slotProps={{
+                            htmlInput: {
+                              inputMode: 'numeric',
+                              pattern: '[0-9]*',
+                              min: 0,
+                              max: 59,
+                              step: 1,
+                            },
+                          }}
+                          sx={{ ...fieldSx, width: 96 }}
+                        />
+                      </Stack>
+                    </Box>
+                  )}
                 </Box>
 
                 <Box>
@@ -582,39 +672,6 @@ export function MediaModal() {
                     })}
                   </Stack>
                 </Box>
-
-                {supportsPlaytime && (
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <TextField
-                      label="Playtime hours"
-                      type="number"
-                      value={form.playtimeHours}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          playtimeHours: event.target.value,
-                        }))
-                      }
-                      slotProps={{ htmlInput: { min: 0, step: 1 } }}
-                      fullWidth
-                      sx={fieldSx}
-                    />
-                    <TextField
-                      label="Playtime minutes"
-                      type="number"
-                      value={form.playtimeMinutes}
-                      onChange={(event) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          playtimeMinutes: event.target.value,
-                        }))
-                      }
-                      slotProps={{ htmlInput: { min: 0, max: 59, step: 1 } }}
-                      fullWidth
-                      sx={fieldSx}
-                    />
-                  </Stack>
-                )}
 
                 {ratingsEnabled && (
                   <Box>
