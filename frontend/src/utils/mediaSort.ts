@@ -14,8 +14,10 @@ export const SORT_FIELD_DEFAULT_DIRECTION: Record<SortField, SortDirection> = {
 const STATUS_RANK: Record<string, number> = {
   Playing: 0,
   Watching: 0,
+  Reading: 0,
   Finished: 1,
   Watched: 1,
+  Read: 1,
   Played: 2,
   Dropped: 3,
   Shelved: 4,
