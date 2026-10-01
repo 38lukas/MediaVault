@@ -57,6 +57,7 @@ const INITIAL_FORM = {
   title: '',
   mediaType: 'Game' as MediaType,
   status: 'Playing',
+  playtime: '',
   externalId: '',
   posterUrl: '',
   startedAt: '',
@@ -127,6 +128,7 @@ export function MediaModal() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [moreOptionsOpen, setMoreOptionsOpen] = useState(false);
+  const supportsPlaytime = form.mediaType === 'Game' || form.mediaType === 'DLC';
   // Skip repeat auto-fetches for the same title + media type.
   const lastCoverQueryKeyRef = useRef<string | null>(null);
 
@@ -174,6 +176,7 @@ export function MediaModal() {
         title: item.title,
         mediaType,
         status: nextStatuses.includes(item.status) ? item.status : nextStatuses[0],
+        playtime: item.playtime?.toString() ?? '',
         externalId: item.external_id ?? '',
         posterUrl: item.poster_path ?? '',
         startedAt: toDateInputValue(item.started_at),
@@ -317,6 +320,7 @@ export function MediaModal() {
       title: form.title.trim(),
       media_type: form.mediaType,
       status: form.status,
+      playtime: form.playtime ? parseInt(form.playtime, 10) : null,
       external_id: form.externalId.trim() || `manual_${Date.now()}`,
       poster_path: form.posterUrl.trim() || null,
       started_at: toIsoDateOrNull(form.startedAt),
@@ -495,6 +499,8 @@ export function MediaModal() {
                             setForm((prev) => ({
                               ...prev,
                               mediaType: type,
+                              playtime:
+                                type === 'Game' || type === 'DLC' ? prev.playtime : '',
                               status: nextStatuses.includes(prev.status)
                                 ? prev.status
                                 : nextStatuses[0],
@@ -562,6 +568,20 @@ export function MediaModal() {
                     })}
                   </Stack>
                 </Box>
+
+                {supportsPlaytime && (
+                  <TextField
+                    label="Playtime (minutes)"
+                    type="number"
+                    value={form.playtime}
+                    onChange={(event) =>
+                      setForm((prev) => ({ ...prev, playtime: event.target.value }))
+                    }
+                    slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                    fullWidth
+                    sx={fieldSx}
+                  />
+                )}
 
                 {ratingsEnabled && (
                   <Box>
