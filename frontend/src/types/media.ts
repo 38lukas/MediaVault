@@ -21,7 +21,7 @@ export type CardSize = 0 | 1 | 2 | 3 | 4;
 export const CARD_SIZE_MIN = 0 as const;
 export const CARD_SIZE_MAX = 4 as const;
 export const CARD_SIZE_DEFAULT = 2 as const; // medium (= former densest size)
-export type TypeFilter = 'All' | 'Game/DLC' | 'Movie' | 'Series' | 'Anime';
+export type TypeFilter = 'All' | 'Game/DLC' | 'Movie' | 'Series' | 'Anime' | 'Book';
 export type SortField =
   | 'title'
   | 'status'
@@ -58,6 +58,7 @@ export const TYPE_FILTERS: TypeFilter[] = [
   'Movie',
   'Series',
   'Anime',
+  'Book'
 ];
 
 // Maps a type filter to matching media_type values. 

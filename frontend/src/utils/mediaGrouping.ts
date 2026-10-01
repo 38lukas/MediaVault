@@ -85,8 +85,8 @@ export function formatFinishedMonthLabel(key: string): string {
  * @returns Section key.
  */
 export function statusSectionKey(item: MediaItem): string {
-  if (item.status === 'Playing' || item.status === 'Watching') return 'Playing / Watching';
-  if (item.status === 'Finished' || item.status === 'Watched') return 'Finished / Watched';
+  if (item.status === 'Playing' || item.status === 'Watching' || item.status === 'Reading') return 'Playing / Watching / Reading';
+  if (item.status === 'Finished' || item.status === 'Watched' || item.status === 'Read') return 'Finished / Watched / Read';
   return item.status;
 }
 

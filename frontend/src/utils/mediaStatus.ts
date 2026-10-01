@@ -7,7 +7,8 @@ export function getStatusColor(status: string) {
   switch (status.toLowerCase()) {
     case 'watching':
     case 'playing':
-    case 'playing / watching':
+    case 'reading':
+    case 'playing / watching / reading':
       return {
         bg: 'rgba(2, 150, 225, 0.22)',
         border: 'rgba(2, 150, 225, 0.42)',
@@ -15,7 +16,8 @@ export function getStatusColor(status: string) {
       };
     case 'finished':
     case 'watched':
-    case 'finished / watched':
+    case 'read':
+    case 'finished / watched / read':
       return {
         bg: 'rgba(56, 142, 60, 0.22)',
         border: 'rgba(56, 142, 60, 0.42)',

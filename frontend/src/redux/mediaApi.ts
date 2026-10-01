@@ -46,7 +46,7 @@ function resolveApiBaseUrl(): string {
   return raw;
 }
 
-// RTK Query API slice for media entries and cover lookups (IGDB / TMDB)
+// RTK Query API slice for media entries and cover lookups (IGDB / TMDB / OpenLibrary)
 export const mediaApi = createApi({
   reducerPath: 'mediaApi',
   baseQuery: fetchBaseQuery({
@@ -107,7 +107,7 @@ export const mediaApi = createApi({
       invalidatesTags: ['MediaEntries'],
     }),
 
-    // 4. EXTERNAL COVER LOOKUPS (IGDB / TMDB)
+    // 4. EXTERNAL COVER LOOKUPS (IGDB / TMDB / OpenLibrary)
     fetchIgdbCover: builder.query<
       { name: string; external_id: string; poster_path: string },
       string
@@ -124,6 +124,13 @@ export const mediaApi = createApi({
         params: { name, media_type: mediaType },
       }),
     }),
+
+    fetchOpenLibraryCover: builder.query<
+      { name: string; external_id: string; poster_path: string },
+      string
+    >({
+      query: (name) => ({ url: '/openlibrary/cover', params: { name } }),
+    }),
   }),
 });
 
@@ -139,4 +146,5 @@ export const {
   useDeleteMediaEntryMutation,
   useLazyFetchIgdbCoverQuery,
   useLazyFetchTmdbCoverQuery,
+  useLazyFetchOpenLibraryCoverQuery,
 } = mediaApi;

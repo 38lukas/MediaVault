@@ -10,6 +10,7 @@ class MediaType(str, Enum):
     ANIME = "Anime"
     GAME = "Game"
     DLC = "DLC"
+    BOOK = "Book"
 
 
 class MediaStatus(str, Enum):
@@ -24,6 +25,8 @@ class MediaStatus(str, Enum):
     BACKLOG = "Backlog"
     WISHLIST = "Wishlist"
     WATCHLIST = "Watchlist"
+    READING = "Reading"
+    READ = "Read"
 
 
 _GAME_STATUSES = {
@@ -57,4 +60,10 @@ ALLOWED_STATUSES = {
         MediaStatus.DROPPED,
         MediaStatus.WATCHLIST,
     },
+    MediaType.BOOK: {
+        MediaStatus.READING,
+        MediaStatus.READ,
+        MediaStatus.DROPPED,
+        MediaStatus.BACKLOG,
+    }
 }

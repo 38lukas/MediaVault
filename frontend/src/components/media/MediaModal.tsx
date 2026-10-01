@@ -29,11 +29,12 @@ import {
   useCreateMediaEntryMutation,
   useDeleteMediaEntryMutation,
   useLazyFetchIgdbCoverQuery,
+  useLazyFetchOpenLibraryCoverQuery,
   useLazyFetchTmdbCoverQuery,
   useUpdateMediaEntryMutation,
 } from '@/redux/mediaApi';
 
-const MEDIA_TYPES = ['Game', 'DLC', 'Movie', 'Series', 'Anime'] as const;
+const MEDIA_TYPES = ['Game', 'DLC', 'Movie', 'Series', 'Anime', 'Book'] as const;
 
 /** Wait for typing to settle before auto-fetching a cover. */
 const AUTO_FETCH_DEBOUNCE_MS = 650;
@@ -47,6 +48,7 @@ const STATUSES_BY_TYPE: Record<(typeof MEDIA_TYPES)[number], string[]> = {
   Movie: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
   Series: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
   Anime: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
+  Book: ['Reading', 'Read', 'Dropped', 'Backlog']
 };
 
 type MediaType = (typeof MEDIA_TYPES)[number];
@@ -87,7 +89,11 @@ function coverFetchErrorMessage(err: unknown, provider: string): string {
       : null;
 
   if (status === 404) return `No ${provider} cover found`;
-  if (status === 400) return `${provider} is not configured`;
+  if (status === 400) {
+    return provider === 'Open Library'
+      ? `${provider} rejected the request`
+      : `${provider} is not configured`;
+  }
   if (status === 502) return `${provider} unavailable`;
 
   const detail = getApiErrorMessage(err, '');
@@ -116,6 +122,7 @@ export function MediaModal() {
   const [updateMediaEntry, updateState] = useUpdateMediaEntryMutation();
   const [deleteMediaEntry, deleteState] = useDeleteMediaEntryMutation();
   const [fetchIgdbCover, igdbState] = useLazyFetchIgdbCoverQuery();
+  const [fetchOpenLibraryCover, openLibraryState] = useLazyFetchOpenLibraryCoverQuery();
   const [fetchTmdbCover, tmdbState] = useLazyFetchTmdbCoverQuery();
   const [form, setForm] = useState(INITIAL_FORM);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -123,7 +130,8 @@ export function MediaModal() {
   // Skip repeat auto-fetches for the same title + media type.
   const lastCoverQueryKeyRef = useRef<string | null>(null);
 
-  const isFetchingCover = igdbState.isFetching || tmdbState.isFetching;
+  const isFetchingCover =
+    igdbState.isFetching || tmdbState.isFetching || openLibraryState.isFetching;
   const isBusy =
     createState.isLoading ||
     updateState.isLoading ||
@@ -137,14 +145,21 @@ export function MediaModal() {
       ? updateState.error
       : createState.error;
 
-  // Cover provider by media type: IGDB for games, TMDB for film/TV
+  // Cover provider by media type: IGDB for games, TMDB for film/TV, Open Library for books.
   const usesIgdb = form.mediaType === 'Game' || form.mediaType === 'DLC';
   const usesTmdb =
     form.mediaType === 'Movie' ||
     form.mediaType === 'Series' ||
     form.mediaType === 'Anime';
-  const supportsCoverFetch = usesIgdb || usesTmdb;
-  const coverProvider = usesIgdb ? 'IGDB' : usesTmdb ? 'TMDB' : null;
+  const usesOpenLibrary = form.mediaType === 'Book';
+  const supportsCoverFetch = usesIgdb || usesTmdb || usesOpenLibrary;
+  const coverProvider = usesIgdb
+    ? 'IGDB'
+    : usesTmdb
+      ? 'TMDB'
+      : usesOpenLibrary
+        ? 'Open Library'
+        : null;
   const statusStyle = getStatusColor(form.status);
   const statuses = useMemo(() => STATUSES_BY_TYPE[form.mediaType], [form.mediaType]);
 
@@ -199,7 +214,7 @@ export function MediaModal() {
   };
 
   /**
-   * Resolves poster URL + external id from the title via IGDB or TMDB.
+  * Resolves poster URL + external id from the title via the matching provider.
    *
    * @param options - Optional overrides for auto-fetch (title, media type, cache).
    * @returns Promise that settles when the cover lookup finishes.
@@ -215,7 +230,8 @@ export function MediaModal() {
     const igdb = mediaType === 'Game' || mediaType === 'DLC';
     const tmdb =
       mediaType === 'Movie' || mediaType === 'Series' || mediaType === 'Anime';
-    const provider = igdb ? 'IGDB' : tmdb ? 'TMDB' : null;
+    const openLibrary = mediaType === 'Book';
+    const provider = igdb ? 'IGDB' : tmdb ? 'TMDB' : openLibrary ? 'Open Library' : null;
 
     if (!title || !provider) return;
 
@@ -225,10 +241,12 @@ export function MediaModal() {
     try {
       const result = igdb
         ? await fetchIgdbCover(title, preferCacheValue).unwrap()
-        : await fetchTmdbCover(
-            { name: title, mediaType: mediaType as 'Movie' | 'Series' | 'Anime' },
-            preferCacheValue,
-          ).unwrap();
+        : tmdb
+          ? await fetchTmdbCover(
+              { name: title, mediaType: mediaType as 'Movie' | 'Series' | 'Anime' },
+              preferCacheValue,
+            ).unwrap()
+          : await fetchOpenLibraryCover(title, preferCacheValue).unwrap();
 
       lastCoverQueryKeyRef.current = queryKey;
       setForm((prev) => {
