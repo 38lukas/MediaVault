@@ -56,7 +56,7 @@ class MediaEntryBase(BaseModel):
     title: str
     media_type: MediaType
     status: MediaStatus
-    playtime: Optional[int] = None
+    playtime: Optional[int] = Field(default=None, ge=0)  # Playtime in minutes; must be non-negative if set.
     external_id: str
     poster_path: Optional[str] = None
     started_at: Optional[datetime] = None
