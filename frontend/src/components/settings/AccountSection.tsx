@@ -9,9 +9,7 @@ import {
   CircularProgress,
   Stack,
   TextField,
-  Typography,
 } from '@mui/material';
-import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { clearUsername, setUsername } from '@/redux/authSlice';
 import {
@@ -137,10 +135,6 @@ export function AccountSection() {
       </Box>
     );
   }
-
-  const joinedLabel = settings?.joined_date
-    ? new Date(settings.joined_date).toLocaleDateString()
-    : '—';
 
   return (
     <Stack spacing={3} sx={{ flex: 1, minWidth: 0 }}>

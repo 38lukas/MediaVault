@@ -8,9 +8,7 @@ import {
   MenuItem,
   Select,
   Stack,
-  Typography,
 } from '@mui/material';
-import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
 import {
   useGetUserSettingsQuery,
