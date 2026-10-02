@@ -11,7 +11,6 @@ export type { MediaEntryPayload };
 
 // Partial general-settings update for PATCH /users/me/settings.
 export interface UserSettingsUpdate {
-  ratings_enabled?: boolean;
   default_sort_field?: SortField;
 }
 

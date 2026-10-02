@@ -30,7 +30,6 @@ class UserSettingsResponse(BaseModel):
 
     username: str
     joined_date: datetime
-    ratings_enabled: bool
     default_sort_field: SortField
 
     model_config = ConfigDict(from_attributes=True)
@@ -39,7 +38,6 @@ class UserSettingsResponse(BaseModel):
 class UserSettingsUpdate(BaseModel):
     """Partial update of the general settings; omitted fields stay unchanged."""
 
-    ratings_enabled: Optional[bool] = None
     default_sort_field: Optional[SortField] = None
 
 

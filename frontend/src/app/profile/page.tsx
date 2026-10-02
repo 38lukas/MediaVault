@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { FinishedStats } from '@/components/profile/FinishedStats';
 import { RatingDistributionChart } from '@/components/profile/RatingDistributionChart';
 import { RecentlyFinished } from '@/components/profile/RecentlyFinished';
-import { useAppSelector, useRatingsEnabled } from '@/redux/hooks';
+import { useAppSelector } from '@/redux/hooks';
 import { useGetProfileStatsQuery } from '@/redux/mediaApi';
 import { getApiErrorMessage } from '@/utils/apiError';
 
@@ -17,7 +17,6 @@ import { getApiErrorMessage } from '@/utils/apiError';
  */
 export default function ProfilePage() {
   const username = useAppSelector((state) => state.auth.username);
-  const ratingsEnabled = useRatingsEnabled();
   const { data, isLoading, isError, error } = useGetProfileStatsQuery(undefined, {
     skip: !username,
   });
@@ -48,9 +47,7 @@ export default function ProfilePage() {
         {data && (
           <Stack spacing={5}>
             <FinishedStats finished={data.finished} />
-            {ratingsEnabled && (
-              <RatingDistributionChart distribution={data.rating_distribution} />
-            )}
+            <RatingDistributionChart distribution={data.rating_distribution} />
             <RecentlyFinished items={data.recently_finished} />
           </Stack>
         )}

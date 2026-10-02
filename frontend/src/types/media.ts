@@ -48,7 +48,6 @@ export type SettingsSection = 'account' | 'general';
 export interface UserSettings {
   username: string;
   joined_date: string;
-  ratings_enabled: boolean;
   default_sort_field: SortField;
 }
 
