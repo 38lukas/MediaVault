@@ -52,23 +52,10 @@ def get_access_token() -> str:
     return _access_token
 
 
-def fetch_cover_by_name(name: str) -> dict[str, Any]:
-    """Search IGDB for a game by name and return cover URL + external id."""
-    trimmed = name.strip()
-    if not trimmed:
-        raise ValueError("Game name is required")
-
+def _query_igdb(query: str) -> list[dict[str, Any]]:
+    """Run an Apicalypse query against the IGDB games endpoint."""
     client_id, _ = _require_credentials()
     token = get_access_token()
-
-    # Escape quotes so titles like O'Reilly don't break the IGDB query body.
-    safe_name = trimmed.replace("\\", "\\\\").replace('"', '\\"')
-    query = (
-        f'search "{safe_name}"; '
-        "fields id,name,cover.image_id; "
-        "limit 1;"
-    )
-
     response = httpx.post(
         IGDB_GAMES_URL,
         headers={
@@ -80,19 +67,75 @@ def fetch_cover_by_name(name: str) -> dict[str, Any]:
         timeout=15.0,
     )
     response.raise_for_status()
-    games = response.json()
+    return response.json()
+
+
+def search_games_by_name(name: str) -> list[dict[str, Any]]:
+    """Return up to five lightweight IGDB matches for a game title."""
+    trimmed = name.strip()
+    if not trimmed:
+        raise ValueError("Game name is required")
+
+    # Escape quotes so titles like O'Reilly don't break the IGDB query body.
+    safe_name = trimmed.replace("\\", "\\\\").replace('"', '\\"')
+    games = _query_igdb(
+        f'search "{safe_name}"; fields id,name; limit 5;'
+    )
+    return [{"id": game["id"], "name": game.get("name", trimmed)} for game in games]
+
+
+def fetch_game_by_id(game_id: int) -> dict[str, Any]:
+    """Return a selected game's cover and display-ready metadata from IGDB."""
+    if game_id < 1:
+        raise ValueError("Game ID must be positive")
+
+    query = (
+        "fields id,name,cover.image_id,first_release_date,platforms.name,"
+        "franchise.name,genres.name,involved_companies.developer,"
+        "involved_companies.publisher,involved_companies.company.name; "
+        f"where id = {game_id}; limit 1;"
+    )
+    games = _query_igdb(query)
 
     if not games:
-        raise LookupError(f'No IGDB game found for "{trimmed}"')
+        raise LookupError(f"No IGDB game found with ID {game_id}")
 
     game = games[0]
     cover = game.get("cover") or {}
     image_id = cover.get("image_id")
-    if not image_id:
-        raise LookupError(f'IGDB game "{game.get("name", trimmed)}" has no cover image')
+
+    companies = game.get("involved_companies") or []
+    developers = [
+        item["company"]["name"]
+        for item in companies
+        if item.get("developer") and item.get("company", {}).get("name")
+    ]
+    publishers = [
+        item["company"]["name"]
+        for item in companies
+        if item.get("publisher") and item.get("company", {}).get("name")
+    ]
+    franchise = game.get("franchise")
+    franchise_name = franchise.get("name") if isinstance(franchise, dict) else None
 
     return {
-        "name": game.get("name", trimmed),
+        "name": game.get("name") or f"IGDB game {game_id}",
         "external_id": f"igdb_{game['id']}",
-        "poster_path": COVER_URL_TEMPLATE.format(image_id=image_id),
+        "poster_path": (
+            COVER_URL_TEMPLATE.format(image_id=image_id) if image_id else None
+        ),
+        "first_release_date": game.get("first_release_date"),
+        "platforms": [platform["name"] for platform in game.get("platforms", [])],
+        "franchise": franchise_name,
+        "genres": [genre["name"] for genre in game.get("genres", [])],
+        "developers": developers,
+        "publishers": publishers
     }
+
+
+def fetch_cover_by_name(name: str) -> dict[str, Any]:
+    """Keep the legacy title lookup while returning the full selected game data."""
+    matches = search_games_by_name(name)
+    if not matches:
+        raise LookupError(f'No IGDB game found for "{name.strip()}"')
+    return fetch_game_by_id(matches[0]["id"])
