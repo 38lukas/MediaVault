@@ -7,7 +7,7 @@ from sqlalchemy import text
 
 from app.database import get_db, engine, Base
 from app import models  # noqa: F401 — register models on Base.metadata
-from app.routers import auth, entries, igdb, openlibrary, tmdb, users
+from app.routers import auth, entries, igdb, openlibrary, profile, tmdb, users
 
 # Create all tables in PostgreSQL that inherit from Base
 Base.metadata.create_all(bind=engine)
@@ -21,7 +21,7 @@ with engine.begin() as connection:
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS username VARCHAR"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS rating INTEGER"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS playtime INTEGER"))
-    connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS ratings_enabled BOOLEAN NOT NULL DEFAULT TRUE'))
+    connection.execute(text('ALTER TABLE "user" DROP COLUMN IF EXISTS ratings_enabled'))
     connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_sort_field VARCHAR NOT NULL DEFAULT 'status'"""))
     # Recreate the username FK so renaming a user cascades into media_entries.
     connection.execute(text("ALTER TABLE media_entries DROP CONSTRAINT IF EXISTS media_entries_username_fkey"))
@@ -48,6 +48,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api")
 app.include_router(entries.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
+app.include_router(profile.router, prefix="/api")
 app.include_router(igdb.router, prefix="/api")
 app.include_router(openlibrary.router, prefix="/api")
 app.include_router(tmdb.router, prefix="/api")

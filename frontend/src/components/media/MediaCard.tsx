@@ -6,8 +6,7 @@ import Image from 'next/image';
 import type { MediaItem } from '@/types/media';
 import { palette } from '@/lib/palette';
 import { getStatusColor } from '@/utils/mediaStatus';
-import { StarRating } from '@/components/media/StarRating';
-import { useRatingsEnabled } from '@/redux/hooks';
+import { StarRating } from '@/components/common/StarRating';
 
 export type { MediaItem };
 
@@ -25,7 +24,6 @@ interface MediaCardProps {
 export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
   const fallbackImage = 'https://via.placeholder.com/300x450?text=No+Cover';
   const statusStyle = getStatusColor(item.status);
-  const ratingsEnabled = useRatingsEnabled();
 
   return (
     <Box
@@ -124,7 +122,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
                 {item.status}
               </Box>
             </Box>
-            {ratingsEnabled && item.rating != null && (
+            {item.rating != null && (
               <Box sx={{ mt: 0.75 }}>
                 <StarRating value={item.rating} readOnly size="small" />
               </Box>

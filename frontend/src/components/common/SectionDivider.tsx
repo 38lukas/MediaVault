@@ -1,24 +1,22 @@
 'use client';
 
 import { Box, Typography } from '@mui/material';
-import { StarRating } from '@/components/media/StarRating';
+import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';
 import { getStatusColor } from '@/utils/mediaStatus';
 
 interface SectionDividerProps {
-  label: string;
-  /** DB rating 1–10; when set, shows read-only star icons before the label. */
+  label: string; 
   rating?: number | null;
-  /** When true, render the label as a left-aligned status chip. */
-  statusStyle?: boolean;
+  statusStyle?: boolean; 
 }
 
-/** Section divider above grouped library items.
+/** Shared section divider used by the library and profile pages.
  *
- * @param props.label - Section title (e.g. status, month, or custom rating text).
- * @param props.rating - Optional DB rating for star icons next to the label.
- * @param props.statusStyle - Style the label as a status chip (used when sorting by status).
- * @returns Divider row with label and horizontal rule.
+ * @param props.label - Section title
+ * @param props.rating - Optional DB rating for star icons next to the label
+ * @param props.statusStyle - Styles the label (used when sorting by status)
+ * @returns Divider row with label and horizontal rule
  */
 export function SectionDivider({ label, rating, statusStyle = false }: SectionDividerProps) {
   const colors = statusStyle ? getStatusColor(label) : null;

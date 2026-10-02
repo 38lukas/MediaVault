@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { Alert, Box, CircularProgress, Stack } from '@mui/material';
 import { MediaGrid } from '@/components/media/MediaGrid';
 import { MediaList } from '@/components/media/MediaList';
-import { SectionDivider } from '@/components/library/SectionDivider';
+import { SectionDivider } from '@/components/common/SectionDivider';
 import { LibraryToolbar } from '@/components/library/LibraryToolbar';
 import {
   finishedMonthKey,

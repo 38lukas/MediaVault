@@ -4,7 +4,7 @@ import { Box, Container, Paper } from '@mui/material';
 import { AuthGate } from '@/components/user/AuthGate';
 import { AccountSection } from '@/components/settings/AccountSection';
 import { GeneralSection } from '@/components/settings/GeneralSection';
-import { SettingsHeader } from '@/components/settings/SettingsHeader';
+import { PageHeader } from '@/components/common/PageHeader';
 import { SettingsSidebar } from '@/components/settings/SettingsSidebar';
 import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
@@ -19,7 +19,7 @@ export default function SettingsPage() {
   return (
     <AuthGate>
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <SettingsHeader />
+        <PageHeader title="Settings" />
         <Box
           sx={{
             display: 'flex',

@@ -10,7 +10,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
-import { useAppDispatch, useAppSelector, useRatingsEnabled } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   setSearchQuery,
   setSortDirection,
@@ -32,10 +32,6 @@ import {
 export function LibraryToolbar() {
   const dispatch = useAppDispatch();
   const { typeFilter, sortField, sortDirection, searchQuery } = useAppSelector((state) => state.libraryUi);
-  const ratingsEnabled = useRatingsEnabled();
-  const sortOptions = SORT_FIELD_OPTIONS.filter(
-    (opt) => ratingsEnabled || opt.value !== 'rating',
-  );
 
   return (
     <>
@@ -85,7 +81,7 @@ export function LibraryToolbar() {
             value={sortField}
             onChange={(e) => dispatch(setSortField(e.target.value as SortField))}
           >
-            {sortOptions.map((opt) => (
+            {SORT_FIELD_OPTIONS.map((opt) => (
               <MenuItem key={opt.value} value={opt.value}>
                 {opt.label}
               </MenuItem>
