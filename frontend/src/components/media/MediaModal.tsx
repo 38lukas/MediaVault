@@ -127,6 +127,15 @@ function coverQueryKey(title: string, mediaType: MediaType): string {
   return `${mediaType}:${title.trim().toLowerCase()}`;
 }
 
+function formatIgdbReleaseDate(timestamp: number | null): string {
+  if (timestamp == null) return '—';
+  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
 /**
  * Create/edit media dialog.
  * Open state and editing item come from Redux; form fields stay local.
@@ -189,6 +198,22 @@ export function MediaModal() {
         : null;
   const statusStyle = getStatusColor(form.status);
   const statuses = useMemo(() => STATUSES_BY_TYPE[form.mediaType], [form.mediaType]);
+  const selectedIgdbDetails = selectedIgdbGame
+    ? igdbGameState.currentData
+    : undefined;
+  const igdbMetadata = selectedIgdbDetails
+    ? [
+        { label: 'Platforms', value: selectedIgdbDetails.platforms.join(', ') },
+        { label: 'Genres', value: selectedIgdbDetails.genres.join(', ') },
+        {
+          label: 'Release date',
+          value: formatIgdbReleaseDate(selectedIgdbDetails.first_release_date),
+        },
+        { label: 'Developer', value: selectedIgdbDetails.developers.join(', ') },
+        { label: 'Publisher', value: selectedIgdbDetails.publishers.join(', ') },
+        { label: 'Franchise', value: selectedIgdbDetails.franchise ?? '' },
+      ]
+    : [];
 
   // Prefill form when opening create vs edit.
   useEffect(() => {
@@ -559,32 +584,66 @@ export function MediaModal() {
               {/* Live poster preview */}
               <Box
                 sx={{
-                  width: { xs: 120, md: 148 },
+                  width: { xs: '100%', md: 220 },
                   flexShrink: 0,
                   alignSelf: { xs: 'center', md: 'flex-start' },
                 }}
               >
-                <Box
-                  sx={{
-                    position: 'relative',
-                    aspectRatio: '2 / 3',
-                    borderRadius: 2.5,
-                    overflow: 'hidden',
-                    backgroundColor: palette.surfaceElevated,
-                    border: `1px solid ${statusStyle.border}`,
-                    boxShadow: `0 12px 32px ${statusStyle.bg}`,
-                  }}
-                >
-                  {form.posterUrl.trim() ? (
-                    <Image
-                      src={form.posterUrl.trim()}
-                      alt={form.title || 'Cover preview'}
-                      fill
-                      sizes="148px"
-                      style={{ objectFit: 'cover' }}
-                    />
-                  ) : null}
+                <Box sx={{ width: { xs: 120, md: 148 }, mx: { xs: 'auto', md: 0 } }}>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      aspectRatio: '2 / 3',
+                      borderRadius: 2.5,
+                      overflow: 'hidden',
+                      backgroundColor: palette.surfaceElevated,
+                      border: `1px solid ${statusStyle.border}`,
+                      boxShadow: `0 12px 32px ${statusStyle.bg}`,
+                    }}
+                  >
+                    {form.posterUrl.trim() ? (
+                      <Image
+                        src={form.posterUrl.trim()}
+                        alt={form.title || 'Cover preview'}
+                        fill
+                        sizes="148px"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    ) : null}
+                  </Box>
                 </Box>
+                {usesIgdb && selectedIgdbGame && (
+                  <Box sx={{ mt: 2, width: '100%' }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 700 }}
+                    >
+                      IGDB details
+                    </Typography>
+                    {igdbGameState.isFetching && !selectedIgdbDetails ? (
+                      <CircularProgress size={18} />
+                    ) : (
+                      <Stack spacing={1}>
+                        {igdbMetadata.map(({ label, value }) => (
+                          <Box key={label}>
+                            <Typography
+                              variant="caption"
+                              sx={{ color: 'text.secondary', display: 'block' }}
+                            >
+                              {label}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: 'text.primary', overflowWrap: 'anywhere' }}
+                            >
+                              {value || '—'}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Stack>
+                    )}
+                  </Box>
+                )}
               </Box>
 
               <Stack spacing={2.25} sx={{ flex: 1, minWidth: 0 }}>
