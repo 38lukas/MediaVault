@@ -1,6 +1,6 @@
 """SQLAlchemy models for MediaVault."""
 from datetime import datetime, timezone
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from app.database import Base
 
 # This represents the user table in the database.
@@ -19,7 +19,6 @@ class User(Base):
     )
 
     # User settings
-    ratings_enabled = Column(Boolean, nullable=False, default=True)
     default_sort_field = Column(String, nullable=False, default="status")
 
 # This represents the media_entries table in the database.

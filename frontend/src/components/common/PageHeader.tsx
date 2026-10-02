@@ -5,11 +5,18 @@ import { Box, IconButton, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { palette } from '@/lib/palette';
 
-/**
- * Settings page header with a back link to the library and the page title.
- * @returns Header row styled like LibraryHeader.
+interface PageHeaderProps {
+  title: string;
+  subtitle?: string; // Optional text shown in parentheses next to the title
+}
+
+/** Shared subpage header with a back link to the library and a page title.
+ * 
+ * @param props.title - Heading shown next to the back button.
+ * @param props.subtitle - Optional parenthetical next to the title.
+ * @returns Header row used by Settings, Profile, and similar pages.
  */
-export function SettingsHeader() {
+export function PageHeader({ title, subtitle }: PageHeaderProps) {
   return (
     <Box
       sx={{
@@ -41,7 +48,16 @@ export function SettingsHeader() {
         component="h1"
         sx={{ fontWeight: 'bold', color: palette.primary }}
       >
-        Settings
+        {title}
+        {subtitle && (
+          <Typography
+            component="span"
+            variant="body2"
+            sx={{ fontWeight: 400, color: 'text.secondary', ml: 1 }}
+          >
+            ({subtitle})
+          </Typography>
+        )}
       </Typography>
     </Box>
   );

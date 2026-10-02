@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Box, Button, IconButton, SvgIcon, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import RemoveIcon from '@mui/icons-material/Remove';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { palette } from '@/lib/palette';
@@ -28,20 +29,19 @@ const SIZE_BUTTON_SX = {
   },
 } as const;
 
-/**
- * Library page header with title, layout toggle, add button, and settings link.
+/** Library page header with title, layout toggle, add button, and settings link
+ * 
  * @returns Header toolbar bound to Redux library UI + auth state.
  */
 export function LibraryHeader() {
   const dispatch = useAppDispatch();
   const viewMode = useAppSelector((state) => state.libraryUi.viewMode);
   const cardSize = useAppSelector((state) => state.libraryUi.cardSize);
-  const username = useAppSelector((state) => state.auth.username);
   const showCardSizeControls = viewMode === 'cards';
 
-  /**
-   * Steps card size toward denser or larger cards.
-   * @param delta - −1 to enlarge, +1 to shrink.
+  /** Steps card size toward denser or larger cards
+   * 
+   * @param delta - −1 to enlarge, +1 to shrink
    */
   const adjustCardSize = (delta: -1 | 1) => {
     const next = Math.min(CARD_SIZE_MAX, Math.max(CARD_SIZE_MIN, cardSize + delta)) as CardSize;
@@ -67,11 +67,7 @@ export function LibraryHeader() {
         >
           MediaVault
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {username
-            ? `Signed in as ${username}`
-            : 'Manage your movies, series, anime and games in one place.'}
-        </Typography>
+
       </Box>
 
       <Box
@@ -190,6 +186,16 @@ export function LibraryHeader() {
           sx={{ whiteSpace: 'nowrap' }}
         >
           Add Game / Media
+        </Button>
+
+        <Button
+          variant="outlined"
+          component={Link}
+          href="/profile"
+          startIcon={<PersonOutlinedIcon />}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          Profile
         </Button>
 
         <Button

@@ -9,9 +9,7 @@ import {
   CircularProgress,
   Stack,
   TextField,
-  Typography,
 } from '@mui/material';
-import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { clearUsername, setUsername } from '@/redux/authSlice';
 import {
@@ -35,9 +33,9 @@ import { getApiErrorMessage } from '@/utils/apiError';
 
 const PASSWORD_MASK = '******';
 
-/**
- * Account settings: rename, change password, and log out.
- * @returns Account form bound to settingsSlice drafts and updateAccount.
+/** Account settings: rename, change password, and log out
+ * 
+ * @returns Account form bound to settingsSlice drafts and updateAccount
  */
 export function AccountSection() {
   const dispatch = useAppDispatch();
@@ -78,9 +76,9 @@ export function AccountSection() {
     passwordsMatch;
   const canSave = canSaveUsername || canSavePassword;
 
-  /**
-   * Submits rename and/or password change via updateAccount.
-   * @returns Promise that settles when the mutation finishes.
+  /** Submits rename and/or password change via updateAccount
+   * 
+   * @returns Promise that settles when the mutation finishes
    */
   const handleSave = async () => {
     if (!canSave) return;
@@ -105,18 +103,14 @@ export function AccountSection() {
     }
   };
 
-  /**
-   * Clears the session and returns to the library (login gate).
-   */
+ // Clears the session and returns to the library (login gate)
   const handleLogout = () => {
     dispatch(clearUsername());
     dispatch(mediaApi.util.resetApiState());
     router.push('/');
   };
 
-  /**
-   * Toggles username edit mode; cancel restores the saved username.
-   */
+  // Toggles username edit mode; cancel restores the saved username
   const handleUsernameEditToggle = () => {
     if (editingUsername) {
       dispatch(cancelEditingUsername(currentName));
@@ -125,9 +119,7 @@ export function AccountSection() {
     }
   };
 
-  /**
-   * Toggles password edit mode; start clears the mask so the user can type.
-   */
+  // Toggles password edit mode; start clears the mask so the user can type
   const handlePasswordEditToggle = () => {
     if (editingPassword) {
       dispatch(cancelEditingPassword());
@@ -144,21 +136,8 @@ export function AccountSection() {
     );
   }
 
-  const joinedLabel = settings?.joined_date
-    ? new Date(settings.joined_date).toLocaleDateString()
-    : '—';
-
   return (
     <Stack spacing={3} sx={{ flex: 1, minWidth: 0 }}>
-      <Box>
-        <Typography variant="h6" sx={{ color: palette.textOnDark, mb: 0.5 }}>
-          Account
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Signed in as {settings?.username ?? username} · Joined {joinedLabel}
-        </Typography>
-      </Box>
-
       <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
         <TextField
           label="Username"

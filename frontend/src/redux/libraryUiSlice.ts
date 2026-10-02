@@ -83,23 +83,16 @@ const libraryUiSlice = createSlice({
       state.defaultSortApplied = false;
     });
 
-    // Apply the user's default sort once; keep sort valid when ratings are off.
+    // Apply the user's default sort once on first settings load.
     builder.addMatcher(
       mediaApi.endpoints.getUserSettings.matchFulfilled,
       (state, action) => {
-        const { default_sort_field, ratings_enabled } = action.payload;
+        if (state.defaultSortApplied) return;
 
-        if (!state.defaultSortApplied) {
-          state.sortField = default_sort_field;
-          state.sortDirection = SORT_FIELD_DEFAULT_DIRECTION[default_sort_field];
-          state.defaultSortApplied = true;
-        }
-
-        // Drop rating sort whenever ratings are disabled.
-        if (!ratings_enabled && state.sortField === 'rating') {
-          state.sortField = 'status';
-          state.sortDirection = SORT_FIELD_DEFAULT_DIRECTION.status;
-        }
+        const { default_sort_field } = action.payload;
+        state.sortField = default_sort_field;
+        state.sortDirection = SORT_FIELD_DEFAULT_DIRECTION[default_sort_field];
+        state.defaultSortApplied = true;
       },
     );
   },

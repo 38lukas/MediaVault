@@ -33,10 +33,6 @@ def update_user_settings(
     for field, value in payload.model_dump(exclude_unset=True, exclude_none=True).items():
         setattr(user, field, value)
 
-    # Sorting by rating makes no sense while ratings are hidden.
-    if not user.ratings_enabled and user.default_sort_field == "rating":
-        user.default_sort_field = "status"
-
     db.commit()
     db.refresh(user)
     return user

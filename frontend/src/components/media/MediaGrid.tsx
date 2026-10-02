@@ -9,6 +9,8 @@ import type { CardSize, MediaItem } from '@/types/media';
 interface MediaGridProps {
   items: MediaItem[];
   onItemClick?: (item: MediaItem) => void;
+  cardSize?: CardSize;
+  emptyMessage?: string;
 }
 
 /** MUI Grid column spans per card size (0 XL → 2 medium → 4 XS).
@@ -18,32 +20,35 @@ const CARD_GRID_COLS: Record<
   CardSize,
   { xs: number; sm: number; md: number; lg: number; xl: number }
 > = {
-  // Extra large — ~2 / 3 / 4 / 5 / 6 per row
-  0: { xs: 6, sm: 4, md: 3, lg: 2.4, xl: 2 },
-  // Large — ~3 / 4 / 5 / 6 / 8 per row
-  1: { xs: 4, sm: 3, md: 2.4, lg: 2, xl: 1.5 },
-  // Medium — ~4 / 5 / 6 / 8 / 10 per row
-  2: { xs: 3, sm: 2.4, md: 2, lg: 1.5, xl: 1.2 },
-  // Small — ~5 / 6 / 8 / 10 / 12 per row
-  3: { xs: 2.4, sm: 2, md: 1.5, lg: 1.2, xl: 1 },
-  // Extra small — ~6 / 8 / 10 / 12 / 14 per row
-  4: { xs: 2, sm: 1.5, md: 1.2, lg: 1, xl: 12 / 14 },
+  0: { xs: 6, sm: 4, md: 3, lg: 2.4, xl: 2 }, // Extra large
+  1: { xs: 4, sm: 3, md: 2.4, lg: 2, xl: 1.5 }, // Large
+  2: { xs: 3, sm: 2.4, md: 2, lg: 1.5, xl: 1.2 }, // Medium
+  3: { xs: 2.4, sm: 2, md: 1.5, lg: 1.2, xl: 1 }, // Small
+  4: { xs: 2, sm: 1.5, md: 1.2, lg: 1, xl: 12 / 14 }, // Extra small
 };
 
-/**
- * Responsive card grid for the library.
- * @param props.items - Media entries to display.
- * @param props.onItemClick - Optional per-item click handler.
- * @returns Grid of MediaCard components, or an empty state.
+/** Responsive card grid for the library
+ * 
+ * @param props.items - Media entries to display
+ * @param props.onItemClick - Optional per-item click handler
+ * @param props.cardSize - Optional fixed size; defaults to libraryUi.cardSize
+ * @param props.emptyMessage - Optional empty-state text
+ * @returns Grid of MediaCard components, or an empty state
  */
-export const MediaGrid: React.FC<MediaGridProps> = ({ items, onItemClick }) => {
-  const cardSize = useAppSelector((state) => state.libraryUi.cardSize);
+export const MediaGrid: React.FC<MediaGridProps> = ({
+  items,
+  onItemClick,
+  cardSize: cardSizeProp,
+  emptyMessage = 'Keine Medien gefunden.',
+}) => {
+  const libraryCardSize = useAppSelector((state) => state.libraryUi.cardSize);
+  const cardSize = cardSizeProp ?? libraryCardSize;
 
   if (items.length === 0) {
     return (
       <Box sx={{ textAlign: 'center', py: 8 }}>
         <Typography variant="h6" color="text.secondary">
-          Keine Medien gefunden.
+          {emptyMessage}
         </Typography>
       </Box>
     );
