@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   CircularProgress,
@@ -28,10 +29,12 @@ import { closeMediaModal } from '@/redux/libraryUiSlice';
 import {
   useCreateMediaEntryMutation,
   useDeleteMediaEntryMutation,
-  useLazyFetchIgdbCoverQuery,
+  useLazyFetchIgdbGameQuery,
   useLazyFetchOpenLibraryCoverQuery,
+  useLazySearchIgdbGamesQuery,
   useLazyFetchTmdbCoverQuery,
   useUpdateMediaEntryMutation,
+  type IgdbGameSearchResult,
 } from '@/redux/mediaApi';
 
 const MEDIA_TYPES = ['Game', 'DLC', 'Movie', 'Series', 'Anime', 'Book'] as const;
@@ -103,7 +106,9 @@ function coverFetchErrorMessage(err: unknown, provider: string): string {
       ? ((err as { status: number | string }).status ?? null)
       : null;
 
-  if (status === 404) return `No ${provider} cover found`;
+  if (status === 404) {
+    return provider === 'IGDB' ? 'No IGDB game found' : `No ${provider} cover found`;
+  }
   if (status === 400) {
     return provider === 'Open Library'
       ? `${provider} rejected the request`
@@ -135,18 +140,25 @@ export function MediaModal() {
   const [createMediaEntry, createState] = useCreateMediaEntryMutation();
   const [updateMediaEntry, updateState] = useUpdateMediaEntryMutation();
   const [deleteMediaEntry, deleteState] = useDeleteMediaEntryMutation();
-  const [fetchIgdbCover, igdbState] = useLazyFetchIgdbCoverQuery();
+  const [searchIgdbGames] = useLazySearchIgdbGamesQuery();
+  const [fetchIgdbGame, igdbGameState] = useLazyFetchIgdbGameQuery();
   const [fetchOpenLibraryCover, openLibraryState] = useLazyFetchOpenLibraryCoverQuery();
   const [fetchTmdbCover, tmdbState] = useLazyFetchTmdbCoverQuery();
   const [form, setForm] = useState(INITIAL_FORM);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [moreOptionsOpen, setMoreOptionsOpen] = useState(false);
+  const [igdbSearchResults, setIgdbSearchResults] = useState<IgdbGameSearchResult[]>([]);
+  const [selectedIgdbGame, setSelectedIgdbGame] = useState<IgdbGameSearchResult | null>(null);
+  const [isSearchingIgdb, setIsSearchingIgdb] = useState(false);
   const supportsPlaytime = form.mediaType === 'Game' || form.mediaType === 'DLC';
   // Skip repeat auto-fetches for the same title + media type.
   const lastCoverQueryKeyRef = useRef<string | null>(null);
+  const igdbSearchRequestIdRef = useRef(0);
+  const igdbDetailRequestIdRef = useRef(0);
+  const selectedIgdbGameIdRef = useRef<number | null>(null);
 
   const isFetchingCover =
-    igdbState.isFetching || tmdbState.isFetching || openLibraryState.isFetching;
+    igdbGameState.isFetching || tmdbState.isFetching || openLibraryState.isFetching;
   const isBusy =
     createState.isLoading ||
     updateState.isLoading ||
@@ -185,6 +197,8 @@ export function MediaModal() {
     if (item) {
       const mediaType = isMediaType(item.media_type) ? item.media_type : 'Game';
       const nextStatuses = STATUSES_BY_TYPE[mediaType];
+      // The form is intentionally reseeded when Redux opens an existing item.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm({
         title: item.title,
         mediaType,
@@ -208,6 +222,12 @@ export function MediaModal() {
       lastCoverQueryKeyRef.current = null;
       createState.reset();
     }
+    setIgdbSearchResults([]);
+    setSelectedIgdbGame(null);
+    setIsSearchingIgdb(false);
+    selectedIgdbGameIdRef.current = null;
+    igdbSearchRequestIdRef.current += 1;
+    igdbDetailRequestIdRef.current += 1;
     setFetchError(null);
     setMoreOptionsOpen(false);
     // Only re-seed when the dialog opens or the edited item changes.
@@ -232,6 +252,50 @@ export function MediaModal() {
     dispatch(closeMediaModal());
   };
 
+  const handleSelectIgdbGame = async (game: IgdbGameSearchResult | null) => {
+    if (!game) return;
+
+    const requestId = ++igdbDetailRequestIdRef.current;
+    selectedIgdbGameIdRef.current = game.id;
+    setSelectedIgdbGame(game);
+    setIgdbSearchResults([]);
+    setFetchError(null);
+    lastCoverQueryKeyRef.current = coverQueryKey(game.name, form.mediaType);
+    setForm((prev) => ({ ...prev, title: game.name }));
+
+    try {
+      const result = await fetchIgdbGame(game.id).unwrap();
+      if (
+        requestId !== igdbDetailRequestIdRef.current ||
+        selectedIgdbGameIdRef.current !== game.id
+      ) {
+        return;
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        title: result.name,
+        posterUrl: result.poster_path ?? '',
+        externalId:
+          !prev.externalId.trim() || prev.externalId.startsWith('manual_')
+            ? result.external_id
+            : prev.externalId,
+      }));
+    } catch (err) {
+      if (
+        err &&
+        typeof err === 'object' &&
+        'name' in err &&
+        (err as { name: string }).name === 'AbortError'
+      ) {
+        return;
+      }
+      if (requestId === igdbDetailRequestIdRef.current) {
+        setFetchError(coverFetchErrorMessage(err, 'IGDB'));
+      }
+    }
+  };
+
   /**
   * Resolves poster URL + external id from the title via the matching provider.
    *
@@ -246,11 +310,10 @@ export function MediaModal() {
     const title = (options?.title ?? form.title).trim();
     const mediaType = options?.mediaType ?? form.mediaType;
     const preferCacheValue = options?.preferCacheValue ?? false;
-    const igdb = mediaType === 'Game' || mediaType === 'DLC';
     const tmdb =
       mediaType === 'Movie' || mediaType === 'Series' || mediaType === 'Anime';
     const openLibrary = mediaType === 'Book';
-    const provider = igdb ? 'IGDB' : tmdb ? 'TMDB' : openLibrary ? 'Open Library' : null;
+    const provider = tmdb ? 'TMDB' : openLibrary ? 'Open Library' : null;
 
     if (!title || !provider) return;
 
@@ -258,10 +321,8 @@ export function MediaModal() {
     setFetchError(null);
 
     try {
-      const result = igdb
-        ? await fetchIgdbCover(title, preferCacheValue).unwrap()
-        : tmdb
-          ? await fetchTmdbCover(
+      const result = tmdb
+        ? await fetchTmdbCover(
               { name: title, mediaType: mediaType as 'Movie' | 'Series' | 'Anime' },
               preferCacheValue,
             ).unwrap()
@@ -301,11 +362,10 @@ export function MediaModal() {
 
   // Debounced auto-fetch when the title looks complete for the selected type.
   useEffect(() => {
-    if (!open || !supportsCoverFetch || !coverProvider) return;
+    if (!open || !supportsCoverFetch || !coverProvider || usesIgdb) return;
 
     const title = form.title.trim();
     if (title.length < AUTO_FETCH_MIN_TITLE_LENGTH) {
-      setFetchError(null);
       return;
     }
 
@@ -323,7 +383,54 @@ export function MediaModal() {
     return () => window.clearTimeout(timer);
     // handleFetchCover closes over latest lazy triggers; deps are the inputs that matter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, form.title, form.mediaType, supportsCoverFetch, coverProvider]);
+  }, [open, form.title, form.mediaType, supportsCoverFetch, coverProvider, usesIgdb]);
+
+  useEffect(() => {
+    if (!open || !usesIgdb || selectedIgdbGame) return;
+
+    const title = form.title.trim();
+    if (title.length < AUTO_FETCH_MIN_TITLE_LENGTH) return;
+
+    const queryKey = coverQueryKey(title, form.mediaType);
+    if (queryKey === lastCoverQueryKeyRef.current) return;
+
+    const requestId = ++igdbSearchRequestIdRef.current;
+    let request: ReturnType<typeof searchIgdbGames> | undefined;
+    const timer = window.setTimeout(() => {
+      setIsSearchingIgdb(true);
+      request = searchIgdbGames(title);
+      void request
+        .unwrap()
+        .then((results) => {
+          if (requestId !== igdbSearchRequestIdRef.current) return;
+          lastCoverQueryKeyRef.current = queryKey;
+          setIgdbSearchResults(results);
+        })
+        .catch((err: unknown) => {
+          if (
+            requestId !== igdbSearchRequestIdRef.current ||
+            (err && typeof err === 'object' && 'name' in err &&
+              (err as { name: string }).name === 'AbortError')
+          ) {
+            return;
+          }
+          setFetchError(coverFetchErrorMessage(err, 'IGDB'));
+        })
+        .finally(() => {
+          if (requestId === igdbSearchRequestIdRef.current) {
+            setIsSearchingIgdb(false);
+          }
+        });
+    }, AUTO_FETCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+      igdbSearchRequestIdRef.current += 1;
+      request?.abort();
+    };
+    // Search only depends on the current title/type and selection state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, usesIgdb, form.title, form.mediaType, selectedIgdbGame]);
 
   /**
    * Creates or updates the entry, then closes the modal.
@@ -481,23 +588,89 @@ export function MediaModal() {
               </Box>
 
               <Stack spacing={2.25} sx={{ flex: 1, minWidth: 0 }}>
-                <TextField
-                  required
-                  label="Title"
-                  value={form.title}
-                  onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                  fullWidth
-                  sx={fieldSx}
-                  slotProps={{
-                    input: {
-                      endAdornment: isFetchingCover ? (
-                        <InputAdornment position="end">
-                          <CircularProgress size={16} thickness={5} color="inherit" />
-                        </InputAdornment>
-                      ) : null,
-                    },
-                  }}
-                />
+                {usesIgdb ? (
+                  <Autocomplete
+                    options={selectedIgdbGame ? [selectedIgdbGame] : igdbSearchResults}
+                    value={selectedIgdbGame}
+                    inputValue={form.title}
+                    getOptionLabel={(option) => option.name}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    filterOptions={(options) => options}
+                    loading={isSearchingIgdb}
+                    noOptionsText={
+                      form.title.trim().length < AUTO_FETCH_MIN_TITLE_LENGTH
+                        ? 'Type at least 3 characters'
+                        : 'No matching games'
+                    }
+                    onInputChange={(_event, value, reason) => {
+                      if (reason !== 'input' && reason !== 'clear') return;
+                      const hadSelection = selectedIgdbGameIdRef.current !== null;
+                      selectedIgdbGameIdRef.current = null;
+                      igdbDetailRequestIdRef.current += 1;
+                      lastCoverQueryKeyRef.current = null;
+                      setSelectedIgdbGame(null);
+                      setIgdbSearchResults([]);
+                      setIsSearchingIgdb(false);
+                      setFetchError(null);
+                      setForm((prev) => ({
+                        ...prev,
+                        title: value,
+                        ...(hadSelection
+                          ? {
+                              posterUrl: '',
+                              externalId: prev.externalId.startsWith('igdb_')
+                                ? ''
+                                : prev.externalId,
+                            }
+                          : {}),
+                      }));
+                    }}
+                    onChange={(_event, game) => void handleSelectIgdbGame(game)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        required
+                        label="Title"
+                        fullWidth
+                        sx={fieldSx}
+                        slotProps={{
+                          ...params.slotProps,
+                          input: {
+                            ...params.slotProps.input,
+                            endAdornment: (
+                            <>
+                              {(isSearchingIgdb || igdbGameState.isFetching) && (
+                                <InputAdornment position="end">
+                                  <CircularProgress size={16} thickness={5} color="inherit" />
+                                </InputAdornment>
+                              )}
+                              {params.slotProps.input.endAdornment}
+                            </>
+                            ),
+                          },
+                        }}
+                      />
+                    )}
+                  />
+                ) : (
+                  <TextField
+                    required
+                    label="Title"
+                    value={form.title}
+                    onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                    fullWidth
+                    sx={fieldSx}
+                    slotProps={{
+                      input: {
+                        endAdornment: isFetchingCover ? (
+                          <InputAdornment position="end">
+                            <CircularProgress size={16} thickness={5} color="inherit" />
+                          </InputAdornment>
+                        ) : null,
+                      },
+                    }}
+                  />
+                )}
 
                 <Box
                   sx={{
@@ -524,6 +697,14 @@ export function MediaModal() {
                             type="button"
                             onClick={() => {
                               const nextStatuses = STATUSES_BY_TYPE[type];
+                              if (type !== form.mediaType) {
+                                selectedIgdbGameIdRef.current = null;
+                                igdbDetailRequestIdRef.current += 1;
+                                setSelectedIgdbGame(null);
+                                setIgdbSearchResults([]);
+                                setIsSearchingIgdb(false);
+                                lastCoverQueryKeyRef.current = null;
+                              }
                               setForm((prev) => ({
                                 ...prev,
                                 mediaType: type,
@@ -768,32 +949,34 @@ export function MediaModal() {
                             setForm((prev) => ({ ...prev, posterUrl: e.target.value }))
                           }
                           fullWidth
-                          helperText={
-                            coverProvider
+                          helperText={usesIgdb
+                            ? 'Choose a game from the title search to load its IGDB details.'
+                            : coverProvider
                               ? `Auto-fetches from ${coverProvider} after you finish the title.`
-                              : undefined
-                          }
+                              : undefined}
                           sx={fieldSx}
                         />
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          onClick={() => void handleFetchCover()}
-                          disabled={
-                            !supportsCoverFetch ||
-                            !form.title.trim() ||
-                            isFetchingCover ||
-                            isBusy
-                          }
-                          sx={{
-                            mt: 0.5,
-                            whiteSpace: 'nowrap',
-                            minWidth: 96,
-                            borderRadius: 2,
-                          }}
-                        >
-                          {isFetchingCover ? '…' : 'Fetch'}
-                        </Button>
+                        {!usesIgdb && (
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => void handleFetchCover()}
+                            disabled={
+                              !supportsCoverFetch ||
+                              !form.title.trim() ||
+                              isFetchingCover ||
+                              isBusy
+                            }
+                            sx={{
+                              mt: 0.5,
+                              whiteSpace: 'nowrap',
+                              minWidth: 96,
+                              borderRadius: 2,
+                            }}
+                          >
+                            {isFetchingCover ? '…' : 'Fetch'}
+                          </Button>
+                        )}
                       </Stack>
                     </Stack>
                   </Collapse>
