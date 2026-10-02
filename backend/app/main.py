@@ -20,7 +20,8 @@ with engine.begin() as connection:
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS finished_at TIMESTAMPTZ"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS username VARCHAR"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS rating INTEGER"))
-    connection.execute(text('ALTER TABLE "user" DROP COLUMN IF EXISTS ratings_enabled'))
+    connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS playtime INTEGER"))
+    connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS ratings_enabled BOOLEAN NOT NULL DEFAULT TRUE'))
     connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_sort_field VARCHAR NOT NULL DEFAULT 'status'"""))
     # Recreate the username FK so renaming a user cascades into media_entries.
     connection.execute(text("ALTER TABLE media_entries DROP CONSTRAINT IF EXISTS media_entries_username_fkey"))

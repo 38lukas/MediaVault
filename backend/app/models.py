@@ -37,6 +37,7 @@ class MediaEntry(Base):
     title = Column(String, nullable=False)
     media_type = Column(String, nullable=False)
     status = Column(String, nullable=False)
+    playtime = Column(Integer, nullable=True)
     external_id = Column(String, nullable=False)
     poster_path = Column(String, nullable=True)
     started_at = Column(DateTime(timezone=True), nullable=True)

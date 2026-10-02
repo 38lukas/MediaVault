@@ -5,6 +5,7 @@ export interface MediaItem {
   title: string;
   media_type: string;
   status: string;
+  playtime?: number | null;
   external_id: string;
   poster_path?: string | null;
   started_at?: string | null;
