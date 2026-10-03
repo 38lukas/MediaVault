@@ -79,9 +79,16 @@ def search_games_by_name(name: str) -> list[dict[str, Any]]:
     # Escape quotes so titles like O'Reilly don't break the IGDB query body.
     safe_name = trimmed.replace("\\", "\\\\").replace('"', '\\"')
     games = _query_igdb(
-        f'search "{safe_name}"; fields id,name; limit 5;'
+        f'search "{safe_name}"; fields id,name,first_release_date; limit 5;'
     )
-    return [{"id": game["id"], "name": game.get("name", trimmed)} for game in games]
+    return [
+        {
+            "id": game["id"],
+            "name": game.get("name", trimmed),
+            "first_release_date": game.get("first_release_date"),
+        }
+        for game in games
+    ]
 
 
 def fetch_game_by_id(game_id: int) -> dict[str, Any]:

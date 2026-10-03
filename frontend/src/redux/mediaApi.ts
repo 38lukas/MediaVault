@@ -42,6 +42,7 @@ export interface IgdbGameLookup {
 export interface IgdbGameSearchResult {
   id: number;
   name: string;
+  first_release_date: number | null;
 }
 
 /** Resolves the RTK Query base URL from env, with a local fallback
