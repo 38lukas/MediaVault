@@ -27,6 +27,24 @@ export interface AuthUser {
   joined_date: string;
 }
 
+export interface IgdbGameLookup {
+  name: string;
+  external_id: string;
+  poster_path: string | null;
+  first_release_date: number | null;
+  platforms: string[];
+  franchise: string | null;
+  genres: string[];
+  developers: string[];
+  publishers: string[];
+}
+
+export interface IgdbGameSearchResult {
+  id: number;
+  name: string;
+  first_release_date: number | null;
+}
+
 /** Resolves the RTK Query base URL from env, with a local fallback
  *  Strips trailing slashes and collapses accidental duplicated origins
  * 
@@ -114,11 +132,17 @@ export const mediaApi = createApi({
     }),
 
     // 5. EXTERNAL COVER LOOKUPS (IGDB / TMDB / OpenLibrary)
-    fetchIgdbCover: builder.query<
-      { name: string; external_id: string; poster_path: string },
-      string
-    >({
+    fetchIgdbCover: builder.query<IgdbGameLookup, string>({
+
       query: (name) => ({ url: '/igdb/cover', params: { name } }),
+    }),
+
+    searchIgdbGames: builder.query<IgdbGameSearchResult[], string>({
+      query: (name) => ({ url: '/igdb/search', params: { name } }),
+    }),
+
+    fetchIgdbGame: builder.query<IgdbGameLookup, number>({
+      query: (id) => `/igdb/games/${id}`,
     }),
 
     fetchTmdbCover: builder.query<
@@ -152,6 +176,8 @@ export const {
   useDeleteMediaEntryMutation,
   useGetProfileStatsQuery,
   useLazyFetchIgdbCoverQuery,
+  useLazySearchIgdbGamesQuery,
+  useLazyFetchIgdbGameQuery,
   useLazyFetchTmdbCoverQuery,
   useLazyFetchOpenLibraryCoverQuery,
 } = mediaApi;
