@@ -136,6 +136,10 @@ function formatIgdbReleaseDate(timestamp: number | null): string {
   });
 }
 
+function formatIgdbReleaseYear(timestamp: number): string {
+  return String(new Date(timestamp * 1000).getUTCFullYear());
+}
+
 /**
  * Create/edit media dialog.
  * Open state and editing item come from Redux; form fields stay local.
@@ -652,7 +656,12 @@ export function MediaModal() {
                     options={selectedIgdbGame ? [selectedIgdbGame] : igdbSearchResults}
                     value={selectedIgdbGame}
                     inputValue={form.title}
-                    getOptionLabel={(option) => option.name}
+                    getOptionLabel={(option) =>
+                      option.first_release_date == null
+                        ? option.name
+                        : `${option.name} (${formatIgdbReleaseYear(option.first_release_date)})`
+                    }
+                    getOptionKey={(option) => option.id}
                     isOptionEqualToValue={(option, value) => option.id === value.id}
                     filterOptions={(options) => options}
                     loading={isSearchingIgdb}
