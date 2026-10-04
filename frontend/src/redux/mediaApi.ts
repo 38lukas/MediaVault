@@ -142,10 +142,6 @@ export const mediaApi = createApi({
 
     // 5. EXTERNAL COVER LOOKUPS (IGDB / TMDB / OpenLibrary)
     fetchIgdbCover: builder.query<IgdbGameLookup, string>({
-<<<<<<< HEAD
-=======
-
->>>>>>> main
       query: (name) => ({ url: '/igdb/cover', params: { name } }),
     }),
 
