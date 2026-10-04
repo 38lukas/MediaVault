@@ -35,9 +35,22 @@ const NAV_ITEMS = [
   },
 ] as const;
 
+// Shared size for nav buttons (fixed height so a larger avatar doesn't stretch them)
+const NAV_BUTTON_SX = {
+  whiteSpace: 'nowrap',
+  px: 2.25,
+  py: 1,
+  minHeight: 42,
+  height: 42,
+  fontSize: '1rem',
+  overflow: 'visible',
+  '& .MuiButton-startIcon': { mr: 1, overflow: 'visible' },
+  '& .MuiButton-startIcon > *:nth-of-type(1)': { fontSize: 24 },
+} as const;
+
 // Define the styles for the active button
 const ACTIVE_BUTTON_SX = {
-  whiteSpace: 'nowrap',
+  ...NAV_BUTTON_SX,
   border: `1px solid ${palette.primary}`,
   backgroundColor: palette.selectedBg,
   color: palette.primary,
@@ -105,8 +118,9 @@ export function AppHeader() {
                 alt=""
                 draggable={false}
                 sx={{
-                  width: 22,
-                  height: 22,
+                  width: 32,
+                  height: 32,
+                  marginBlock: '-5px',
                   borderRadius: '50%',
                   objectFit: 'cover',
                   display: 'block',
@@ -138,7 +152,7 @@ export function AppHeader() {
               component={Link}
               href={href}
               startIcon={startIcon}
-              sx={{ whiteSpace: 'nowrap' }}
+              sx={NAV_BUTTON_SX}
             >
               {label}
             </Button>
