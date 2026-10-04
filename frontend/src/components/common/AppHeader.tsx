@@ -7,22 +7,24 @@ import LibraryBooksOutlinedIcon from '@mui/icons-material/LibraryBooksOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { palette } from '@/lib/palette';
+import { useAppSelector } from '@/redux/hooks';
+import { useGetUserSettingsQuery } from '@/redux/mediaApi';
 
 // Define the navigation buttons for the app header
 const NAV_ITEMS = [
-  {
-    id: 'library',
-    label: 'Library',
-    href: '/library',
-    icon: LibraryBooksOutlinedIcon,
-    isActive: (pathname: string) => pathname.startsWith('/library'),
-  },
   {
     id: 'profile',
     label: 'Profile',
     href: '/',
     icon: PersonOutlinedIcon,
     isActive: (pathname: string) => pathname === '/',
+  },
+  {
+    id: 'library',
+    label: 'Library',
+    href: '/library',
+    icon: LibraryBooksOutlinedIcon,
+    isActive: (pathname: string) => pathname.startsWith('/library'),
   },
   {
     id: 'settings',
@@ -52,6 +54,11 @@ const ACTIVE_BUTTON_SX = {
  */
 export function AppHeader() {
   const pathname = usePathname();
+  const username = useAppSelector((state) => state.auth.username);
+  const { data: settings } = useGetUserSettingsQuery(undefined, {
+    skip: !username,
+  });
+  const avatarSrc = settings?.avatar_path ?? null;
 
   return (
     <Box
@@ -90,6 +97,24 @@ export function AppHeader() {
       >
         {NAV_ITEMS.map(({ id, label, href, icon: Icon, isActive }) => {
           const active = isActive(pathname);
+          const startIcon =
+            id === 'profile' && avatarSrc ? (
+              <Box
+                component="img"
+                src={avatarSrc}
+                alt=""
+                draggable={false}
+                sx={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+              />
+            ) : (
+              <Icon />
+            );
 
           if (active) {
             return (
@@ -97,7 +122,7 @@ export function AppHeader() {
                 key={id}
                 variant="outlined"
                 disabled
-                startIcon={<Icon />}
+                startIcon={startIcon}
                 aria-current="page"
                 sx={ACTIVE_BUTTON_SX}
               >
@@ -112,7 +137,7 @@ export function AppHeader() {
               variant="outlined"
               component={Link}
               href={href}
-              startIcon={<Icon />}
+              startIcon={startIcon}
               sx={{ whiteSpace: 'nowrap' }}
             >
               {label}
