@@ -40,6 +40,8 @@ export function LibraryView() {
     const filtered = items.filter((item) => {
       if (!matchesTypeFilter(item.media_type, typeFilter)) return false;
       if (query && !item.title.toLowerCase().includes(query)) return false;
+      // Months view: only finished media (grouped by finished_at).
+      if (sortField === 'months' && !item.finished_at) return false;
       return true;
     });
 
@@ -50,7 +52,7 @@ export function LibraryView() {
 
   const sections = useMemo(() => {
     if (sortField === 'status') {
-      return groupConsecutive(visibleItems, statusSectionKey);
+      return groupConsecutive(visibleItems, (item) => statusSectionKey(item, typeFilter));
     }
     if (sortField === 'months') {
       return groupConsecutive(visibleItems, finishedMonthKey, formatFinishedMonthLabel);
@@ -59,7 +61,7 @@ export function LibraryView() {
       return groupConsecutive(visibleItems, ratingSectionKey, formatRatingLabel, (item) => item.rating);
     }
     return null;
-  }, [visibleItems, sortField]);
+  }, [visibleItems, sortField, typeFilter]);
 
   const errorMessage = getApiErrorMessage(error, 'Failed to fetch media entries');
 

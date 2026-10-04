@@ -50,7 +50,7 @@ export interface IgdbGameSearchResult {
  * 
  * @returns Absolute API base URL without a trailing slash
  */
-function resolveApiBaseUrl(): string {
+export function resolveApiBaseUrl(): string {
   let raw = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api').trim();
 
   // Clean up the URL to remove markdown links, quotes, trailing slashes, and duplicated origins.
@@ -102,6 +102,15 @@ export const mediaApi = createApi({
       invalidatesTags: ['UserSettings'],
     }),
 
+    uploadAvatar: builder.mutation<UserSettings, File>({
+      query: (file) => {
+        const body = new FormData();
+        body.append('file', file);
+        return { url: '/users/me/avatar', method: 'POST', body };
+      },
+      invalidatesTags: ['UserSettings'],
+    }),
+
     // 3. MEDIA ENTRIES (CRUD)
     getMediaEntries: builder.query<MediaItem[], void>({
       query: () => '/entries',
@@ -133,7 +142,10 @@ export const mediaApi = createApi({
 
     // 5. EXTERNAL COVER LOOKUPS (IGDB / TMDB / OpenLibrary)
     fetchIgdbCover: builder.query<IgdbGameLookup, string>({
+<<<<<<< HEAD
+=======
 
+>>>>>>> main
       query: (name) => ({ url: '/igdb/cover', params: { name } }),
     }),
 
@@ -169,6 +181,7 @@ export const {
   useLoginMutation,
   useGetUserSettingsQuery,
   useUpdateUserSettingsMutation,
+  useUploadAvatarMutation,
   useUpdateAccountMutation,
   useGetMediaEntriesQuery,
   useCreateMediaEntryMutation,

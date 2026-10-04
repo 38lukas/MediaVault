@@ -1,7 +1,7 @@
 /** Shared UI color tokens for MediaVault. */
 
 export const palette = {
-  bg: '#0a0a0a',
+  bg: 'rgba(0, 0, 0, 0.9)',
   surface: '#141414',
   surfaceElevated: '#1a1a1a',
   paper: '#1e1e1e',

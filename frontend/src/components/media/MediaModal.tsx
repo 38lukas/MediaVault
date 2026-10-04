@@ -765,6 +765,14 @@ export function MediaModal() {
                             type="button"
                             onClick={() => {
                               const nextStatuses = STATUSES_BY_TYPE[type];
+                              if (type !== form.mediaType) {
+                                selectedIgdbGameIdRef.current = null;
+                                igdbDetailRequestIdRef.current += 1;
+                                setSelectedIgdbGame(null);
+                                setIgdbSearchResults([]);
+                                setIsSearchingIgdb(false);
+                                lastCoverQueryKeyRef.current = null;
+                              }
                               setForm((prev) => ({
                                 ...prev,
                                 mediaType: type,

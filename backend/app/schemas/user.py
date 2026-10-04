@@ -31,6 +31,7 @@ class UserSettingsResponse(BaseModel):
     username: str
     joined_date: datetime
     default_sort_field: SortField
+    avatar_path: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

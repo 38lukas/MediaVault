@@ -50,6 +50,14 @@ TWITCH_CLIENT_ID=your_twitch_client_id
 TWITCH_CLIENT_SECRET=your_twitch_client_secret
 TMDB_ACCESS_TOKEN=your_tmdb_read_access_token
 NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
+
+# Avatars (S3-compatible: AWS S3, Cloudflare R2, …)
+S3_BUCKET=your-bucket-name
+S3_ACCESS_KEY_ID=your_access_key
+S3_SECRET_ACCESS_KEY=your_secret_key
+S3_REGION=auto
+S3_ENDPOINT_URL=
+S3_PUBLIC_BASE_URL=https://your-public-base-url
 ```
 
 IGDB uses Twitch developer credentials. Create an app at https://dev.twitch.tv/console/apps
@@ -57,6 +65,11 @@ IGDB uses Twitch developer credentials. Create an app at https://dev.twitch.tv/c
 
 TMDB cover lookup uses the **API Read Access Token** (Bearer), not the v3 API key.
 Copy it from https://www.themoviedb.org/settings/api into `TMDB_ACCESS_TOKEN`.
+
+Avatars upload to S3-compatible storage. Set `S3_*` in the root `.env`
+(and on Render). For Cloudflare R2, set `S3_ENDPOINT_URL` to your account endpoint
+and `S3_PUBLIC_BASE_URL` to the bucket’s public `r2.dev` URL or custom domain.
+The bucket (or public domain) must allow public read of `avatars/*`.
 
 ### 4. Run the Backend Server
 

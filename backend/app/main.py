@@ -23,6 +23,22 @@ with engine.begin() as connection:
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS playtime INTEGER"))
     connection.execute(text('ALTER TABLE "user" DROP COLUMN IF EXISTS ratings_enabled'))
     connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_sort_field VARCHAR NOT NULL DEFAULT 'status'"""))
+    # Prefer avatar_path; migrate the older profile_picture_path column if present.
+    connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS avatar_path VARCHAR'))
+    connection.execute(text("""
+        DO $$
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name = 'user'
+                  AND column_name = 'profile_picture_path'
+            ) THEN
+                EXECUTE 'UPDATE "user" SET avatar_path = profile_picture_path WHERE avatar_path IS NULL';
+                EXECUTE 'ALTER TABLE "user" DROP COLUMN profile_picture_path';
+            END IF;
+        END $$;
+    """))
     # Recreate the username FK so renaming a user cascades into media_entries.
     connection.execute(text("ALTER TABLE media_entries DROP CONSTRAINT IF EXISTS media_entries_username_fkey"))
     connection.execute(text(
