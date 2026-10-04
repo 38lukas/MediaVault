@@ -1,7 +1,7 @@
 import type { MediaItem, SortDirection, SortField } from '@/types/media';
-import { dateValue, maxDateValue } from '@/utils/date';
+import { dateValue } from '@/utils/date';
 
-// Default Asc/Desc applied automatically when a sort field is selected.
+// Default Asc/Desc applied automatically when a sort field is selected
 export const SORT_FIELD_DEFAULT_DIRECTION: Record<SortField, SortDirection> = {
   title: 'asc',
   status: 'asc',
@@ -26,22 +26,22 @@ const STATUS_RANK: Record<string, number> = {
   Watchlist: 6,
 };
 
-/** Maps a status label to a sort rank.
+/** Maps a status label to a sort rank
  * 
- *  @param status - Media status string.
- *  @returns Numeric rank used for status sorting.
+ *  @param status - Media status string
+ *  @returns Numeric rank used for status sorting
  */
 function getStatusRank(status: string): number {
   return STATUS_RANK[status] ?? 99;
 }
 
-/** Sorts two media items for the library sort controls.
+/** Sorts two media items for the library sort controls
  * 
- *  @param a - Left media item.
- *  @param b - Right media item.
- *  @param field - Active sort field.
- *  @param direction - Ascending or descending.
- *  @returns Negative/zero/positive result.
+ *  @param a - Left media item
+ *  @param b - Right media item
+ *  @param field - Active sort field
+ *  @param direction - Ascending or descending
+ *  @returns Negative/zero/positive result
  */
 export function sortMediaItems(
   a: MediaItem,
@@ -89,10 +89,10 @@ export function sortMediaItems(
     }
   }
 
-  // Months: last played/watched date = newer of finished_at and started_at.
+  // Months: group/sort by finished_at only.
   else if (field === 'months') {
-    const aDate = maxDateValue(a.finished_at, a.started_at);
-    const bDate = maxDateValue(b.finished_at, b.started_at);
+    const aDate = dateValue(a.finished_at);
+    const bDate = dateValue(b.finished_at);
     if (aDate === null && bDate === null) return 0;
     if (aDate === null) return 1;
     if (bDate === null) return -1;

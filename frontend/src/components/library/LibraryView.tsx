@@ -40,6 +40,8 @@ export function LibraryView() {
     const filtered = items.filter((item) => {
       if (!matchesTypeFilter(item.media_type, typeFilter)) return false;
       if (query && !item.title.toLowerCase().includes(query)) return false;
+      // Months view: only finished media (grouped by finished_at).
+      if (sortField === 'months' && !item.finished_at) return false;
       return true;
     });
 
