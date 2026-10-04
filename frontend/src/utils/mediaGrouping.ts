@@ -1,4 +1,4 @@
-import type { MediaItem } from '@/types/media';
+import type { MediaItem, TypeFilter } from '@/types/media';
 import { dateValue } from '@/utils/date';
 import {
   RATING_SECTION_LABELS,
@@ -79,13 +79,20 @@ export function formatFinishedMonthLabel(key: string): string {
 }
 
 /** Section key so equivalent statuses share one divider.
+ * When a specific media type is filtered, uses the item's actual status label.
  * 
  * @param item - Media entry.
+ * @param typeFilter - Active library type filter.
  * @returns Section key.
  */
-export function statusSectionKey(item: MediaItem): string {
-  if (item.status === 'Playing' || item.status === 'Watching' || item.status === 'Reading') return 'Playing / Watching / Reading';
-  if (item.status === 'Finished' || item.status === 'Watched' || item.status === 'Read') return 'Finished / Watched / Read';
+export function statusSectionKey(item: MediaItem, typeFilter: TypeFilter = 'All'): string {
+  if (typeFilter !== 'All') return item.status;
+  if (item.status === 'Playing' || item.status === 'Watching' || item.status === 'Reading') {
+    return 'Playing / Watching / Reading';
+  }
+  if (item.status === 'Finished' || item.status === 'Watched' || item.status === 'Read') {
+    return 'Finished / Watched / Read';
+  }
   return item.status;
 }
 

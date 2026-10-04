@@ -52,7 +52,7 @@ export function LibraryView() {
 
   const sections = useMemo(() => {
     if (sortField === 'status') {
-      return groupConsecutive(visibleItems, statusSectionKey);
+      return groupConsecutive(visibleItems, (item) => statusSectionKey(item, typeFilter));
     }
     if (sortField === 'months') {
       return groupConsecutive(visibleItems, finishedMonthKey, formatFinishedMonthLabel);
@@ -61,7 +61,7 @@ export function LibraryView() {
       return groupConsecutive(visibleItems, ratingSectionKey, formatRatingLabel, (item) => item.rating);
     }
     return null;
-  }, [visibleItems, sortField]);
+  }, [visibleItems, sortField, typeFilter]);
 
   const errorMessage = getApiErrorMessage(error, 'Failed to fetch media entries');
 
