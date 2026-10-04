@@ -3,7 +3,7 @@
 import { Alert, Box, CircularProgress, Stack, Typography } from '@mui/material';
 import { SectionDivider } from '@/components/common/SectionDivider';
 import { FinishedStats } from '@/components/profile/FinishedStats';
-import { ProfilePicture } from '@/components/profile/ProfilePicture';
+import { Avatar } from '@/components/profile/Avatar';
 import { RatingDistributionChart } from '@/components/profile/RatingDistributionChart';
 import { RecentlyFinished } from '@/components/profile/RecentlyFinished';
 import { palette } from '@/lib/palette';
@@ -46,7 +46,7 @@ export default function ProfilePage() {
               flexWrap: 'wrap',
             }}
           >
-            <ProfilePicture username={username} />
+            <Avatar username={username} />
             {username && (
               <Typography
                 variant="h3"

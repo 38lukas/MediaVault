@@ -20,6 +20,7 @@ class User(Base):
 
     # User settings
     default_sort_field = Column(String, nullable=False, default="status")
+    avatar_path = Column(String, nullable=True)
 
 # This represents the media_entries table in the database.
 class MediaEntry(Base):

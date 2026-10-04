@@ -32,7 +32,7 @@ export interface AuthUser {
  * 
  * @returns Absolute API base URL without a trailing slash
  */
-function resolveApiBaseUrl(): string {
+export function resolveApiBaseUrl(): string {
   let raw = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api').trim();
 
   // Clean up the URL to remove markdown links, quotes, trailing slashes, and duplicated origins.
@@ -81,6 +81,15 @@ export const mediaApi = createApi({
 
     updateUserSettings: builder.mutation<UserSettings, UserSettingsUpdate>({
       query: (body) => ({ url: '/users/me/settings', method: 'PATCH', body }),
+      invalidatesTags: ['UserSettings'],
+    }),
+
+    uploadAvatar: builder.mutation<UserSettings, File>({
+      query: (file) => {
+        const body = new FormData();
+        body.append('file', file);
+        return { url: '/users/me/avatar', method: 'POST', body };
+      },
       invalidatesTags: ['UserSettings'],
     }),
 
@@ -145,6 +154,7 @@ export const {
   useLoginMutation,
   useGetUserSettingsQuery,
   useUpdateUserSettingsMutation,
+  useUploadAvatarMutation,
   useUpdateAccountMutation,
   useGetMediaEntriesQuery,
   useCreateMediaEntryMutation,

@@ -1,12 +1,13 @@
 """Current-user settings and account routes under /api/users/me."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_username
 from app import models, schemas
+from app.services.avatars import save_avatar
 
 router = APIRouter(prefix="/users/me", tags=["users"])
 
@@ -33,6 +34,24 @@ def update_user_settings(
     for field, value in payload.model_dump(exclude_unset=True, exclude_none=True).items():
         setattr(user, field, value)
 
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.post("/avatar", response_model=schemas.UserSettingsResponse)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    username: str = Depends(get_current_username),
+):
+    """Upload an avatar for the logged-in user and persist its public URL."""
+    user = db.query(models.User).filter(models.User.username == username).first()
+    user.avatar_path = await save_avatar(
+        username,
+        file,
+        user.avatar_path,
+    )
     db.commit()
     db.refresh(user)
     return user
@@ -65,8 +84,9 @@ def update_account(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Username is already taken",
             )
-        
-        user.username = new_username # Media entries will be updated via ON UPDATE CASCADE
+
+        user.username = new_username  # Media entries will be updated via ON UPDATE CASCADE
+        # Avatar stays on the same S3 object URL (keys are unique; no rename needed).
 
     try:
         db.commit()

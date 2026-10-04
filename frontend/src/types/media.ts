@@ -50,6 +50,7 @@ export interface UserSettings {
   username: string;
   joined_date: string;
   default_sort_field: SortField;
+  avatar_path: string | null;
 }
 
 export const TYPE_FILTERS: TypeFilter[] = [
