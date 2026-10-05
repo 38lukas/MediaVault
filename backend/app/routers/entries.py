@@ -55,6 +55,7 @@ def create_entry(
         genres=entry_in.genres,
         developers=entry_in.developers,
         publishers=entry_in.publishers,
+        platform_played_on=entry_in.platform_played_on,
         external_id=entry_in.external_id,
         poster_path=entry_in.poster_path,
         started_at=entry_in.started_at,
@@ -97,6 +98,7 @@ def update_entry(
     entry.genres = entry_in.genres
     entry.developers = entry_in.developers
     entry.publishers = entry_in.publishers
+    entry.platform_played_on = entry_in.platform_played_on
     entry.external_id = entry_in.external_id
     entry.poster_path = entry_in.poster_path
     entry.started_at = entry_in.started_at

@@ -46,6 +46,7 @@ class MediaEntry(Base):
     genres = Column(ARRAY(String), nullable=True)
     developers = Column(ARRAY(String), nullable=True)
     publishers = Column(ARRAY(String), nullable=True)
+    platform_played_on = Column(String, nullable=True)
     external_id = Column(String, nullable=False)
     poster_path = Column(String, nullable=True)
     started_at = Column(DateTime(timezone=True), nullable=True)

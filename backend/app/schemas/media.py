@@ -21,6 +21,7 @@ class MediaEntryBase(BaseModel):
     genres: Optional[list[str]] = None
     developers: Optional[list[str]] = None
     publishers: Optional[list[str]] = None
+    platform_played_on: Optional[str] = None
     external_id: str
     poster_path: Optional[str] = None
     started_at: Optional[datetime] = None

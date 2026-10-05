@@ -12,7 +12,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   InputAdornment,
+  MenuItem,
+  Select,
   Stack,
   TextField,
   Typography,
@@ -70,6 +73,7 @@ const INITIAL_FORM = {
   genres: [] as string[],
   developers: [] as string[],
   publishers: [] as string[],
+  platformPlayedOn: '',
   externalId: '',
   posterUrl: '',
   startedAt: '',
@@ -249,6 +253,7 @@ export function MediaModal() {
         genres: item.genres ?? [],
         developers: item.developers ?? [],
         publishers: item.publishers ?? [],
+        platformPlayedOn: item.platform_played_on ?? '',
         externalId: item.external_id ?? '',
         posterUrl: item.poster_path ?? '',
         startedAt: toDateInputValue(item.started_at),
@@ -322,6 +327,7 @@ export function MediaModal() {
     setFetchError(null);
     lastCoverQueryKeyRef.current = coverQueryKey(game.name, form.mediaType);
     setForm((prev) => ({ ...prev, title: game.name }));
+    setForm((prev) => ({ ...prev, platformPlayedOn: '' }));
 
     try {
       const result = await fetchIgdbGame(game.id).unwrap();
@@ -528,6 +534,7 @@ export function MediaModal() {
       genres: usesIgdb ? form.genres : null,
       developers: usesIgdb ? form.developers : null,
       publishers: usesIgdb ? form.publishers : null,
+      platform_played_on: supportsPlaytime ? form.platformPlayedOn || null : null,
     };
 
     try {
@@ -752,6 +759,7 @@ export function MediaModal() {
                         genres: [],
                         developers: [],
                         publishers: [],
+                        platformPlayedOn: '',
                       }));
                     }}
                     onChange={(_event, game) => void handleSelectIgdbGame(game)}
@@ -853,6 +861,7 @@ export function MediaModal() {
                                       genres: [],
                                       developers: [],
                                       publishers: [],
+                                      platformPlayedOn: '',
                                     }
                                   : {}),
                                 status: nextStatuses.includes(prev.status)
@@ -992,20 +1001,60 @@ export function MediaModal() {
                   </Stack>
                 </Box>
 
-                <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
-                  >
-                    Rating
-                  </Typography>
-                  <StarRating
-                    value={form.rating}
-                    onChange={(stars) =>
-                      setForm((prev) => ({ ...prev, rating: toDbRating(stars) }))
-                    }
-                  />
-                </Box>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={2}
+                  sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}
+                >
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'text.secondary', mb: 1.5, display: 'block', fontWeight: 600 }}
+                    >
+                      Rating
+                    </Typography>
+                    <StarRating
+                      value={form.rating}
+                      onChange={(stars) =>
+                        setForm((prev) => ({ ...prev, rating: toDbRating(stars) }))
+                      }
+                    />
+                  </Box>
+                  {supportsPlaytime && (
+                    <Box sx={{ minWidth: 180 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+                      >
+                        Played on:
+                      </Typography>
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={form.platformPlayedOn}
+                          displayEmpty
+                          inputProps={{ 'aria-label': 'Played on platform' }}
+                          disabled={form.platforms.length === 0}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              platformPlayedOn: event.target.value,
+                            }))
+                          }
+                          sx={{ ...fieldSx, fontSize: '0.8rem' }}
+                        >
+                          <MenuItem value="" sx={{ fontSize: '0.8rem' }}>
+                            <em>{form.platforms.length ? 'Not selected' : 'No platforms available'}</em>
+                          </MenuItem>
+                          {form.platforms.map((platform) => (
+                            <MenuItem key={platform} value={platform} sx={{ fontSize: '0.8rem' }}>
+                              {platform}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+                  )}
+                </Stack>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField

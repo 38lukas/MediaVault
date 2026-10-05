@@ -12,6 +12,7 @@ export interface MediaItem {
   genres?: string[] | null;
   developers?: string[] | null;
   publishers?: string[] | null;
+  platform_played_on?: string | null;
   external_id: string;
   poster_path?: string | null;
   started_at?: string | null;
