@@ -11,12 +11,14 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogTitle,
   InputAdornment,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Image from 'next/image';
 import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';
@@ -167,7 +169,12 @@ export function MediaModal() {
   const [fetchTmdbCover, tmdbState] = useLazyFetchTmdbCoverQuery();
   const [form, setForm] = useState(INITIAL_FORM);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [moreOptionsOpen, setMoreOptionsOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [coverDetailsOpen, setCoverDetailsOpen] = useState(false);
+  const [coverDetailsDraft, setCoverDetailsDraft] = useState({
+    externalId: '',
+    posterUrl: '',
+  });
   const [igdbSearchResults, setIgdbSearchResults] = useState<IgdbGameSearchResult[]>([]);
   const [selectedIgdbGame, setSelectedIgdbGame] = useState<IgdbGameSearchResult | null>(null);
   const [isSearchingIgdb, setIsSearchingIgdb] = useState(false);
@@ -264,7 +271,8 @@ export function MediaModal() {
     igdbSearchRequestIdRef.current += 1;
     igdbDetailRequestIdRef.current += 1;
     setFetchError(null);
-    setMoreOptionsOpen(false);
+    setDetailsOpen(false);
+    setCoverDetailsOpen(false);
     // Only re-seed when the dialog opens or the edited item changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, item]);
@@ -285,6 +293,23 @@ export function MediaModal() {
   const handleClose = () => {
     if (isBusy) return;
     dispatch(closeMediaModal());
+  };
+
+  const handleOpenCoverDetails = () => {
+    setCoverDetailsDraft({
+      externalId: form.externalId,
+      posterUrl: form.posterUrl,
+    });
+    setCoverDetailsOpen(true);
+  };
+
+  const handleApplyCoverDetails = () => {
+    setForm((prev) => ({
+      ...prev,
+      externalId: coverDetailsDraft.externalId,
+      posterUrl: coverDetailsDraft.posterUrl,
+    }));
+    setCoverDetailsOpen(false);
   };
 
   const handleSelectIgdbGame = async (game: IgdbGameSearchResult | null) => {
@@ -614,7 +639,31 @@ export function MediaModal() {
                   alignSelf: { xs: 'center', md: 'flex-start' },
                 }}
               >
-                <Box sx={{ width: { xs: 120, md: 148 }, mx: { xs: 'auto', md: 0 } }}>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={handleOpenCoverDetails}
+                  aria-label="Edit cover details"
+                  sx={{
+                    position: 'relative',
+                    display: 'block',
+                    width: { xs: 120, md: 148 },
+                    mx: { xs: 'auto', md: 0 },
+                    p: 0,
+                    border: 'none',
+                    borderRadius: 2.5,
+                    background: 'none',
+                    cursor: 'pointer',
+                    lineHeight: 0,
+                    '&:hover .cover-edit-overlay, &:focus-visible .cover-edit-overlay': {
+                      opacity: 1,
+                    },
+                    '&:focus-visible': {
+                      outline: `2px solid ${palette.primary}`,
+                      outlineOffset: 2,
+                    },
+                  }}
+                >
                   <Box
                     sx={{
                       position: 'relative',
@@ -635,6 +684,23 @@ export function MediaModal() {
                         style={{ objectFit: 'cover' }}
                       />
                     ) : null}
+                  </Box>
+                  <Box
+                    className="cover-edit-overlay"
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 2.5,
+                      backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                      opacity: 0,
+                      transition: 'opacity 0.15s ease',
+                      color: palette.textOnDark,
+                    }}
+                  >
+                    <EditOutlinedIcon sx={{ fontSize: 36 }} />
                   </Box>
                 </Box>
               </Box>
@@ -966,14 +1032,14 @@ export function MediaModal() {
                   />
                 </Stack>
 
-                <Box>
+                {usesIgdb && <Box>
                   <Button
                     type="button"
-                    onClick={() => setMoreOptionsOpen((prev) => !prev)}
+                    onClick={() => setDetailsOpen((prev) => !prev)}
                     endIcon={
                       <ExpandMoreIcon
                         sx={{
-                          transform: moreOptionsOpen ? 'rotate(180deg)' : 'none',
+                          transform: detailsOpen ? 'rotate(180deg)' : 'none',
                           transition: 'transform 0.2s ease',
                         }}
                       />
@@ -993,64 +1059,8 @@ export function MediaModal() {
                   >
                     Details
                   </Button>
-                  <Collapse in={moreOptionsOpen}>
+                  <Collapse in={detailsOpen}>
                     <Stack spacing={2} sx={{ pt: 1.5 }}>
-                      <TextField
-                        label="External ID"
-                        helperText={
-                          coverProvider
-                            ? `Optional. Filled by ${coverProvider} Fetch, or generated on save.`
-                            : 'Optional. Generated on save if empty.'
-                        }
-                        value={form.externalId}
-                        onChange={(e) =>
-                          setForm((prev) => ({ ...prev, externalId: e.target.value }))
-                        }
-                        fullWidth
-                        sx={fieldSx}
-                      />
-
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        sx={{ alignItems: 'flex-start' }}
-                      >
-                        <TextField
-                          label="Poster URL"
-                          value={form.posterUrl}
-                          onChange={(e) =>
-                            setForm((prev) => ({ ...prev, posterUrl: e.target.value }))
-                          }
-                          fullWidth
-                          helperText={usesIgdb
-                            ? 'Choose a game from the title search to load its IGDB details.'
-                            : coverProvider
-                              ? `Auto-fetches from ${coverProvider} after you finish the title.`
-                              : undefined}
-                          sx={fieldSx}
-                        />
-                        {!usesIgdb && (
-                          <Button
-                            variant="outlined"
-                            color="primary"
-                            onClick={() => void handleFetchCover()}
-                            disabled={
-                              !supportsCoverFetch ||
-                              !form.title.trim() ||
-                              isFetchingCover ||
-                              isBusy
-                            }
-                            sx={{
-                              mt: 0.5,
-                              whiteSpace: 'nowrap',
-                              minWidth: 96,
-                              borderRadius: 2,
-                            }}
-                          >
-                            {isFetchingCover ? '…' : 'Fetch'}
-                          </Button>
-                        )}
-                      </Stack>
                       {usesIgdb && (isEdit || selectedIgdbGame) && (
                         <Box>
                           <Typography
@@ -1085,7 +1095,7 @@ export function MediaModal() {
                       )}
                     </Stack>
                   </Collapse>
-                </Box>
+                </Box>}
               </Stack>
             </Stack>
           </Stack>
@@ -1129,6 +1139,64 @@ export function MediaModal() {
           </Button>
         </DialogActions>
       </Box>
+      <Dialog
+        open={coverDetailsOpen}
+        onClose={() => setCoverDetailsOpen(false)}
+        fullWidth
+        maxWidth="xs"
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 2,
+              backgroundColor: palette.surface,
+              border: `1px solid ${palette.border}`,
+              backgroundImage: 'none',
+            },
+          },
+        }}
+      >
+        <DialogTitle>Cover details</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <TextField
+              label="External ID"
+              helperText={
+                coverProvider
+                  ? `Optional. Filled by ${coverProvider}, or generated on save.`
+                  : 'Optional. Generated on save if empty.'
+              }
+              value={coverDetailsDraft.externalId}
+              onChange={(event) =>
+                setCoverDetailsDraft((prev) => ({
+                  ...prev,
+                  externalId: event.target.value,
+                }))
+              }
+              fullWidth
+              sx={fieldSx}
+            />
+            <TextField
+              label="Poster URL"
+              helperText={coverProvider ? `Cover source: ${coverProvider}` : undefined}
+              value={coverDetailsDraft.posterUrl}
+              onChange={(event) =>
+                setCoverDetailsDraft((prev) => ({
+                  ...prev,
+                  posterUrl: event.target.value,
+                }))
+              }
+              fullWidth
+              sx={fieldSx}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setCoverDetailsOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleApplyCoverDetails}>
+            Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 }
