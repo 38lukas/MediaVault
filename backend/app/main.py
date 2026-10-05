@@ -28,38 +28,6 @@ with engine.begin() as connection:
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS developers VARCHAR[]"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS publishers VARCHAR[]"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS platform_played_on VARCHAR"))
-    for column in ("platforms", "genres", "developers", "publishers"):
-        column_type = connection.execute(
-            text(
-                "SELECT data_type FROM information_schema.columns "
-                "WHERE table_schema = current_schema() "
-                "AND table_name = 'media_entries' AND column_name = :column_name"
-            ),
-            {"column_name": column},
-        ).scalar_one_or_none()
-        if column_type == "ARRAY":
-            continue
-
-        migrated_column = f"{column}_list_migration"
-        connection.execute(
-            text(f"ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS {migrated_column} VARCHAR[]")
-        )
-        connection.execute(
-            text(
-                f"UPDATE media_entries SET {migrated_column} = CASE "
-                f"WHEN {column} IS NULL THEN NULL "
-                f"WHEN btrim({column}) = '' THEN ARRAY[]::VARCHAR[] "
-                f"WHEN left(ltrim({column}), 1) = '[' THEN "
-                f"ARRAY(SELECT value::VARCHAR FROM jsonb_array_elements_text({column}::jsonb) AS item(value)) "
-                f"ELSE string_to_array({column}, ',')::VARCHAR[] END"
-            )
-        )
-        connection.execute(text(f"ALTER TABLE media_entries DROP COLUMN {column}"))
-        connection.execute(
-            text(
-                f"ALTER TABLE media_entries RENAME COLUMN {migrated_column} TO {column}"
-            )
-        )
     connection.execute(text('ALTER TABLE "user" DROP COLUMN IF EXISTS ratings_enabled'))
     connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_sort_field VARCHAR NOT NULL DEFAULT 'status'"""))
     # Prefer avatar_path; migrate the older profile_picture_path column if present.
