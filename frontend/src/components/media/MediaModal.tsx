@@ -62,6 +62,12 @@ const INITIAL_FORM = {
   status: 'Playing',
   playtimeHours: '',
   playtimeMinutes: '',
+  releaseDate: '',
+  platforms: [] as string[],
+  franchise: '',
+  genres: [] as string[],
+  developers: [] as string[],
+  publishers: [] as string[],
   externalId: '',
   posterUrl: '',
   startedAt: '',
@@ -127,9 +133,11 @@ function coverQueryKey(title: string, mediaType: MediaType): string {
   return `${mediaType}:${title.trim().toLowerCase()}`;
 }
 
-function formatIgdbReleaseDate(timestamp: number | null): string {
-  if (timestamp == null) return '—';
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
+function formatIgdbReleaseDate(value: string): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -202,22 +210,14 @@ export function MediaModal() {
         : null;
   const statusStyle = getStatusColor(form.status);
   const statuses = useMemo(() => STATUSES_BY_TYPE[form.mediaType], [form.mediaType]);
-  const selectedIgdbDetails = selectedIgdbGame
-    ? igdbGameState.currentData
-    : undefined;
-  const igdbMetadata = selectedIgdbDetails
-    ? [
-        { label: 'Platforms', value: selectedIgdbDetails.platforms.join(', ') },
-        { label: 'Genres', value: selectedIgdbDetails.genres.join(', ') },
-        {
-          label: 'Release date',
-          value: formatIgdbReleaseDate(selectedIgdbDetails.first_release_date),
-        },
-        { label: 'Developer', value: selectedIgdbDetails.developers.join(', ') },
-        { label: 'Publisher', value: selectedIgdbDetails.publishers.join(', ') },
-        { label: 'Franchise', value: selectedIgdbDetails.franchise ?? '' },
-      ]
-    : [];
+  const igdbMetadata = [
+    { label: 'Platforms', value: form.platforms.join(', ') },
+    { label: 'Genres', value: form.genres.join(', ') },
+    { label: 'Release date', value: formatIgdbReleaseDate(form.releaseDate) },
+    { label: 'Developer', value: form.developers.join(', ') },
+    { label: 'Publisher', value: form.publishers.join(', ') },
+    { label: 'Franchise', value: form.franchise },
+  ];
 
   // Prefill form when opening create vs edit.
   useEffect(() => {
@@ -236,6 +236,12 @@ export function MediaModal() {
           item.playtime == null ? '' : String(Math.floor(item.playtime / 60)),
         playtimeMinutes:
           item.playtime == null ? '' : String(item.playtime % 60),
+        releaseDate: item.release_date ?? '',
+        platforms: item.platforms ?? [],
+        franchise: item.franchise ?? '',
+        genres: item.genres ?? [],
+        developers: item.developers ?? [],
+        publishers: item.publishers ?? [],
         externalId: item.external_id ?? '',
         posterUrl: item.poster_path ?? '',
         startedAt: toDateInputValue(item.started_at),
@@ -305,6 +311,15 @@ export function MediaModal() {
         ...prev,
         title: result.name,
         posterUrl: result.poster_path ?? '',
+        releaseDate:
+          result.first_release_date == null
+            ? ''
+            : new Date(result.first_release_date * 1000).toISOString(),
+        platforms: result.platforms,
+        franchise: result.franchise ?? '',
+        genres: result.genres,
+        developers: result.developers,
+        publishers: result.publishers,
         externalId:
           !prev.externalId.trim() || prev.externalId.startsWith('manual_')
             ? result.external_id
@@ -482,6 +497,12 @@ export function MediaModal() {
       started_at: toIsoDateOrNull(form.startedAt),
       finished_at: toIsoDateOrNull(form.finishedAt),
       rating: form.rating,
+      release_date: usesIgdb ? form.releaseDate || null : null,
+      platforms: usesIgdb ? form.platforms : null,
+      franchise: usesIgdb ? form.franchise || null : null,
+      genres: usesIgdb ? form.genres : null,
+      developers: usesIgdb ? form.developers : null,
+      publishers: usesIgdb ? form.publishers : null,
     };
 
     try {
@@ -616,38 +637,6 @@ export function MediaModal() {
                     ) : null}
                   </Box>
                 </Box>
-                {usesIgdb && selectedIgdbGame && (
-                  <Box sx={{ mt: 2, width: '100%' }}>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 700 }}
-                    >
-                      IGDB details
-                    </Typography>
-                    {igdbGameState.isFetching && !selectedIgdbDetails ? (
-                      <CircularProgress size={18} />
-                    ) : (
-                      <Stack spacing={1}>
-                        {igdbMetadata.map(({ label, value }) => (
-                          <Box key={label}>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'text.secondary', display: 'block' }}
-                            >
-                              {label}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{ color: 'text.primary', overflowWrap: 'anywhere' }}
-                            >
-                              {value || '—'}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Stack>
-                    )}
-                  </Box>
-                )}
               </Box>
 
               <Stack spacing={2.25} sx={{ flex: 1, minWidth: 0 }}>
@@ -691,6 +680,12 @@ export function MediaModal() {
                                 : prev.externalId,
                             }
                           : {}),
+                        releaseDate: '',
+                        platforms: [],
+                        franchise: '',
+                        genres: [],
+                        developers: [],
+                        publishers: [],
                       }));
                     }}
                     onChange={(_event, game) => void handleSelectIgdbGame(game)}
@@ -784,6 +779,16 @@ export function MediaModal() {
                                   type === 'Game' || type === 'DLC'
                                     ? prev.playtimeMinutes
                                     : '',
+                                ...(type !== form.mediaType
+                                  ? {
+                                      releaseDate: '',
+                                      platforms: [],
+                                      franchise: '',
+                                      genres: [],
+                                      developers: [],
+                                      publishers: [],
+                                    }
+                                  : {}),
                                 status: nextStatuses.includes(prev.status)
                                   ? prev.status
                                   : nextStatuses[0],
@@ -986,7 +991,7 @@ export function MediaModal() {
                       },
                     }}
                   >
-                    More Options
+                    Details
                   </Button>
                   <Collapse in={moreOptionsOpen}>
                     <Stack spacing={2} sx={{ pt: 1.5 }}>
@@ -1046,6 +1051,38 @@ export function MediaModal() {
                           </Button>
                         )}
                       </Stack>
+                      {usesIgdb && (isEdit || selectedIgdbGame) && (
+                        <Box>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ mb: 1, fontWeight: 700 }}
+                          >
+                            IGDB details
+                          </Typography>
+                          {selectedIgdbGame && igdbGameState.isFetching ? (
+                            <CircularProgress size={18} />
+                          ) : (
+                            <Stack spacing={1}>
+                              {igdbMetadata.map(({ label, value }) => (
+                                <Box key={label}>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{ color: 'text.secondary', display: 'block' }}
+                                  >
+                                    {label}
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{ color: 'text.primary', overflowWrap: 'anywhere' }}
+                                  >
+                                    {value || '—'}
+                                  </Typography>
+                                </Box>
+                              ))}
+                            </Stack>
+                          )}
+                        </Box>
+                      )}
                     </Stack>
                   </Collapse>
                 </Box>

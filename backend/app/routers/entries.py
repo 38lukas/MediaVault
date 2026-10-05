@@ -49,6 +49,12 @@ def create_entry(
         media_type=entry_in.media_type,
         status=entry_in.status,
         playtime=entry_in.playtime,
+        release_date=entry_in.release_date,
+        platforms=entry_in.platforms,
+        franchise=entry_in.franchise,
+        genres=entry_in.genres,
+        developers=entry_in.developers,
+        publishers=entry_in.publishers,
         external_id=entry_in.external_id,
         poster_path=entry_in.poster_path,
         started_at=entry_in.started_at,
@@ -85,6 +91,12 @@ def update_entry(
     entry.media_type = entry_in.media_type
     entry.status = entry_in.status
     entry.playtime = entry_in.playtime
+    entry.release_date = entry_in.release_date
+    entry.platforms = entry_in.platforms
+    entry.franchise = entry_in.franchise
+    entry.genres = entry_in.genres
+    entry.developers = entry_in.developers
+    entry.publishers = entry_in.publishers
     entry.external_id = entry_in.external_id
     entry.poster_path = entry_in.poster_path
     entry.started_at = entry_in.started_at
