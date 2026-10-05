@@ -49,8 +49,8 @@ const STATUSES_BY_TYPE: Record<(typeof MEDIA_TYPES)[number], string[]> = {
   Game: ['Playing', 'Finished', 'Played', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
   DLC: ['Playing', 'Finished', 'Played', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
   Movie: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
-  Series: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
-  Anime: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
+  Series: ['Watching', 'Watched', 'Shelved', 'Dropped', 'Watchlist'],
+  Anime: ['Watching', 'Watched', 'Shelved', 'Dropped', 'Watchlist'],
   Book: ['Reading', 'Read', 'Dropped', 'Backlog']
 };
 
