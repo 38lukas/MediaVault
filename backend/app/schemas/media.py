@@ -15,6 +15,13 @@ class MediaEntryBase(BaseModel):
     media_type: MediaType
     status: MediaStatus
     playtime: Optional[int] = Field(default=None, ge=0)  # Minutes; non-negative if set.
+    release_date: Optional[datetime] = None
+    platforms: Optional[list[str]] = None
+    franchise: Optional[str] = None
+    genres: Optional[list[str]] = None
+    developers: Optional[list[str]] = None
+    publishers: Optional[list[str]] = None
+    platform_played_on: Optional[str] = None
     external_id: str
     poster_path: Optional[str] = None
     started_at: Optional[datetime] = None

@@ -1,6 +1,7 @@
 """SQLAlchemy models for MediaVault."""
 from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import ARRAY
 from app.database import Base
 
 # This represents the user table in the database.
@@ -39,6 +40,13 @@ class MediaEntry(Base):
     media_type = Column(String, nullable=False)
     status = Column(String, nullable=False)
     playtime = Column(Integer, nullable=True)
+    release_date = Column(DateTime(timezone=True), nullable=True)
+    platforms = Column(ARRAY(String), nullable=True)
+    franchise = Column(String, nullable=True)
+    genres = Column(ARRAY(String), nullable=True)
+    developers = Column(ARRAY(String), nullable=True)
+    publishers = Column(ARRAY(String), nullable=True)
+    platform_played_on = Column(String, nullable=True)
     external_id = Column(String, nullable=False)
     poster_path = Column(String, nullable=True)
     started_at = Column(DateTime(timezone=True), nullable=True)

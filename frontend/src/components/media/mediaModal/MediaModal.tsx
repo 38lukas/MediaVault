@@ -7,18 +7,22 @@ import {
   Box,
   Button,
   CircularProgress,
-  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
+  DialogTitle,
+  FormControl,
   InputAdornment,
+  MenuItem,
+  Select,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Image from 'next/image';
 import { StarRating } from '@/components/common/StarRating';
+import { Details } from './Details';
 import { palette } from '@/lib/palette';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { toDateInputValue, toIsoDateOrNull } from '@/utils/date';
@@ -49,8 +53,8 @@ const STATUSES_BY_TYPE: Record<(typeof MEDIA_TYPES)[number], string[]> = {
   Game: ['Playing', 'Finished', 'Played', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
   DLC: ['Playing', 'Finished', 'Played', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
   Movie: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
-  Series: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
-  Anime: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
+  Series: ['Watching', 'Watched', 'Shelved', 'Dropped', 'Watchlist'],
+  Anime: ['Watching', 'Watched', 'Shelved', 'Dropped', 'Watchlist'],
   Book: ['Reading', 'Read', 'Dropped', 'Backlog']
 };
 
@@ -62,6 +66,13 @@ const INITIAL_FORM = {
   status: 'Playing',
   playtimeHours: '',
   playtimeMinutes: '',
+  releaseDate: '',
+  platforms: [] as string[],
+  franchise: '',
+  genres: [] as string[],
+  developers: [] as string[],
+  publishers: [] as string[],
+  platformPlayedOn: '',
   externalId: '',
   posterUrl: '',
   startedAt: '',
@@ -127,15 +138,6 @@ function coverQueryKey(title: string, mediaType: MediaType): string {
   return `${mediaType}:${title.trim().toLowerCase()}`;
 }
 
-function formatIgdbReleaseDate(timestamp: number | null): string {
-  if (timestamp == null) return '—';
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 function formatIgdbReleaseYear(timestamp: number): string {
   return String(new Date(timestamp * 1000).getUTCFullYear());
 }
@@ -159,7 +161,11 @@ export function MediaModal() {
   const [fetchTmdbCover, tmdbState] = useLazyFetchTmdbCoverQuery();
   const [form, setForm] = useState(INITIAL_FORM);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [moreOptionsOpen, setMoreOptionsOpen] = useState(false);
+  const [coverDetailsOpen, setCoverDetailsOpen] = useState(false);
+  const [coverDetailsDraft, setCoverDetailsDraft] = useState({
+    externalId: '',
+    posterUrl: '',
+  });
   const [igdbSearchResults, setIgdbSearchResults] = useState<IgdbGameSearchResult[]>([]);
   const [selectedIgdbGame, setSelectedIgdbGame] = useState<IgdbGameSearchResult | null>(null);
   const [isSearchingIgdb, setIsSearchingIgdb] = useState(false);
@@ -202,23 +208,6 @@ export function MediaModal() {
         : null;
   const statusStyle = getStatusColor(form.status);
   const statuses = useMemo(() => STATUSES_BY_TYPE[form.mediaType], [form.mediaType]);
-  const selectedIgdbDetails = selectedIgdbGame
-    ? igdbGameState.currentData
-    : undefined;
-  const igdbMetadata = selectedIgdbDetails
-    ? [
-        { label: 'Platforms', value: selectedIgdbDetails.platforms.join(', ') },
-        { label: 'Genres', value: selectedIgdbDetails.genres.join(', ') },
-        {
-          label: 'Release date',
-          value: formatIgdbReleaseDate(selectedIgdbDetails.first_release_date),
-        },
-        { label: 'Developer', value: selectedIgdbDetails.developers.join(', ') },
-        { label: 'Publisher', value: selectedIgdbDetails.publishers.join(', ') },
-        { label: 'Franchise', value: selectedIgdbDetails.franchise ?? '' },
-      ]
-    : [];
-
   // Prefill form when opening create vs edit.
   useEffect(() => {
     if (!open) return;
@@ -236,6 +225,13 @@ export function MediaModal() {
           item.playtime == null ? '' : String(Math.floor(item.playtime / 60)),
         playtimeMinutes:
           item.playtime == null ? '' : String(item.playtime % 60),
+        releaseDate: item.release_date ?? '',
+        platforms: item.platforms ?? [],
+        franchise: item.franchise ?? '',
+        genres: item.genres ?? [],
+        developers: item.developers ?? [],
+        publishers: item.publishers ?? [],
+        platformPlayedOn: item.platform_played_on ?? '',
         externalId: item.external_id ?? '',
         posterUrl: item.poster_path ?? '',
         startedAt: toDateInputValue(item.started_at),
@@ -258,7 +254,7 @@ export function MediaModal() {
     igdbSearchRequestIdRef.current += 1;
     igdbDetailRequestIdRef.current += 1;
     setFetchError(null);
-    setMoreOptionsOpen(false);
+    setCoverDetailsOpen(false);
     // Only re-seed when the dialog opens or the edited item changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, item]);
@@ -281,6 +277,23 @@ export function MediaModal() {
     dispatch(closeMediaModal());
   };
 
+  const handleOpenCoverDetails = () => {
+    setCoverDetailsDraft({
+      externalId: form.externalId,
+      posterUrl: form.posterUrl,
+    });
+    setCoverDetailsOpen(true);
+  };
+
+  const handleApplyCoverDetails = () => {
+    setForm((prev) => ({
+      ...prev,
+      externalId: coverDetailsDraft.externalId,
+      posterUrl: coverDetailsDraft.posterUrl,
+    }));
+    setCoverDetailsOpen(false);
+  };
+
   const handleSelectIgdbGame = async (game: IgdbGameSearchResult | null) => {
     if (!game) return;
 
@@ -291,6 +304,7 @@ export function MediaModal() {
     setFetchError(null);
     lastCoverQueryKeyRef.current = coverQueryKey(game.name, form.mediaType);
     setForm((prev) => ({ ...prev, title: game.name }));
+    setForm((prev) => ({ ...prev, platformPlayedOn: '' }));
 
     try {
       const result = await fetchIgdbGame(game.id).unwrap();
@@ -305,6 +319,15 @@ export function MediaModal() {
         ...prev,
         title: result.name,
         posterUrl: result.poster_path ?? '',
+        releaseDate:
+          result.first_release_date == null
+            ? ''
+            : new Date(result.first_release_date * 1000).toISOString(),
+        platforms: result.platforms,
+        franchise: result.franchise ?? '',
+        genres: result.genres,
+        developers: result.developers,
+        publishers: result.publishers,
         externalId:
           !prev.externalId.trim() || prev.externalId.startsWith('manual_')
             ? result.external_id
@@ -482,6 +505,13 @@ export function MediaModal() {
       started_at: toIsoDateOrNull(form.startedAt),
       finished_at: toIsoDateOrNull(form.finishedAt),
       rating: form.rating,
+      release_date: usesIgdb ? form.releaseDate || null : null,
+      platforms: usesIgdb ? form.platforms : null,
+      franchise: usesIgdb ? form.franchise || null : null,
+      genres: usesIgdb ? form.genres : null,
+      developers: usesIgdb ? form.developers : null,
+      publishers: usesIgdb ? form.publishers : null,
+      platform_played_on: supportsPlaytime ? form.platformPlayedOn || null : null,
     };
 
     try {
@@ -593,7 +623,31 @@ export function MediaModal() {
                   alignSelf: { xs: 'center', md: 'flex-start' },
                 }}
               >
-                <Box sx={{ width: { xs: 120, md: 148 }, mx: { xs: 'auto', md: 0 } }}>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={handleOpenCoverDetails}
+                  aria-label="Edit cover details"
+                  sx={{
+                    position: 'relative',
+                    display: 'block',
+                    width: { xs: 120, md: 148 },
+                    mx: { xs: 'auto', md: 0 },
+                    p: 0,
+                    border: 'none',
+                    borderRadius: 2.5,
+                    background: 'none',
+                    cursor: 'pointer',
+                    lineHeight: 0,
+                    '&:hover .cover-edit-overlay, &:focus-visible .cover-edit-overlay': {
+                      opacity: 1,
+                    },
+                    '&:focus-visible': {
+                      outline: `2px solid ${palette.primary}`,
+                      outlineOffset: 2,
+                    },
+                  }}
+                >
                   <Box
                     sx={{
                       position: 'relative',
@@ -615,39 +669,24 @@ export function MediaModal() {
                       />
                     ) : null}
                   </Box>
-                </Box>
-                {usesIgdb && selectedIgdbGame && (
-                  <Box sx={{ mt: 2, width: '100%' }}>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: 700 }}
-                    >
-                      IGDB details
-                    </Typography>
-                    {igdbGameState.isFetching && !selectedIgdbDetails ? (
-                      <CircularProgress size={18} />
-                    ) : (
-                      <Stack spacing={1}>
-                        {igdbMetadata.map(({ label, value }) => (
-                          <Box key={label}>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'text.secondary', display: 'block' }}
-                            >
-                              {label}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{ color: 'text.primary', overflowWrap: 'anywhere' }}
-                            >
-                              {value || '—'}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Stack>
-                    )}
+                  <Box
+                    className="cover-edit-overlay"
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 2.5,
+                      backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                      opacity: 0,
+                      transition: 'opacity 0.15s ease',
+                      color: palette.textOnDark,
+                    }}
+                  >
+                    <EditOutlinedIcon sx={{ fontSize: 36 }} />
                   </Box>
-                )}
+                </Box>
               </Box>
 
               <Stack spacing={2.25} sx={{ flex: 1, minWidth: 0 }}>
@@ -691,6 +730,13 @@ export function MediaModal() {
                                 : prev.externalId,
                             }
                           : {}),
+                        releaseDate: '',
+                        platforms: [],
+                        franchise: '',
+                        genres: [],
+                        developers: [],
+                        publishers: [],
+                        platformPlayedOn: '',
                       }));
                     }}
                     onChange={(_event, game) => void handleSelectIgdbGame(game)}
@@ -784,6 +830,17 @@ export function MediaModal() {
                                   type === 'Game' || type === 'DLC'
                                     ? prev.playtimeMinutes
                                     : '',
+                                ...(type !== form.mediaType
+                                  ? {
+                                      releaseDate: '',
+                                      platforms: [],
+                                      franchise: '',
+                                      genres: [],
+                                      developers: [],
+                                      publishers: [],
+                                      platformPlayedOn: '',
+                                    }
+                                  : {}),
                                 status: nextStatuses.includes(prev.status)
                                   ? prev.status
                                   : nextStatuses[0],
@@ -921,20 +978,60 @@ export function MediaModal() {
                   </Stack>
                 </Box>
 
-                <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
-                  >
-                    Rating
-                  </Typography>
-                  <StarRating
-                    value={form.rating}
-                    onChange={(stars) =>
-                      setForm((prev) => ({ ...prev, rating: toDbRating(stars) }))
-                    }
-                  />
-                </Box>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={2}
+                  sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}
+                >
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'text.secondary', mb: 1.5, display: 'block', fontWeight: 600 }}
+                    >
+                      Rating
+                    </Typography>
+                    <StarRating
+                      value={form.rating}
+                      onChange={(stars) =>
+                        setForm((prev) => ({ ...prev, rating: toDbRating(stars) }))
+                      }
+                    />
+                  </Box>
+                  {supportsPlaytime && (
+                    <Box sx={{ minWidth: 180 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+                      >
+                        Played on:
+                      </Typography>
+                      <FormControl size="small" fullWidth>
+                        <Select
+                          value={form.platformPlayedOn}
+                          displayEmpty
+                          inputProps={{ 'aria-label': 'Played on platform' }}
+                          disabled={form.platforms.length === 0}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              platformPlayedOn: event.target.value,
+                            }))
+                          }
+                          sx={{ ...fieldSx, fontSize: '0.8rem' }}
+                        >
+                          <MenuItem value="" sx={{ fontSize: '0.8rem' }}>
+                            <em>{form.platforms.length ? 'Not selected' : 'No platforms available'}</em>
+                          </MenuItem>
+                          {form.platforms.map((platform) => (
+                            <MenuItem key={platform} value={platform} sx={{ fontSize: '0.8rem' }}>
+                              {platform}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+                  )}
+                </Stack>
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField
@@ -961,94 +1058,19 @@ export function MediaModal() {
                   />
                 </Stack>
 
-                <Box>
-                  <Button
-                    type="button"
-                    onClick={() => setMoreOptionsOpen((prev) => !prev)}
-                    endIcon={
-                      <ExpandMoreIcon
-                        sx={{
-                          transform: moreOptionsOpen ? 'rotate(180deg)' : 'none',
-                          transition: 'transform 0.2s ease',
-                        }}
-                      />
-                    }
-                    sx={{
-                      color: 'text.secondary',
-                      fontWeight: 600,
-                      fontSize: '0.8rem',
-                      textTransform: 'none',
-                      px: 0,
-                      minWidth: 0,
-                      '&:hover': {
-                        backgroundColor: 'transparent',
-                        color: 'text.primary',
-                      },
-                    }}
-                  >
-                    More Options
-                  </Button>
-                  <Collapse in={moreOptionsOpen}>
-                    <Stack spacing={2} sx={{ pt: 1.5 }}>
-                      <TextField
-                        label="External ID"
-                        helperText={
-                          coverProvider
-                            ? `Optional. Filled by ${coverProvider} Fetch, or generated on save.`
-                            : 'Optional. Generated on save if empty.'
-                        }
-                        value={form.externalId}
-                        onChange={(e) =>
-                          setForm((prev) => ({ ...prev, externalId: e.target.value }))
-                        }
-                        fullWidth
-                        sx={fieldSx}
-                      />
-
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        sx={{ alignItems: 'flex-start' }}
-                      >
-                        <TextField
-                          label="Poster URL"
-                          value={form.posterUrl}
-                          onChange={(e) =>
-                            setForm((prev) => ({ ...prev, posterUrl: e.target.value }))
-                          }
-                          fullWidth
-                          helperText={usesIgdb
-                            ? 'Choose a game from the title search to load its IGDB details.'
-                            : coverProvider
-                              ? `Auto-fetches from ${coverProvider} after you finish the title.`
-                              : undefined}
-                          sx={fieldSx}
-                        />
-                        {!usesIgdb && (
-                          <Button
-                            variant="outlined"
-                            color="primary"
-                            onClick={() => void handleFetchCover()}
-                            disabled={
-                              !supportsCoverFetch ||
-                              !form.title.trim() ||
-                              isFetchingCover ||
-                              isBusy
-                            }
-                            sx={{
-                              mt: 0.5,
-                              whiteSpace: 'nowrap',
-                              minWidth: 96,
-                              borderRadius: 2,
-                            }}
-                          >
-                            {isFetchingCover ? '…' : 'Fetch'}
-                          </Button>
-                        )}
-                      </Stack>
-                    </Stack>
-                  </Collapse>
-                </Box>
+                {usesIgdb && (
+                  <Details
+                    key={`${open}:${item?.id ?? 'new'}`}
+                    showIgdbDetails={isEdit || selectedIgdbGame != null}
+                    loading={selectedIgdbGame != null && igdbGameState.isFetching}
+                    platforms={form.platforms}
+                    genres={form.genres}
+                    releaseDate={form.releaseDate}
+                    developers={form.developers}
+                    publishers={form.publishers}
+                    franchise={form.franchise}
+                  />
+                )}
               </Stack>
             </Stack>
           </Stack>
@@ -1092,6 +1114,64 @@ export function MediaModal() {
           </Button>
         </DialogActions>
       </Box>
+      <Dialog
+        open={coverDetailsOpen}
+        onClose={() => setCoverDetailsOpen(false)}
+        fullWidth
+        maxWidth="xs"
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 2,
+              backgroundColor: palette.surface,
+              border: `1px solid ${palette.border}`,
+              backgroundImage: 'none',
+            },
+          },
+        }}
+      >
+        <DialogTitle>Cover details</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <TextField
+              label="External ID"
+              helperText={
+                coverProvider
+                  ? `Optional. Filled by ${coverProvider}, or generated on save.`
+                  : 'Optional. Generated on save if empty.'
+              }
+              value={coverDetailsDraft.externalId}
+              onChange={(event) =>
+                setCoverDetailsDraft((prev) => ({
+                  ...prev,
+                  externalId: event.target.value,
+                }))
+              }
+              fullWidth
+              sx={fieldSx}
+            />
+            <TextField
+              label="Poster URL"
+              helperText={coverProvider ? `Cover source: ${coverProvider}` : undefined}
+              value={coverDetailsDraft.posterUrl}
+              onChange={(event) =>
+                setCoverDetailsDraft((prev) => ({
+                  ...prev,
+                  posterUrl: event.target.value,
+                }))
+              }
+              fullWidth
+              sx={fieldSx}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setCoverDetailsOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleApplyCoverDetails}>
+            Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 }

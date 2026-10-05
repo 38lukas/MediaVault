@@ -6,6 +6,13 @@ export interface MediaItem {
   media_type: string;
   status: string;
   playtime?: number | null;
+  release_date?: string | null;
+  platforms?: string[] | null;
+  franchise?: string | null;
+  genres?: string[] | null;
+  developers?: string[] | null;
+  publishers?: string[] | null;
+  platform_played_on?: string | null;
   external_id: string;
   poster_path?: string | null;
   started_at?: string | null;

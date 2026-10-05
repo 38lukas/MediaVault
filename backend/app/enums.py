@@ -51,12 +51,14 @@ ALLOWED_STATUSES = {
     MediaType.SERIES: {
         MediaStatus.WATCHING,
         MediaStatus.WATCHED,
+        MediaStatus.SHELVED,
         MediaStatus.DROPPED,
         MediaStatus.WATCHLIST,
     },
     MediaType.ANIME: {
         MediaStatus.WATCHING,
         MediaStatus.WATCHED,
+        MediaStatus.SHELVED,
         MediaStatus.DROPPED,
         MediaStatus.WATCHLIST,
     },
