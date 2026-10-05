@@ -7,7 +7,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -20,10 +19,10 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Image from 'next/image';
 import { StarRating } from '@/components/common/StarRating';
+import { Details } from './Details';
 import { palette } from '@/lib/palette';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { toDateInputValue, toIsoDateOrNull } from '@/utils/date';
@@ -139,17 +138,6 @@ function coverQueryKey(title: string, mediaType: MediaType): string {
   return `${mediaType}:${title.trim().toLowerCase()}`;
 }
 
-function formatIgdbReleaseDate(value: string): string {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 function formatIgdbReleaseYear(timestamp: number): string {
   return String(new Date(timestamp * 1000).getUTCFullYear());
 }
@@ -173,7 +161,6 @@ export function MediaModal() {
   const [fetchTmdbCover, tmdbState] = useLazyFetchTmdbCoverQuery();
   const [form, setForm] = useState(INITIAL_FORM);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const [coverDetailsOpen, setCoverDetailsOpen] = useState(false);
   const [coverDetailsDraft, setCoverDetailsDraft] = useState({
     externalId: '',
@@ -221,15 +208,6 @@ export function MediaModal() {
         : null;
   const statusStyle = getStatusColor(form.status);
   const statuses = useMemo(() => STATUSES_BY_TYPE[form.mediaType], [form.mediaType]);
-  const igdbMetadata = [
-    { label: 'Platforms', value: form.platforms.join(', ') },
-    { label: 'Genres', value: form.genres.join(', ') },
-    { label: 'Release date', value: formatIgdbReleaseDate(form.releaseDate) },
-    { label: 'Developer', value: form.developers.join(', ') },
-    { label: 'Publisher', value: form.publishers.join(', ') },
-    { label: 'Franchise', value: form.franchise },
-  ];
-
   // Prefill form when opening create vs edit.
   useEffect(() => {
     if (!open) return;
@@ -276,7 +254,6 @@ export function MediaModal() {
     igdbSearchRequestIdRef.current += 1;
     igdbDetailRequestIdRef.current += 1;
     setFetchError(null);
-    setDetailsOpen(false);
     setCoverDetailsOpen(false);
     // Only re-seed when the dialog opens or the edited item changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1081,70 +1058,19 @@ export function MediaModal() {
                   />
                 </Stack>
 
-                {usesIgdb && <Box>
-                  <Button
-                    type="button"
-                    onClick={() => setDetailsOpen((prev) => !prev)}
-                    endIcon={
-                      <ExpandMoreIcon
-                        sx={{
-                          transform: detailsOpen ? 'rotate(180deg)' : 'none',
-                          transition: 'transform 0.2s ease',
-                        }}
-                      />
-                    }
-                    sx={{
-                      color: 'text.secondary',
-                      fontWeight: 600,
-                      fontSize: '0.8rem',
-                      textTransform: 'none',
-                      px: 0,
-                      minWidth: 0,
-                      '&:hover': {
-                        backgroundColor: 'transparent',
-                        color: 'text.primary',
-                      },
-                    }}
-                  >
-                    Details
-                  </Button>
-                  <Collapse in={detailsOpen}>
-                    <Stack spacing={2} sx={{ pt: 1.5 }}>
-                      {usesIgdb && (isEdit || selectedIgdbGame) && (
-                        <Box>
-                          <Typography
-                            variant="subtitle2"
-                            sx={{ mb: 1, fontWeight: 700 }}
-                          >
-                            IGDB details
-                          </Typography>
-                          {selectedIgdbGame && igdbGameState.isFetching ? (
-                            <CircularProgress size={18} />
-                          ) : (
-                            <Stack spacing={1}>
-                              {igdbMetadata.map(({ label, value }) => (
-                                <Box key={label}>
-                                  <Typography
-                                    variant="caption"
-                                    sx={{ color: 'text.secondary', display: 'block' }}
-                                  >
-                                    {label}
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{ color: 'text.primary', overflowWrap: 'anywhere' }}
-                                  >
-                                    {value || '—'}
-                                  </Typography>
-                                </Box>
-                              ))}
-                            </Stack>
-                          )}
-                        </Box>
-                      )}
-                    </Stack>
-                  </Collapse>
-                </Box>}
+                {usesIgdb && (
+                  <Details
+                    key={`${open}:${item?.id ?? 'new'}`}
+                    showIgdbDetails={isEdit || selectedIgdbGame != null}
+                    loading={selectedIgdbGame != null && igdbGameState.isFetching}
+                    platforms={form.platforms}
+                    genres={form.genres}
+                    releaseDate={form.releaseDate}
+                    developers={form.developers}
+                    publishers={form.publishers}
+                    franchise={form.franchise}
+                  />
+                )}
               </Stack>
             </Stack>
           </Stack>

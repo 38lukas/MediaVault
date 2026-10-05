@@ -1,6 +1,6 @@
 import { Container } from '@mui/material';
 import { AppHeader } from '@/components/common/AppHeader';
-import { MediaModal } from '@/components/media/MediaModal';
+import { MediaModal } from '@/components/media/mediaModal/MediaModal';
 import { AuthGate } from '@/components/user/AuthGate';
 
 // Shared layout for pages
