@@ -2,6 +2,7 @@
 
 import { Box, Paper, Typography } from '@mui/material';
 import { AccountSection } from '@/components/settings/AccountSection';
+import { AppearanceSection } from '@/components/settings/AppearanceSection';
 import { GeneralSection } from '@/components/settings/GeneralSection';
 import { SettingsSidebar } from '@/components/settings/SettingsSidebar';
 import { palette } from '@/lib/palette';
@@ -40,7 +41,13 @@ export default function SettingsPage() {
             border: `1px solid ${palette.border}`,
           }}
         >
-          {activeSection === 'account' ? <AccountSection /> : <GeneralSection />}
+          {activeSection === 'account' ? (
+            <AccountSection />
+          ) : activeSection === 'general' ? (
+            <GeneralSection />
+          ) : (
+            <AppearanceSection />
+          )}
         </Paper>
       </Box>
     </>

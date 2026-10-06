@@ -1,9 +1,8 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  Autocomplete,
   Box,
   Button,
   CircularProgress,
@@ -23,6 +22,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Image from 'next/image';
 import { StarRating } from '@/components/common/StarRating';
 import { Details } from './Details';
+import { IgdbGameSearch } from './IgdbGameSearch';
 import { palette } from '@/lib/palette';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { toDateInputValue, toIsoDateOrNull } from '@/utils/date';
@@ -33,11 +33,10 @@ import { closeMediaModal } from '@/redux/libraryUiSlice';
 import {
   useCreateMediaEntryMutation,
   useDeleteMediaEntryMutation,
-  useLazyFetchIgdbGameQuery,
   useLazyFetchOpenLibraryCoverQuery,
-  useLazySearchIgdbGamesQuery,
   useLazyFetchTmdbCoverQuery,
   useUpdateMediaEntryMutation,
+  type IgdbGameLookup,
   type IgdbGameSearchResult,
 } from '@/redux/mediaApi';
 
@@ -138,10 +137,6 @@ function coverQueryKey(title: string, mediaType: MediaType): string {
   return `${mediaType}:${title.trim().toLowerCase()}`;
 }
 
-function formatIgdbReleaseYear(timestamp: number): string {
-  return String(new Date(timestamp * 1000).getUTCFullYear());
-}
-
 /**
  * Create/edit media dialog.
  * Open state and editing item come from Redux; form fields stay local.
@@ -155,8 +150,6 @@ export function MediaModal() {
   const [createMediaEntry, createState] = useCreateMediaEntryMutation();
   const [updateMediaEntry, updateState] = useUpdateMediaEntryMutation();
   const [deleteMediaEntry, deleteState] = useDeleteMediaEntryMutation();
-  const [searchIgdbGames] = useLazySearchIgdbGamesQuery();
-  const [fetchIgdbGame, igdbGameState] = useLazyFetchIgdbGameQuery();
   const [fetchOpenLibraryCover, openLibraryState] = useLazyFetchOpenLibraryCoverQuery();
   const [fetchTmdbCover, tmdbState] = useLazyFetchTmdbCoverQuery();
   const [form, setForm] = useState(INITIAL_FORM);
@@ -166,18 +159,14 @@ export function MediaModal() {
     externalId: '',
     posterUrl: '',
   });
-  const [igdbSearchResults, setIgdbSearchResults] = useState<IgdbGameSearchResult[]>([]);
   const [selectedIgdbGame, setSelectedIgdbGame] = useState<IgdbGameSearchResult | null>(null);
-  const [isSearchingIgdb, setIsSearchingIgdb] = useState(false);
+  const [isFetchingIgdbDetails, setIsFetchingIgdbDetails] = useState(false);
   const supportsPlaytime = form.mediaType === 'Game' || form.mediaType === 'DLC';
   // Skip repeat auto-fetches for the same title + media type.
   const lastCoverQueryKeyRef = useRef<string | null>(null);
-  const igdbSearchRequestIdRef = useRef(0);
-  const igdbDetailRequestIdRef = useRef(0);
-  const selectedIgdbGameIdRef = useRef<number | null>(null);
 
   const isFetchingCover =
-    igdbGameState.isFetching || tmdbState.isFetching || openLibraryState.isFetching;
+    isFetchingIgdbDetails || tmdbState.isFetching || openLibraryState.isFetching;
   const isBusy =
     createState.isLoading ||
     updateState.isLoading ||
@@ -247,12 +236,8 @@ export function MediaModal() {
       lastCoverQueryKeyRef.current = null;
       createState.reset();
     }
-    setIgdbSearchResults([]);
     setSelectedIgdbGame(null);
-    setIsSearchingIgdb(false);
-    selectedIgdbGameIdRef.current = null;
-    igdbSearchRequestIdRef.current += 1;
-    igdbDetailRequestIdRef.current += 1;
+    setIsFetchingIgdbDetails(false);
     setFetchError(null);
     setCoverDetailsOpen(false);
     // Only re-seed when the dialog opens or the edited item changes.
@@ -294,59 +279,66 @@ export function MediaModal() {
     setCoverDetailsOpen(false);
   };
 
-  const handleSelectIgdbGame = async (game: IgdbGameSearchResult | null) => {
-    if (!game) return;
-
-    const requestId = ++igdbDetailRequestIdRef.current;
-    selectedIgdbGameIdRef.current = game.id;
-    setSelectedIgdbGame(game);
-    setIgdbSearchResults([]);
+  const handleIgdbTitleChange = (title: string, hadSelection: boolean) => {
+    setSelectedIgdbGame(null);
+    setIsFetchingIgdbDetails(false);
     setFetchError(null);
-    lastCoverQueryKeyRef.current = coverQueryKey(game.name, form.mediaType);
-    setForm((prev) => ({ ...prev, title: game.name }));
-    setForm((prev) => ({ ...prev, platformPlayedOn: '' }));
+    lastCoverQueryKeyRef.current = null;
+    setForm((prev) => ({
+      ...prev,
+      title,
+      ...(hadSelection
+        ? {
+            posterUrl: '',
+            externalId: prev.externalId.startsWith('igdb_') ? '' : prev.externalId,
+          }
+        : {}),
+      releaseDate: '',
+      platforms: [],
+      franchise: '',
+      genres: [],
+      developers: [],
+      publishers: [],
+      platformPlayedOn: '',
+    }));
+  };
 
-    try {
-      const result = await fetchIgdbGame(game.id).unwrap();
-      if (
-        requestId !== igdbDetailRequestIdRef.current ||
-        selectedIgdbGameIdRef.current !== game.id
-      ) {
-        return;
-      }
-
-      setForm((prev) => ({
-        ...prev,
-        title: result.name,
-        posterUrl: result.poster_path ?? '',
-        releaseDate:
-          result.first_release_date == null
-            ? ''
-            : new Date(result.first_release_date * 1000).toISOString(),
-        platforms: result.platforms,
-        franchise: result.franchise ?? '',
-        genres: result.genres,
-        developers: result.developers,
-        publishers: result.publishers,
-        externalId:
-          !prev.externalId.trim() || prev.externalId.startsWith('manual_')
-            ? result.external_id
-            : prev.externalId,
-      }));
-    } catch (err) {
-      if (
-        err &&
-        typeof err === 'object' &&
-        'name' in err &&
-        (err as { name: string }).name === 'AbortError'
-      ) {
-        return;
-      }
-      if (requestId === igdbDetailRequestIdRef.current) {
-        setFetchError(coverFetchErrorMessage(err, 'IGDB'));
-      }
+  const handleIgdbSelectionChange = (
+    game: IgdbGameSearchResult | null,
+    loading: boolean,
+  ) => {
+    setSelectedIgdbGame(game);
+    setIsFetchingIgdbDetails(loading);
+    if (game) {
+      lastCoverQueryKeyRef.current = coverQueryKey(game.name, form.mediaType);
+      setForm((prev) => ({ ...prev, title: game.name }));
     }
   };
+
+  const handleIgdbGameLoaded = (result: IgdbGameLookup) => {
+    setForm((prev) => ({
+      ...prev,
+      title: result.name,
+      posterUrl: result.poster_path ?? '',
+      releaseDate:
+        result.first_release_date == null
+          ? ''
+          : new Date(result.first_release_date * 1000).toISOString(),
+      platforms: result.platforms,
+      franchise: result.franchise ?? '',
+      genres: result.genres,
+      developers: result.developers,
+      publishers: result.publishers,
+      externalId:
+        !prev.externalId.trim() || prev.externalId.startsWith('manual_')
+          ? result.external_id
+          : prev.externalId,
+    }));
+  };
+
+  const handleIgdbSearchError = useCallback((err: unknown) => {
+    setFetchError(coverFetchErrorMessage(err, 'IGDB'));
+  }, []);
 
   /**
   * Resolves poster URL + external id from the title via the matching provider.
@@ -436,53 +428,6 @@ export function MediaModal() {
     // handleFetchCover closes over latest lazy triggers; deps are the inputs that matter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, form.title, form.mediaType, supportsCoverFetch, coverProvider, usesIgdb]);
-
-  useEffect(() => {
-    if (!open || !usesIgdb || selectedIgdbGame) return;
-
-    const title = form.title.trim();
-    if (title.length < AUTO_FETCH_MIN_TITLE_LENGTH) return;
-
-    const queryKey = coverQueryKey(title, form.mediaType);
-    if (queryKey === lastCoverQueryKeyRef.current) return;
-
-    const requestId = ++igdbSearchRequestIdRef.current;
-    let request: ReturnType<typeof searchIgdbGames> | undefined;
-    const timer = window.setTimeout(() => {
-      setIsSearchingIgdb(true);
-      request = searchIgdbGames(title);
-      void request
-        .unwrap()
-        .then((results) => {
-          if (requestId !== igdbSearchRequestIdRef.current) return;
-          lastCoverQueryKeyRef.current = queryKey;
-          setIgdbSearchResults(results);
-        })
-        .catch((err: unknown) => {
-          if (
-            requestId !== igdbSearchRequestIdRef.current ||
-            (err && typeof err === 'object' && 'name' in err &&
-              (err as { name: string }).name === 'AbortError')
-          ) {
-            return;
-          }
-          setFetchError(coverFetchErrorMessage(err, 'IGDB'));
-        })
-        .finally(() => {
-          if (requestId === igdbSearchRequestIdRef.current) {
-            setIsSearchingIgdb(false);
-          }
-        });
-    }, AUTO_FETCH_DEBOUNCE_MS);
-
-    return () => {
-      window.clearTimeout(timer);
-      igdbSearchRequestIdRef.current += 1;
-      request?.abort();
-    };
-    // Search only depends on the current title/type and selection state.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, usesIgdb, form.title, form.mediaType, selectedIgdbGame]);
 
   /**
    * Creates or updates the entry, then closes the modal.
@@ -691,80 +636,21 @@ export function MediaModal() {
 
               <Stack spacing={2.25} sx={{ flex: 1, minWidth: 0 }}>
                 {usesIgdb ? (
-                  <Autocomplete
-                    options={selectedIgdbGame ? [selectedIgdbGame] : igdbSearchResults}
-                    value={selectedIgdbGame}
-                    inputValue={form.title}
-                    getOptionLabel={(option) =>
-                      option.first_release_date == null
-                        ? option.name
-                        : `${option.name} (${formatIgdbReleaseYear(option.first_release_date)})`
+                  <IgdbGameSearch
+                    key={`${open}:${item?.id ?? 'new'}:${form.mediaType}`}
+                    open={open}
+                    title={form.title}
+                    skipSearchForTitle={
+                      isEdit && item &&
+                      (item.media_type === 'Game' || item.media_type === 'DLC')
+                        ? item.title
+                        : undefined
                     }
-                    getOptionKey={(option) => option.id}
-                    isOptionEqualToValue={(option, value) => option.id === value.id}
-                    filterOptions={(options) => options}
-                    loading={isSearchingIgdb}
-                    noOptionsText={
-                      form.title.trim().length < AUTO_FETCH_MIN_TITLE_LENGTH
-                        ? 'Type at least 3 characters'
-                        : 'No matching games'
-                    }
-                    onInputChange={(_event, value, reason) => {
-                      if (reason !== 'input' && reason !== 'clear') return;
-                      const hadSelection = selectedIgdbGameIdRef.current !== null;
-                      selectedIgdbGameIdRef.current = null;
-                      igdbDetailRequestIdRef.current += 1;
-                      lastCoverQueryKeyRef.current = null;
-                      setSelectedIgdbGame(null);
-                      setIgdbSearchResults([]);
-                      setIsSearchingIgdb(false);
-                      setFetchError(null);
-                      setForm((prev) => ({
-                        ...prev,
-                        title: value,
-                        ...(hadSelection
-                          ? {
-                              posterUrl: '',
-                              externalId: prev.externalId.startsWith('igdb_')
-                                ? ''
-                                : prev.externalId,
-                            }
-                          : {}),
-                        releaseDate: '',
-                        platforms: [],
-                        franchise: '',
-                        genres: [],
-                        developers: [],
-                        publishers: [],
-                        platformPlayedOn: '',
-                      }));
-                    }}
-                    onChange={(_event, game) => void handleSelectIgdbGame(game)}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        required
-                        label="Title"
-                        fullWidth
-                        sx={fieldSx}
-                        slotProps={{
-                          ...params.slotProps,
-                          input: {
-                            ...params.slotProps.input,
-                            endAdornment: (
-                            <>
-                              {(isSearchingIgdb || igdbGameState.isFetching) && (
-                                <InputAdornment position="end">
-                                  <CircularProgress size={16} thickness={5} color="inherit" />
-                                </InputAdornment>
-                              )}
-                              {params.slotProps.input.endAdornment}
-                            </>
-                            ),
-                          },
-                        }}
-                      />
-                    )}
+                    fieldSx={fieldSx}
+                    onTitleChange={handleIgdbTitleChange}
+                    onSelectionChange={handleIgdbSelectionChange}
+                    onGameLoaded={handleIgdbGameLoaded}
+                    onError={handleIgdbSearchError}
                   />
                 ) : (
                   <TextField
@@ -812,11 +698,8 @@ export function MediaModal() {
                             onClick={() => {
                               const nextStatuses = STATUSES_BY_TYPE[type];
                               if (type !== form.mediaType) {
-                                selectedIgdbGameIdRef.current = null;
-                                igdbDetailRequestIdRef.current += 1;
                                 setSelectedIgdbGame(null);
-                                setIgdbSearchResults([]);
-                                setIsSearchingIgdb(false);
+                                setIsFetchingIgdbDetails(false);
                                 lastCoverQueryKeyRef.current = null;
                               }
                               setForm((prev) => ({
@@ -1062,7 +945,7 @@ export function MediaModal() {
                   <Details
                     key={`${open}:${item?.id ?? 'new'}`}
                     showIgdbDetails={isEdit || selectedIgdbGame != null}
-                    loading={selectedIgdbGame != null && igdbGameState.isFetching}
+                    loading={selectedIgdbGame != null && isFetchingIgdbDetails}
                     platforms={form.platforms}
                     genres={form.genres}
                     releaseDate={form.releaseDate}

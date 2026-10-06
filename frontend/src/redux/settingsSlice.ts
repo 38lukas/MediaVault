@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { SettingsSection } from '@/types/media';
+import { DEFAULT_PRIMARY_COLOR } from '@/lib/palette';
 import { clearUsername } from './authSlice';
 
 interface SettingsState {
@@ -10,6 +11,7 @@ interface SettingsState {
   confirmPasswordDraft: string;
   editingUsername: boolean;
   editingPassword: boolean;
+  primaryColor: string;
 }
 
 const initialState: SettingsState = {
@@ -20,6 +22,7 @@ const initialState: SettingsState = {
   confirmPasswordDraft: '',
   editingUsername: false,
   editingPassword: false,
+  primaryColor: DEFAULT_PRIMARY_COLOR,
 };
 
 // Local UI state for the settings page (sidebar + account form drafts).
@@ -29,6 +32,9 @@ const settingsSlice = createSlice({
   reducers: {
     setActiveSection(state, action: PayloadAction<SettingsSection>) {
       state.activeSection = action.payload;
+    },
+    setPrimaryColor(state, action: PayloadAction<string>) {
+      state.primaryColor = action.payload;
     },
     setUsernameDraft(state, action: PayloadAction<string>) {
       state.usernameDraft = action.payload;
@@ -79,12 +85,16 @@ const settingsSlice = createSlice({
   },
   extraReducers: (builder) => {
     // Drop drafts when the user logs out so the next session starts clean.
-    builder.addCase(clearUsername, () => initialState);
+    builder.addCase(clearUsername, (state) => ({
+      ...initialState,
+      primaryColor: state.primaryColor,
+    }));
   },
 });
 
 export const {
   setActiveSection,
+  setPrimaryColor,
   setUsernameDraft,
   setCurrentPasswordDraft,
   setNewPasswordDraft,

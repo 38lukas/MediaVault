@@ -3,6 +3,7 @@
 import { List, ListItemButton, ListItemIcon, ListItemText, Paper } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import TuneIcon from '@mui/icons-material/Tune';
+import PaletteIcon from '@mui/icons-material/Palette';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setActiveSection } from '@/redux/settingsSlice';
@@ -11,6 +12,7 @@ import type { SettingsSection } from '@/types/media';
 const SECTIONS: { id: SettingsSection; label: string; icon: typeof PersonIcon }[] = [
   { id: 'account', label: 'Account', icon: PersonIcon },
   { id: 'general', label: 'General', icon: TuneIcon },
+  { id: 'appearance', label: 'Appearance', icon: PaletteIcon }
 ];
 
 /** Settings sidebar: Account and General navigation.

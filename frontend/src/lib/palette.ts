@@ -1,12 +1,15 @@
 /** Shared UI color tokens for MediaVault. */
 
+export const DEFAULT_PRIMARY_COLOR = '#ffbb3d';
+export const DEFAULT_PRIMARY_CONTRAST = '#0a0a0a';
+
 export const palette = {
   bg: 'rgba(0, 0, 0, 0.9)',
   surface: '#141414',
   surfaceElevated: '#1a1a1a',
   paper: '#1e1e1e',
-  primary: 'rgba(255, 187, 61, 0.8)', // for buttons and links
-  primaryContrast: '#0a0a0a',
+  primary: 'var(--media-vault-primary, #ffbb3d)', // for buttons and links
+  primaryContrast: 'var(--media-vault-primary-contrast, #0a0a0a)',
   border: 'rgba(255,255,255,0.08)',
   borderSubtle: 'rgba(255,255,255,0.06)',
   borderMuted: 'rgba(255,255,255,0.1)',
