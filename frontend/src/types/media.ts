@@ -50,7 +50,7 @@ export const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
 ];
 
 // Settings sidebar section keys.
-export type SettingsSection = 'account' | 'general';
+export type SettingsSection = 'account' | 'general' | 'appearance';
 
 // Current-user account info and general settings from GET /api/users/me.
 export interface UserSettings {
