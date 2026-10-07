@@ -33,7 +33,7 @@ export interface IgdbGameLookup {
   poster_path: string | null;
   first_release_date: number | null;
   platforms: string[];
-  franchise: string | null;
+  franchises: string[];
   genres: string[];
   developers: string[];
   publishers: string[];

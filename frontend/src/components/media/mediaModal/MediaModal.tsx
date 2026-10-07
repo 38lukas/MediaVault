@@ -65,7 +65,7 @@ const INITIAL_FORM = {
   playtimeMinutes: '',
   releaseDate: '',
   platforms: [] as string[],
-  franchise: '',
+  franchises: [] as string[],
   genres: [] as string[],
   developers: [] as string[],
   publishers: [] as string[],
@@ -209,7 +209,7 @@ export function MediaModal() {
           item.playtime == null ? '' : String(item.playtime % 60),
         releaseDate: item.release_date ?? '',
         platforms: item.platforms ?? [],
-        franchise: item.franchise ?? '',
+        franchises: item.franchises ?? [],
         genres: item.genres ?? [],
         developers: item.developers ?? [],
         publishers: item.publishers ?? [],
@@ -270,7 +270,7 @@ export function MediaModal() {
         : {}),
       releaseDate: '',
       platforms: [],
-      franchise: '',
+      franchises: [],
       genres: [],
       developers: [],
       publishers: [],
@@ -300,7 +300,7 @@ export function MediaModal() {
           ? ''
           : new Date(result.first_release_date * 1000).toISOString(),
       platforms: result.platforms,
-      franchise: result.franchise ?? '',
+      franchises: result.franchises,
       genres: result.genres,
       developers: result.developers,
       publishers: result.publishers,
@@ -427,7 +427,7 @@ export function MediaModal() {
       rating: form.rating,
       release_date: usesIgdb ? form.releaseDate || null : null,
       platforms: usesIgdb ? form.platforms : null,
-      franchise: usesIgdb ? form.franchise || null : null,
+      franchises: usesIgdb ? form.franchises : null,
       genres: usesIgdb ? form.genres : null,
       developers: usesIgdb ? form.developers : null,
       publishers: usesIgdb ? form.publishers : null,
@@ -636,7 +636,7 @@ export function MediaModal() {
                                   ? {
                                       releaseDate: '',
                                       platforms: [],
-                                      franchise: '',
+                                      franchises: [],
                                       genres: [],
                                       developers: [],
                                       publishers: [],
@@ -870,7 +870,7 @@ export function MediaModal() {
                     releaseDate={form.releaseDate}
                     developers={form.developers}
                     publishers={form.publishers}
-                    franchise={form.franchise}
+                    franchises={form.franchises}
                   />
                 )}
               </Stack>

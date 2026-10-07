@@ -51,7 +51,7 @@ def create_entry(
         playtime=entry_in.playtime,
         release_date=entry_in.release_date,
         platforms=entry_in.platforms,
-        franchise=entry_in.franchise,
+        franchises=entry_in.franchises,
         genres=entry_in.genres,
         developers=entry_in.developers,
         publishers=entry_in.publishers,
@@ -94,7 +94,7 @@ def update_entry(
     entry.playtime = entry_in.playtime
     entry.release_date = entry_in.release_date
     entry.platforms = entry_in.platforms
-    entry.franchise = entry_in.franchise
+    entry.franchises = entry_in.franchises
     entry.genres = entry_in.genres
     entry.developers = entry_in.developers
     entry.publishers = entry_in.publishers
