@@ -17,7 +17,7 @@ class MediaEntryBase(BaseModel):
     playtime: Optional[int] = Field(default=None, ge=0)  # Minutes; non-negative if set.
     release_date: Optional[datetime] = None
     platforms: Optional[list[str]] = None
-    franchise: Optional[str] = None
+    franchises: Optional[list[str]] = None
     genres: Optional[list[str]] = None
     developers: Optional[list[str]] = None
     publishers: Optional[list[str]] = None

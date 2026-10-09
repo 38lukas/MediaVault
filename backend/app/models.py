@@ -42,7 +42,7 @@ class MediaEntry(Base):
     playtime = Column(Integer, nullable=True)
     release_date = Column(DateTime(timezone=True), nullable=True)
     platforms = Column(ARRAY(String), nullable=True)
-    franchise = Column(String, nullable=True)
+    franchises = Column(ARRAY(String), nullable=True)
     genres = Column(ARRAY(String), nullable=True)
     developers = Column(ARRAY(String), nullable=True)
     publishers = Column(ARRAY(String), nullable=True)

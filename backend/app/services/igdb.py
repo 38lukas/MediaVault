@@ -98,7 +98,7 @@ def fetch_game_by_id(game_id: int) -> dict[str, Any]:
 
     query = (
         "fields id,name,cover.image_id,first_release_date,platforms.name,"
-        "franchise.name,genres.name,involved_companies.developer,"
+        "franchises.name,genres.name,involved_companies.developer,"
         "involved_companies.publisher,involved_companies.company.name; "
         f"where id = {game_id}; limit 1;"
     )
@@ -122,8 +122,11 @@ def fetch_game_by_id(game_id: int) -> dict[str, Any]:
         for item in companies
         if item.get("publisher") and item.get("company", {}).get("name")
     ]
-    franchise = game.get("franchise")
-    franchise_name = franchise.get("name") if isinstance(franchise, dict) else None
+    franchises = [
+        item["name"]
+        for item in game.get("franchises") or []
+        if isinstance(item, dict) and item.get("name")
+    ]
 
     return {
         "name": game.get("name") or f"IGDB game {game_id}",
@@ -133,7 +136,7 @@ def fetch_game_by_id(game_id: int) -> dict[str, Any]:
         ),
         "first_release_date": game.get("first_release_date"),
         "platforms": [platform["name"] for platform in game.get("platforms", [])],
-        "franchise": franchise_name,
+        "franchises": franchises,
         "genres": [genre["name"] for genre in game.get("genres", [])],
         "developers": developers,
         "publishers": publishers

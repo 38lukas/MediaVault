@@ -8,7 +8,7 @@ export interface MediaItem {
   playtime?: number | null;
   release_date?: string | null;
   platforms?: string[] | null;
-  franchise?: string | null;
+  franchises?: string[] | null;
   genres?: string[] | null;
   developers?: string[] | null;
   publishers?: string[] | null;

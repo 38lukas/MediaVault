@@ -9,7 +9,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   FormControl,
   InputAdornment,
   MenuItem,
@@ -18,9 +17,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import Image from 'next/image';
 import { StarRating } from '@/components/common/StarRating';
+import { CoverDetails } from './CoverDetails';
 import { Details } from './Details';
 import { IgdbGameSearch } from './IgdbGameSearch';
 import { palette } from '@/lib/palette';
@@ -67,7 +65,7 @@ const INITIAL_FORM = {
   playtimeMinutes: '',
   releaseDate: '',
   platforms: [] as string[],
-  franchise: '',
+  franchises: [] as string[],
   genres: [] as string[],
   developers: [] as string[],
   publishers: [] as string[],
@@ -154,11 +152,6 @@ export function MediaModal() {
   const [fetchTmdbCover, tmdbState] = useLazyFetchTmdbCoverQuery();
   const [form, setForm] = useState(INITIAL_FORM);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [coverDetailsOpen, setCoverDetailsOpen] = useState(false);
-  const [coverDetailsDraft, setCoverDetailsDraft] = useState({
-    externalId: '',
-    posterUrl: '',
-  });
   const [selectedIgdbGame, setSelectedIgdbGame] = useState<IgdbGameSearchResult | null>(null);
   const [isFetchingIgdbDetails, setIsFetchingIgdbDetails] = useState(false);
   const supportsPlaytime = form.mediaType === 'Game' || form.mediaType === 'DLC';
@@ -216,7 +209,7 @@ export function MediaModal() {
           item.playtime == null ? '' : String(item.playtime % 60),
         releaseDate: item.release_date ?? '',
         platforms: item.platforms ?? [],
-        franchise: item.franchise ?? '',
+        franchises: item.franchises ?? [],
         genres: item.genres ?? [],
         developers: item.developers ?? [],
         publishers: item.publishers ?? [],
@@ -239,7 +232,6 @@ export function MediaModal() {
     setSelectedIgdbGame(null);
     setIsFetchingIgdbDetails(false);
     setFetchError(null);
-    setCoverDetailsOpen(false);
     // Only re-seed when the dialog opens or the edited item changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, item]);
@@ -262,23 +254,6 @@ export function MediaModal() {
     dispatch(closeMediaModal());
   };
 
-  const handleOpenCoverDetails = () => {
-    setCoverDetailsDraft({
-      externalId: form.externalId,
-      posterUrl: form.posterUrl,
-    });
-    setCoverDetailsOpen(true);
-  };
-
-  const handleApplyCoverDetails = () => {
-    setForm((prev) => ({
-      ...prev,
-      externalId: coverDetailsDraft.externalId,
-      posterUrl: coverDetailsDraft.posterUrl,
-    }));
-    setCoverDetailsOpen(false);
-  };
-
   const handleIgdbTitleChange = (title: string, hadSelection: boolean) => {
     setSelectedIgdbGame(null);
     setIsFetchingIgdbDetails(false);
@@ -295,7 +270,7 @@ export function MediaModal() {
         : {}),
       releaseDate: '',
       platforms: [],
-      franchise: '',
+      franchises: [],
       genres: [],
       developers: [],
       publishers: [],
@@ -325,7 +300,7 @@ export function MediaModal() {
           ? ''
           : new Date(result.first_release_date * 1000).toISOString(),
       platforms: result.platforms,
-      franchise: result.franchise ?? '',
+      franchises: result.franchises,
       genres: result.genres,
       developers: result.developers,
       publishers: result.publishers,
@@ -452,7 +427,7 @@ export function MediaModal() {
       rating: form.rating,
       release_date: usesIgdb ? form.releaseDate || null : null,
       platforms: usesIgdb ? form.platforms : null,
-      franchise: usesIgdb ? form.franchise || null : null,
+      franchises: usesIgdb ? form.franchises : null,
       genres: usesIgdb ? form.genres : null,
       developers: usesIgdb ? form.developers : null,
       publishers: usesIgdb ? form.publishers : null,
@@ -560,79 +535,23 @@ export function MediaModal() {
               spacing={3}
               sx={{ alignItems: { md: 'flex-start' } }}
             >
-              {/* Live poster preview */}
-              <Box
-                sx={{
-                  width: { xs: '100%', md: 220 },
-                  flexShrink: 0,
-                  alignSelf: { xs: 'center', md: 'flex-start' },
-                }}
-              >
-                <Box
-                  component="button"
-                  type="button"
-                  onClick={handleOpenCoverDetails}
-                  aria-label="Edit cover details"
-                  sx={{
-                    position: 'relative',
-                    display: 'block',
-                    width: { xs: 120, md: 148 },
-                    mx: { xs: 'auto', md: 0 },
-                    p: 0,
-                    border: 'none',
-                    borderRadius: 2.5,
-                    background: 'none',
-                    cursor: 'pointer',
-                    lineHeight: 0,
-                    '&:hover .cover-edit-overlay, &:focus-visible .cover-edit-overlay': {
-                      opacity: 1,
-                    },
-                    '&:focus-visible': {
-                      outline: `2px solid ${palette.primary}`,
-                      outlineOffset: 2,
-                    },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      position: 'relative',
-                      aspectRatio: '2 / 3',
-                      borderRadius: 2.5,
-                      overflow: 'hidden',
-                      backgroundColor: palette.surfaceElevated,
-                      border: `1px solid ${statusStyle.border}`,
-                      boxShadow: `0 12px 32px ${statusStyle.bg}`,
-                    }}
-                  >
-                    {form.posterUrl.trim() ? (
-                      <Image
-                        src={form.posterUrl.trim()}
-                        alt={form.title || 'Cover preview'}
-                        fill
-                        sizes="148px"
-                        style={{ objectFit: 'cover' }}
-                      />
-                    ) : null}
-                  </Box>
-                  <Box
-                    className="cover-edit-overlay"
-                    sx={{
-                      position: 'absolute',
-                      inset: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 2.5,
-                      backgroundColor: 'rgba(0, 0, 0, 0.55)',
-                      opacity: 0,
-                      transition: 'opacity 0.15s ease',
-                      color: palette.textOnDark,
-                    }}
-                  >
-                    <EditOutlinedIcon sx={{ fontSize: 36 }} />
-                  </Box>
-                </Box>
-              </Box>
+              <CoverDetails
+                key={`${open}:${item?.id ?? 'new'}`}
+                posterUrl={form.posterUrl}
+                title={form.title}
+                externalId={form.externalId}
+                coverProvider={coverProvider}
+                statusBorder={statusStyle.border}
+                statusShadow={statusStyle.bg}
+                fieldSx={fieldSx}
+                onApply={({ externalId, posterUrl }) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    externalId,
+                    posterUrl,
+                  }))
+                }
+              />
 
               <Stack spacing={2.25} sx={{ flex: 1, minWidth: 0 }}>
                 {usesIgdb ? (
@@ -717,7 +636,7 @@ export function MediaModal() {
                                   ? {
                                       releaseDate: '',
                                       platforms: [],
-                                      franchise: '',
+                                      franchises: [],
                                       genres: [],
                                       developers: [],
                                       publishers: [],
@@ -951,7 +870,7 @@ export function MediaModal() {
                     releaseDate={form.releaseDate}
                     developers={form.developers}
                     publishers={form.publishers}
-                    franchise={form.franchise}
+                    franchises={form.franchises}
                   />
                 )}
               </Stack>
@@ -997,64 +916,6 @@ export function MediaModal() {
           </Button>
         </DialogActions>
       </Box>
-      <Dialog
-        open={coverDetailsOpen}
-        onClose={() => setCoverDetailsOpen(false)}
-        fullWidth
-        maxWidth="xs"
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: 2,
-              backgroundColor: palette.surface,
-              border: `1px solid ${palette.border}`,
-              backgroundImage: 'none',
-            },
-          },
-        }}
-      >
-        <DialogTitle>Cover details</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField
-              label="External ID"
-              helperText={
-                coverProvider
-                  ? `Optional. Filled by ${coverProvider}, or generated on save.`
-                  : 'Optional. Generated on save if empty.'
-              }
-              value={coverDetailsDraft.externalId}
-              onChange={(event) =>
-                setCoverDetailsDraft((prev) => ({
-                  ...prev,
-                  externalId: event.target.value,
-                }))
-              }
-              fullWidth
-              sx={fieldSx}
-            />
-            <TextField
-              label="Poster URL"
-              helperText={coverProvider ? `Cover source: ${coverProvider}` : undefined}
-              value={coverDetailsDraft.posterUrl}
-              onChange={(event) =>
-                setCoverDetailsDraft((prev) => ({
-                  ...prev,
-                  posterUrl: event.target.value,
-                }))
-              }
-              fullWidth
-              sx={fieldSx}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setCoverDetailsOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleApplyCoverDetails}>
-            Apply
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Dialog>
   );
 }

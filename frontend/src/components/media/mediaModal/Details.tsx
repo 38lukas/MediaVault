@@ -19,7 +19,7 @@ interface DetailsProps {
   releaseDate: string;
   developers: string[];
   publishers: string[];
-  franchise: string;
+  franchises: string[];
 }
 
 function formatReleaseDate(value: string): string {
@@ -41,7 +41,7 @@ export function Details({
   releaseDate,
   developers,
   publishers,
-  franchise,
+  franchises,
 }: DetailsProps) {
   const [open, setOpen] = useState(false);
   const metadata = [
@@ -50,7 +50,7 @@ export function Details({
     { label: 'Release date', value: formatReleaseDate(releaseDate) },
     { label: 'Developer', value: developers.join(', ') },
     { label: 'Publisher', value: publishers.join(', ') },
-    { label: 'Franchise', value: franchise },
+    { label: 'Franchises', value: franchises.join(', ') },
   ];
 
   return (
