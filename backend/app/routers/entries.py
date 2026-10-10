@@ -61,6 +61,7 @@ def create_entry(
         started_at=entry_in.started_at,
         finished_at=entry_in.finished_at,
         rating=entry_in.rating,
+        played_dates=entry_in.played_dates,
     )
 
     db.add(db_entry)
@@ -104,6 +105,7 @@ def update_entry(
     entry.started_at = entry_in.started_at
     entry.finished_at = entry_in.finished_at
     entry.rating = entry_in.rating
+    entry.played_dates = entry_in.played_dates
 
     db.commit()
     db.refresh(entry)

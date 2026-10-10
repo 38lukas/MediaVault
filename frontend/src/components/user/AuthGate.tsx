@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from 'react';
 import { Box, CircularProgress, Container } from '@mui/material';
 import { LoginForm } from './LoginForm';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { AUTH_STORAGE_KEY, hydrateAuth } from '@/redux/authSlice';
+import { AUTH_STORAGE_KEY, hydrateAuth } from '@/redux/slices/authSlice';
 
 /** Restores auth from localStorage, shows a spinner until hydrated, then
  *  either the login form or the authenticated children.

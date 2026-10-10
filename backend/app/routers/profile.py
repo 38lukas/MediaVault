@@ -1,6 +1,7 @@
 """Profile stats routes under /api/profile."""
 
 from collections import Counter
+from datetime import date
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -26,7 +27,7 @@ def get_profile_stats(
     db: Session = Depends(get_db),
     username: str = Depends(get_current_username),
 ):
-    """Aggregate finished counts, rating histogram, and recently finished entries."""
+    """Aggregate finished counts, rating histogram, and recently active entries."""
 
     # get all entries for the current user
     entries = (
@@ -64,15 +65,23 @@ def get_profile_stats(
         for rating in range(1, 11)
     ]
 
-    # get the 5 most recently finished entries
-    recently_finished = sorted(
-        (entry for entry in entries if entry.finished_at is not None),
-        key=lambda entry: entry.finished_at,
-        reverse=True,
-    )[:8]
+    # get the 8 entries with the most recent activity
+    active_entries = [
+        (activity, entry)
+        for entry in entries
+        if (activity := _last_activity(entry)) is not None
+    ]
+    active_entries.sort(key=lambda pair: (pair[0], pair[1].id), reverse=True)
 
     return schemas.ProfileStatsResponse(
         finished=finished,
         rating_distribution=rating_distribution,
-        recently_finished=recently_finished,
+        recent_activity=[entry for _, entry in active_entries[:8]],
     )
+
+
+def _last_activity(entry: models.MediaEntry) -> date | None:
+    """Latest journal day, finish date or start date of an entry."""
+    days = list(entry.played_dates or [])
+    days += [dt.date() for dt in (entry.finished_at, entry.started_at) if dt is not None]
+    return max(days, default=None)

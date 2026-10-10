@@ -3,7 +3,7 @@
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { DEFAULT_PRIMARY_COLOR } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { setPrimaryColor } from '@/redux/settingsSlice';
+import { setPrimaryColor } from '@/redux/slices/settingsSlice';
 
 export function AppearanceSection() {
   const dispatch = useAppDispatch();

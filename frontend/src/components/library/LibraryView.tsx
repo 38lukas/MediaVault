@@ -17,8 +17,8 @@ import {
 import { getApiErrorMessage } from '@/utils/apiError';
 import { sortMediaItems } from '@/utils/mediaSort';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { openEditMediaModal } from '@/redux/libraryUiSlice';
-import { useGetMediaEntriesQuery } from '@/redux/mediaApi';
+import { openEditMediaModal } from '@/redux/slices/mediaModalSlice';
+import { useGetMediaEntriesQuery } from '@/redux/api/mediaApi';
 import { matchesTypeFilter, type MediaItem } from '@/types/media';
 
 /** Loads media entries and renders filtered/sorted card or list content.

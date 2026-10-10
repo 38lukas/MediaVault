@@ -28,4 +28,4 @@ class ProfileStatsResponse(BaseModel):
 
     finished: FinishedCounts
     rating_distribution: list[RatingBucket]
-    recently_finished: list[MediaEntryResponse]
+    recent_activity: list[MediaEntryResponse]

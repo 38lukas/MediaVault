@@ -10,6 +10,17 @@
   --color-foreground: var(--foreground);
 }
 
+/* Keep layout width identical whether or not a page scrolls. */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* The stable gutter already reserves the scrollbar space, so skip the
+   padding-right MUI adds to body while a dialog locks scrolling. */
+body {
+  padding-right: 0 !important;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

@@ -1,7 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type {
   CardSize,
-  MediaItem,
   SortDirection,
   SortField,
   TypeFilter,
@@ -10,7 +9,7 @@ import type {
 import { CARD_SIZE_DEFAULT } from '@/types/media';
 import { SORT_FIELD_DEFAULT_DIRECTION } from '@/utils/mediaSort';
 import { clearUsername } from './authSlice';
-import { mediaApi } from './mediaApi';
+import { mediaApi } from '../api/mediaApi';
 
 interface LibraryUiState {
   viewMode: ViewMode; // cards, list
@@ -19,8 +18,6 @@ interface LibraryUiState {
   sortField: SortField; // title, status, rating, started_at, finished_at, months
   sortDirection: SortDirection; // asc, desc
   searchQuery: string; // case-insensitive title substring filter
-  isMediaModalOpen: boolean;
-  editingItem: MediaItem | null;
   defaultSortApplied: boolean; // true after first getUserSettings applies default_sort_field
 }
 
@@ -33,8 +30,6 @@ const initialState: LibraryUiState = {
   sortField: initialSortField,
   sortDirection: SORT_FIELD_DEFAULT_DIRECTION[initialSortField],
   searchQuery: '',
-  isMediaModalOpen: false,
-  editingItem: null,
   defaultSortApplied: false,
 };
 
@@ -62,18 +57,6 @@ const libraryUiSlice = createSlice({
     },
     setSearchQuery(state, action: PayloadAction<string>) {
       state.searchQuery = action.payload;
-    },
-    openCreateMediaModal(state) {
-      state.editingItem = null;
-      state.isMediaModalOpen = true;
-    },
-    openEditMediaModal(state, action: PayloadAction<MediaItem>) {
-      state.editingItem = action.payload;
-      state.isMediaModalOpen = true;
-    },
-    closeMediaModal(state) {
-      state.isMediaModalOpen = false;
-      state.editingItem = null;
     },
   },
   extraReducers: (builder) => {
@@ -106,9 +89,6 @@ export const {
   setSortField,
   setSortDirection,
   setSearchQuery,
-  openCreateMediaModal,
-  openEditMediaModal,
-  closeMediaModal,
 } = libraryUiSlice.actions;
 
 // Export the reducer to be used in the store.

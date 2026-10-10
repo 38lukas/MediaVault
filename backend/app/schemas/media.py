@@ -1,6 +1,6 @@
 """Pydantic request/response schemas for media entries."""
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -27,6 +27,7 @@ class MediaEntryBase(BaseModel):
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
     rating: Optional[int] = Field(default=None, ge=1, le=10)  # Null = unrated; when set, must be an integer 1–10.
+    played_dates: Optional[list[date]] = None  # Journal days, stored sorted and unique.
 
     @model_validator(mode="after")
     def validate_status_for_media_type(self):
@@ -42,6 +43,8 @@ class MediaEntryBase(BaseModel):
             raise ValueError(
                 f"Playtime is only allowed for games and DLCs, but the current media type is '{self.media_type.value}'."
             )
+        if self.played_dates is not None:
+            self.played_dates = sorted(set(self.played_dates))
         return self
 
 

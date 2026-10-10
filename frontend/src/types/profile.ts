@@ -21,5 +21,5 @@ export interface RatingBucket {
 export interface ProfileStats {
   finished: FinishedCounts;
   rating_distribution: RatingBucket[];
-  recently_finished: MediaItem[];
+  recent_activity: MediaItem[];
 }

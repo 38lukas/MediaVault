@@ -4,8 +4,8 @@ import { FormEvent, useState } from 'react';
 import { Alert, Box, Button, Paper, Stack, TextField, Typography } from '@mui/material';
 import { palette } from '@/lib/palette';
 import { useAppDispatch } from '@/redux/hooks';
-import { setUsername } from '@/redux/authSlice';
-import { useLoginMutation } from '@/redux/mediaApi';
+import { setUsername } from '@/redux/slices/authSlice';
+import { useLoginMutation } from '@/redux/api/mediaApi';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 /** Full-page login form shown before the library is accessible.

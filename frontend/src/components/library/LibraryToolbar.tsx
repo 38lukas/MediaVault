@@ -17,15 +17,15 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { openCreateMediaModal } from '@/redux/slices/mediaModalSlice';
 import {
-  openCreateMediaModal,
   setCardSize,
   setSearchQuery,
   setSortDirection,
   setSortField,
   setTypeFilter,
   setViewMode,
-} from '@/redux/libraryUiSlice';
+} from '@/redux/slices/libraryUiSlice';
 import {
   CARD_SIZE_MAX,
   CARD_SIZE_MIN,

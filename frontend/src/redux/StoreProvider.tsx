@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Provider } from 'react-redux';
 import { makeStore, type AppStore } from './store';
 import { useAppDispatch, useAppSelector } from './hooks';
-import { setPrimaryColor } from './settingsSlice';
-import { createMediaVaultTheme } from './theme';
+import { setPrimaryColor } from './slices/settingsSlice';
+import { createMediaVaultTheme } from '@/lib/theme';
 
 const PRIMARY_COLOR_STORAGE_KEY = 'media-vault-primary-color';
 

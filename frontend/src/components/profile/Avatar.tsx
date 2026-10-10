@@ -4,7 +4,7 @@ import { ChangeEvent, useRef } from 'react';
 import { Box, CircularProgress } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { palette } from '@/lib/palette';
-import { useGetUserSettingsQuery, useUploadAvatarMutation } from '@/redux/mediaApi';
+import { useGetUserSettingsQuery, useUploadAvatarMutation } from '@/redux/api/mediaApi';
 
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
 

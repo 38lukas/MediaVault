@@ -2,13 +2,37 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Box, Button, Typography } from '@mui/material';
-import LibraryBooksOutlinedIcon from '@mui/icons-material/LibraryBooksOutlined';
+import { Box, Button, SvgIcon, Typography, type SvgIconProps } from '@mui/material';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
-import { useGetUserSettingsQuery } from '@/redux/mediaApi';
+import { useGetUserSettingsQuery } from '@/redux/api/mediaApi';
+
+/** Three books stacked flat — MUI has no stacked-books icon. */
+function BookshelfIcon(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props} viewBox="0 0 24 24">
+      <g
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      >
+        {/* Top book */}
+        <rect x={5} y={3.5} width={14} height={5} rx={0.7} />
+        <path d="M7.25 3.5v5" />
+        {/* Middle book (offset) */}
+        <rect x={3.5} y={9.5} width={15} height={5} rx={0.7} />
+        <path d="M5.75 9.5v5" />
+        {/* Bottom book */}
+        <rect x={4.5} y={15.5} width={16} height={5} rx={0.7} />
+        <path d="M6.75 15.5v5" />
+      </g>
+    </SvgIcon>
+  );
+}
 
 // Define the navigation buttons for the app header
 const NAV_ITEMS = [
@@ -23,7 +47,7 @@ const NAV_ITEMS = [
     id: 'library',
     label: 'Library',
     href: '/library',
-    icon: LibraryBooksOutlinedIcon,
+    icon: BookshelfIcon,
     isActive: (pathname: string) => pathname.startsWith('/library'),
   },
   {

@@ -5,10 +5,10 @@ import { SectionDivider } from '@/components/common/SectionDivider';
 import { FinishedStats } from '@/components/profile/FinishedStats';
 import { Avatar } from '@/components/profile/Avatar';
 import { RatingDistributionChart } from '@/components/profile/RatingDistributionChart';
-import { RecentlyFinished } from '@/components/profile/RecentlyFinished';
+import { RecentActivity } from '@/components/profile/RecentActivity';
 import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
-import { useGetProfileStatsQuery } from '@/redux/mediaApi';
+import { useGetProfileStatsQuery } from '@/redux/api/mediaApi';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 // Profile page (home route)
@@ -63,7 +63,7 @@ export default function ProfilePage() {
             <RatingDistributionChart distribution={data.rating_distribution} />
           </Box>
           <FinishedStats finished={data.finished} />
-          <RecentlyFinished items={data.recently_finished} />
+          <RecentActivity items={data.recent_activity} />
         </Stack>
       )}
     </>

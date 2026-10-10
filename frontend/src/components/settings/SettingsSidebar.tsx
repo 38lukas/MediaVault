@@ -6,7 +6,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import PaletteIcon from '@mui/icons-material/Palette';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { setActiveSection } from '@/redux/settingsSlice';
+import { setActiveSection } from '@/redux/slices/settingsSlice';
 import type { SettingsSection } from '@/types/media';
 
 const SECTIONS: { id: SettingsSection; label: string; icon: typeof PersonIcon }[] = [

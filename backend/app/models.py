@@ -1,6 +1,6 @@
 """SQLAlchemy models for MediaVault."""
 from datetime import datetime, timezone
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from app.database import Base
 
@@ -52,3 +52,4 @@ class MediaEntry(Base):
     started_at = Column(DateTime(timezone=True), nullable=True)
     finished_at = Column(DateTime(timezone=True), nullable=True)
     rating = Column(Integer, nullable=True)
+    played_dates = Column(ARRAY(Date), nullable=True)

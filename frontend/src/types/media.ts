@@ -18,10 +18,33 @@ export interface MediaItem {
   started_at?: string | null;
   finished_at?: string | null;
   rating?: number | null; // 1–10, or null when unrated
+  played_dates?: string[] | null; // YYYY-MM-DD journal days
 }
 
 // Payload for creating/updating entries (username is set by the backend)
 export type MediaEntryPayload = Omit<MediaItem, 'id' | 'username'>;
+
+export const MEDIA_TYPES = ['Game', 'DLC', 'Movie', 'Series', 'Anime', 'Book'] as const;
+export type MediaType = (typeof MEDIA_TYPES)[number];
+
+/** Statuses allowed per media type (mirrors backend ALLOWED_STATUSES). */
+export const STATUSES_BY_TYPE: Record<MediaType, string[]> = {
+  Game: ['Playing', 'Finished', 'Played', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
+  DLC: ['Playing', 'Finished', 'Played', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
+  Movie: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
+  Series: ['Watching', 'Watched', 'Shelved', 'Dropped', 'Watchlist'],
+  Anime: ['Watching', 'Watched', 'Shelved', 'Dropped', 'Watchlist'],
+  Book: ['Reading', 'Read', 'Dropped', 'Backlog']
+};
+
+export function isMediaType(value: string): value is MediaType {
+  return (MEDIA_TYPES as readonly string[]).includes(value);
+}
+
+/** Games and DLCs support playtime, platforms and IGDB metadata. */
+export function isGameType(mediaType: string): boolean {
+  return mediaType === 'Game' || mediaType === 'DLC';
+}
 
 export type ViewMode = 'cards' | 'list';
 /** Card grid density: 0 = extra large … 2 = medium … 4 = extra small. */

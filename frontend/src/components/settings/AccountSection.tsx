@@ -11,7 +11,7 @@ import {
   TextField,
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { clearUsername, setUsername } from '@/redux/authSlice';
+import { clearUsername, setUsername } from '@/redux/slices/authSlice';
 import {
   cancelEditingPassword,
   cancelEditingUsername,
@@ -23,12 +23,12 @@ import {
   setUsernameDraft,
   startEditingPassword,
   startEditingUsername,
-} from '@/redux/settingsSlice';
+} from '@/redux/slices/settingsSlice';
 import {
   mediaApi,
   useGetUserSettingsQuery,
   useUpdateAccountMutation,
-} from '@/redux/mediaApi';
+} from '@/redux/api/mediaApi';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const PASSWORD_MASK = '******';

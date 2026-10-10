@@ -13,7 +13,7 @@ import { useAppSelector } from '@/redux/hooks';
 import {
   useGetUserSettingsQuery,
   useUpdateUserSettingsMutation,
-} from '@/redux/mediaApi';
+} from '@/redux/api/mediaApi';
 import { SORT_FIELD_OPTIONS, type SortField } from '@/types/media';
 
 /**
