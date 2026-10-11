@@ -1,5 +1,5 @@
 import type { MediaItem, SortDirection, SortField } from '@/types/media';
-import { dateValue } from '@/utils/date';
+import { dateValue, maxDateValue } from '@/utils/date';
 
 // Default Asc/Desc applied automatically when a sort field is selected
 export const SORT_FIELD_DEFAULT_DIRECTION: Record<SortField, SortDirection> = {
@@ -9,7 +9,13 @@ export const SORT_FIELD_DEFAULT_DIRECTION: Record<SortField, SortDirection> = {
   started_at: 'desc',
   finished_at: 'desc',
   months: 'desc',
+  last_played: 'desc',
 };
+
+/** Latest journal day for an entry, or null when none are logged. */
+function lastPlayedValue(item: MediaItem): number | null {
+  return maxDateValue(...(item.played_dates ?? []));
+}
 
 const STATUS_RANK: Record<string, number> = {
   Playing: 0,
@@ -97,6 +103,21 @@ export function sortMediaItems(
     if (aDate === null) return 1;
     if (bDate === null) return -1;
     result = aDate - bDate;
+  }
+
+  // Latest journal day (played_dates); entries with none stay at the end.
+  else if (field === 'last_played') {
+    const aDate = lastPlayedValue(a);
+    const bDate = lastPlayedValue(b);
+    if (aDate === null && bDate === null) {
+      return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+    }
+    if (aDate === null) return 1;
+    if (bDate === null) return -1;
+    result = aDate - bDate;
+    if (result === 0) {
+      return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+    }
   }
 
   // Sort by a single date field (started_at or finished_at).

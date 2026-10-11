@@ -13,7 +13,7 @@ import { mediaApi } from '../api/mediaApi';
 interface LibraryUiState {
   cardSize: CardSize; // 0 XL … 2 medium … 4 XS
   typeFilter: TypeFilter; // All, Game/DLC, Movie, Series, Anime
-  sortField: SortField; // title, status, rating, started_at, finished_at, months
+  sortField: SortField; // title, status, rating, started_at, finished_at, last_played, months
   sortDirection: SortDirection; // asc, desc
   searchQuery: string; // case-insensitive title substring filter
   defaultsApplied: boolean; // true after first getUserSettings applies account defaults

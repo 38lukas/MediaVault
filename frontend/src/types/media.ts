@@ -68,7 +68,8 @@ export type SortField =
   | 'started_at'
   | 'finished_at'
   | 'months'
-  | 'rating';
+  | 'rating'
+  | 'last_played';
 export type SortDirection = 'asc' | 'desc';
 
 // Shared sort options for the library toolbar and settings.
@@ -78,6 +79,7 @@ export const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'rating', label: 'Rating' },
   { value: 'started_at', label: 'Started at' },
   { value: 'finished_at', label: 'Finished at' },
+  { value: 'last_played', label: 'Last Played' },
   { value: 'months', label: 'Months' },
 ];
 

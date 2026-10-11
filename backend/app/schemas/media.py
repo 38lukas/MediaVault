@@ -43,8 +43,13 @@ class MediaEntryBase(BaseModel):
             raise ValueError(
                 f"Playtime is only allowed for games and DLCs, but the current media type is '{self.media_type.value}'."
             )
-        if self.played_dates is not None:
-            self.played_dates = sorted(set(self.played_dates))
+        # Start / finish days always count as journal days.
+        days = set(self.played_dates or [])
+        if self.started_at is not None:
+            days.add(self.started_at.date())
+        if self.finished_at is not None:
+            days.add(self.finished_at.date())
+        self.played_dates = sorted(days) if days else None
         return self
 
 

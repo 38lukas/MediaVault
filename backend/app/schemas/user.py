@@ -6,7 +6,9 @@ from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 # Must match the frontend SortField / CardSize unions.
-SortField = Literal["title", "status", "rating", "started_at", "finished_at", "months"]
+SortField = Literal[
+    "title", "status", "rating", "started_at", "finished_at", "months", "last_played"
+]
 CardSize = Literal[0, 1, 2, 3, 4]
 
 

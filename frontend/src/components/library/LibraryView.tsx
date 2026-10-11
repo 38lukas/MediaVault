@@ -8,8 +8,10 @@ import { LibraryToolbar } from '@/components/library/LibraryToolbar';
 import {
   finishedMonthKey,
   formatFinishedMonthLabel,
+  formatLastPlayedLabel,
   formatRatingLabel,
   groupConsecutive,
+  lastPlayedSectionKey,
   ratingSectionKey,
   statusSectionKey,
 } from '@/utils/mediaGrouping';
@@ -59,6 +61,9 @@ export function LibraryView() {
     if (sortField === 'rating') {
       return groupConsecutive(visibleItems, ratingSectionKey, formatRatingLabel, (item) => item.rating);
     }
+    if (sortField === 'last_played') {
+      return groupConsecutive(visibleItems, lastPlayedSectionKey, formatLastPlayedLabel);
+    }
     return null;
   }, [visibleItems, sortField, typeFilter]);
 
@@ -97,11 +102,13 @@ export function LibraryView() {
         <Stack spacing={3}>
           {sections.map((section) => (
             <Box key={section.key}>
-              <SectionDivider
-                label={section.label}
-                rating={section.rating}
-                statusStyle={hideStatus}
-              />
+              {section.label ? (
+                <SectionDivider
+                  label={section.label}
+                  rating={section.rating}
+                  statusStyle={hideStatus}
+                />
+              ) : null}
               <MediaGrid items={section.items} onItemClick={handleItemClick} />
             </Box>
           ))}

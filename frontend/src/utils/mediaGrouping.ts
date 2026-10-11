@@ -1,5 +1,5 @@
 import type { MediaItem, TypeFilter } from '@/types/media';
-import { dateValue } from '@/utils/date';
+import { dateValue, maxDateValue } from '@/utils/date';
 import {
   RATING_SECTION_LABELS,
   UNRATED_SECTION_LABEL,
@@ -8,6 +8,8 @@ import {
 
 export const NO_FINISH_KEY = 'none';
 export const NO_RATING_KEY = 'none';
+export const NO_LAST_PLAYED_KEY = 'none';
+export const HAS_LAST_PLAYED_KEY = 'dated';
 
 export interface LibrarySection {
   key: string;
@@ -116,4 +118,19 @@ export function formatRatingLabel(key: string): string {
   const stars = toStars(Number(key));
   if (stars == null) return UNRATED_SECTION_LABEL;
   return RATING_SECTION_LABELS[stars] ?? `${stars}`;
+}
+
+/** True when the entry has at least one journal day. */
+export function hasLastPlayedDate(item: MediaItem): boolean {
+  return maxDateValue(...(item.played_dates ?? [])) !== null;
+}
+
+/** Section key for Last Played sort: dated entries vs no journal days. */
+export function lastPlayedSectionKey(item: MediaItem): string {
+  return hasLastPlayedDate(item) ? HAS_LAST_PLAYED_KEY : NO_LAST_PLAYED_KEY;
+}
+
+/** Formats a Last Played section key; dated group has no divider label. */
+export function formatLastPlayedLabel(key: string): string {
+  return key === NO_LAST_PLAYED_KEY ? 'No Date' : '';
 }

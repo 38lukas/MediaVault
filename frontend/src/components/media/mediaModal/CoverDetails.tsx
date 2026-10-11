@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -14,12 +15,22 @@ import {
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Image from 'next/image';
 import { palette } from '@/lib/palette';
+import { useAppDispatch } from '@/redux/hooks';
+import { useLazyFetchIgdbGameQuery } from '@/redux/api/mediaApi';
+import {
+  igdbGameLoaded,
+  igdbSelectionChanged,
+  patchForm,
+  setFetchError,
+} from '@/redux/slices/mediaModalSlice';
+import { parseIgdbExternalId, type CoverProvider } from './constants';
+import { coverFetchErrorMessage } from './useCoverAutoFetch';
 
 interface CoverDetailsProps {
   posterUrl: string;
   title: string;
   externalId: string;
-  coverProvider: string | null;
+  coverProvider: CoverProvider | null;
   statusBorder: string;
   statusShadow: string;
   fieldSx: object;
@@ -28,6 +39,7 @@ interface CoverDetailsProps {
 
 /**
  * Clickable cover preview and nested dialog for editing external id / poster URL.
+ * For games, applying a numeric or `igdb_<id>` external id fetches IGDB cover + details.
  *
  * @param props - Current cover values and apply handler from MediaModal.
  * @returns Cover preview button plus cover-details dialog.
@@ -42,7 +54,10 @@ export function CoverDetails({
   fieldSx,
   onApply,
 }: CoverDetailsProps) {
+  const dispatch = useAppDispatch();
+  const [fetchIgdbGame] = useLazyFetchIgdbGameQuery();
   const [open, setOpen] = useState(false);
+  const [applying, setApplying] = useState(false);
   const [draft, setDraft] = useState({
     externalId: '',
     posterUrl: '',
@@ -56,12 +71,47 @@ export function CoverDetails({
     setOpen(true);
   };
 
-  const handleApply = () => {
-    onApply({
-      externalId: draft.externalId,
-      posterUrl: draft.posterUrl,
-    });
-    setOpen(false);
+  const handleApply = async () => {
+    const nextExternalId = draft.externalId.trim();
+    const nextPosterUrl = draft.posterUrl.trim();
+    const igdbId =
+      coverProvider === 'IGDB' ? parseIgdbExternalId(nextExternalId) : null;
+
+    if (igdbId == null) {
+      onApply({
+        externalId: nextExternalId,
+        posterUrl: nextPosterUrl,
+      });
+      setOpen(false);
+      return;
+    }
+
+    setApplying(true);
+    dispatch(setFetchError(null));
+    dispatch(igdbSelectionChanged({ name: title.trim() || null, loading: true }));
+    try {
+      const result = await fetchIgdbGame(igdbId).unwrap();
+      dispatch(igdbGameLoaded(result));
+      // Force the canonical igdb_* id (and keep a poster URL typed in this dialog).
+      dispatch(
+        patchForm({
+          externalId: result.external_id,
+          ...(nextPosterUrl ? { posterUrl: nextPosterUrl } : {}),
+        }),
+      );
+      dispatch(igdbSelectionChanged({ name: result.name, loading: false }));
+      setOpen(false);
+    } catch (err) {
+      dispatch(igdbSelectionChanged({ name: null, loading: false }));
+      dispatch(setFetchError(coverFetchErrorMessage(err, 'IGDB')));
+      onApply({
+        externalId: nextExternalId,
+        posterUrl: nextPosterUrl,
+      });
+      setOpen(false);
+    } finally {
+      setApplying(false);
+    }
   };
 
   return (
@@ -141,7 +191,9 @@ export function CoverDetails({
 
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          if (!applying) setOpen(false);
+        }}
         fullWidth
         maxWidth="xs"
         slotProps={{
@@ -161,9 +213,11 @@ export function CoverDetails({
             <TextField
               label="External ID"
               helperText={
-                coverProvider
-                  ? `Optional. Filled by ${coverProvider}, or generated on save.`
-                  : 'Optional. Generated on save if empty.'
+                coverProvider === 'IGDB'
+                  ? 'Enter an IGDB id to fetch cover and details on Apply.'
+                  : coverProvider
+                    ? `Optional. Filled by ${coverProvider}, or generated on save.`
+                    : 'Optional. Generated on save if empty.'
               }
               value={draft.externalId}
               onChange={(event) =>
@@ -172,6 +226,7 @@ export function CoverDetails({
                   externalId: event.target.value,
                 }))
               }
+              disabled={applying}
               fullWidth
               sx={fieldSx}
             />
@@ -185,14 +240,22 @@ export function CoverDetails({
                   posterUrl: event.target.value,
                 }))
               }
+              disabled={applying}
               fullWidth
               sx={fieldSx}
             />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleApply}>
+          <Button onClick={() => setOpen(false)} disabled={applying}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => void handleApply()}
+            disabled={applying}
+            startIcon={applying ? <CircularProgress size={16} color="inherit" /> : undefined}
+          >
             Apply
           </Button>
         </DialogActions>

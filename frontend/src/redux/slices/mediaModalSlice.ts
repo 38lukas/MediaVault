@@ -72,9 +72,25 @@ export function coverQueryKey(title: string, mediaType: MediaType): string {
   return `${mediaType}:${title.trim().toLowerCase()}`;
 }
 
+/** Adds YYYY-MM-DD keys to playedDates (sorted, unique). */
+function withPlayedDates(dates: string[], ...keys: Array<string | null | undefined>): string[] {
+  const next = new Set(dates);
+  for (const key of keys) {
+    if (key) next.add(key);
+  }
+  return [...next].sort();
+}
+
+/** Keeps start / finish days in the journal list. */
+function syncMilestoneDates(form: MediaForm) {
+  form.playedDates = withPlayedDates(form.playedDates, form.startedAt, form.finishedAt);
+}
+
 function formFromItem(item: MediaItem): MediaForm {
   const mediaType = isMediaType(item.media_type) ? item.media_type : 'Game';
   const statuses = STATUSES_BY_TYPE[mediaType];
+  const startedAt = toDateInputValue(item.started_at);
+  const finishedAt = toDateInputValue(item.finished_at);
   return {
     title: item.title,
     mediaType,
@@ -90,10 +106,10 @@ function formFromItem(item: MediaItem): MediaForm {
     platformPlayedOn: item.platform_played_on ?? '',
     externalId: item.external_id ?? '',
     posterUrl: item.poster_path ?? '',
-    startedAt: toDateInputValue(item.started_at),
-    finishedAt: toDateInputValue(item.finished_at),
+    startedAt,
+    finishedAt,
     rating: item.rating ?? null,
-    playedDates: item.played_dates ?? [],
+    playedDates: withPlayedDates(item.played_dates ?? [], startedAt, finishedAt),
   };
 }
 
@@ -130,6 +146,9 @@ const mediaModalSlice = createSlice({
     },
     patchForm(state, action: PayloadAction<Partial<MediaForm>>) {
       Object.assign(state.form, action.payload);
+      if ('startedAt' in action.payload || 'finishedAt' in action.payload) {
+        syncMilestoneDates(state.form);
+      }
     },
     setMediaType(state, action: PayloadAction<MediaType>) {
       const type = action.payload;
