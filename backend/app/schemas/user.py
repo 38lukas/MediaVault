@@ -5,8 +5,9 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-# Must match the frontend SortField union.
+# Must match the frontend SortField / CardSize unions.
 SortField = Literal["title", "status", "rating", "started_at", "finished_at", "months"]
+CardSize = Literal[0, 1, 2, 3, 4]
 
 
 class LoginRequest(BaseModel):
@@ -31,6 +32,7 @@ class UserSettingsResponse(BaseModel):
     username: str
     joined_date: datetime
     default_sort_field: SortField
+    default_card_size: CardSize
     avatar_path: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -40,6 +42,7 @@ class UserSettingsUpdate(BaseModel):
     """Partial update of the general settings; omitted fields stay unchanged."""
 
     default_sort_field: Optional[SortField] = None
+    default_card_size: Optional[CardSize] = None
 
 
 class UserAccountUpdate(BaseModel):

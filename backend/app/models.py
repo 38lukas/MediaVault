@@ -21,6 +21,7 @@ class User(Base):
 
     # User settings
     default_sort_field = Column(String, nullable=False, default="status")
+    default_card_size = Column(Integer, nullable=False, default=2)
     avatar_path = Column(String, nullable=True)
 
 # This represents the media_entries table in the database.

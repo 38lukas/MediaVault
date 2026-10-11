@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type {
+  CardSize,
   MediaEntryPayload,
   MediaItem,
   SortField,
@@ -12,6 +13,7 @@ export type { MediaEntryPayload };
 // Partial general-settings update for PATCH /users/me/settings.
 export interface UserSettingsUpdate {
   default_sort_field?: SortField;
+  default_card_size?: CardSize;
 }
 
 // Account rename/password change for PATCH /users/me/account.

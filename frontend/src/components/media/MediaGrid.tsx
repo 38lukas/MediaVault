@@ -13,9 +13,7 @@ interface MediaGridProps {
   emptyMessage?: string;
 }
 
-/** MUI Grid column spans per card size (0 XL → 2 medium → 4 XS).
- *  Spans step evenly so each +/- changes density by ~2 cards per row.
- */
+/** MUI Grid column spans per card size (0 XL → 2 M → 4 XS). */
 const CARD_GRID_COLS: Record<
   CardSize,
   { xs: number; sm: number; md: number; lg: number; xl: number }

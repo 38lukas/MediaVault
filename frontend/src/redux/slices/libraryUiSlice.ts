@@ -4,7 +4,6 @@ import type {
   SortDirection,
   SortField,
   TypeFilter,
-  ViewMode,
 } from '@/types/media';
 import { CARD_SIZE_DEFAULT } from '@/types/media';
 import { SORT_FIELD_DEFAULT_DIRECTION } from '@/utils/mediaSort';
@@ -12,25 +11,23 @@ import { clearUsername } from './authSlice';
 import { mediaApi } from '../api/mediaApi';
 
 interface LibraryUiState {
-  viewMode: ViewMode; // cards, list
-  cardSize: CardSize; // 0 XL … 2 medium … 4 XS (cards view only)
+  cardSize: CardSize; // 0 XL … 2 medium … 4 XS
   typeFilter: TypeFilter; // All, Game/DLC, Movie, Series, Anime
   sortField: SortField; // title, status, rating, started_at, finished_at, months
   sortDirection: SortDirection; // asc, desc
   searchQuery: string; // case-insensitive title substring filter
-  defaultSortApplied: boolean; // true after first getUserSettings applies default_sort_field
+  defaultsApplied: boolean; // true after first getUserSettings applies account defaults
 }
 
 const initialSortField: SortField = 'status';
 
 const initialState: LibraryUiState = {
-  viewMode: 'cards',
   cardSize: CARD_SIZE_DEFAULT,
   typeFilter: 'All',
   sortField: initialSortField,
   sortDirection: SORT_FIELD_DEFAULT_DIRECTION[initialSortField],
   searchQuery: '',
-  defaultSortApplied: false,
+  defaultsApplied: false,
 };
 
 // UI state for the library page with methods to update the state.
@@ -38,9 +35,6 @@ const libraryUiSlice = createSlice({
   name: 'libraryUi',
   initialState,
   reducers: {
-    setViewMode(state, action: PayloadAction<ViewMode>) {
-      state.viewMode = action.payload;
-    },
     setCardSize(state, action: PayloadAction<CardSize>) {
       state.cardSize = action.payload;
     },
@@ -63,19 +57,30 @@ const libraryUiSlice = createSlice({
     // Let the next login apply that user's default sort.
     // addCase must come before addMatcher (RTK builder rule).
     builder.addCase(clearUsername, (state) => {
-      state.defaultSortApplied = false;
+      state.defaultsApplied = false;
     });
 
-    // Apply the user's default sort once on first settings load.
+    // Apply the user's library defaults once on first settings load.
     builder.addMatcher(
       mediaApi.endpoints.getUserSettings.matchFulfilled,
       (state, action) => {
-        if (state.defaultSortApplied) return;
+        if (state.defaultsApplied) return;
 
-        const { default_sort_field } = action.payload;
+        const { default_sort_field, default_card_size } = action.payload;
         state.sortField = default_sort_field;
         state.sortDirection = SORT_FIELD_DEFAULT_DIRECTION[default_sort_field];
-        state.defaultSortApplied = true;
+        state.cardSize = default_card_size;
+        state.defaultsApplied = true;
+      },
+    );
+
+    // Keep the live grid size in sync when the account default changes.
+    builder.addMatcher(
+      mediaApi.endpoints.updateUserSettings.matchFulfilled,
+      (state, action) => {
+        if (action.meta.arg.originalArgs.default_card_size !== undefined) {
+          state.cardSize = action.payload.default_card_size;
+        }
       },
     );
   },
@@ -83,7 +88,6 @@ const libraryUiSlice = createSlice({
 
 // Export the methods to be used in the components.
 export const {
-  setViewMode,
   setCardSize,
   setTypeFilter,
   setSortField,

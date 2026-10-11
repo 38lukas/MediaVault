@@ -7,9 +7,9 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { palette } from '@/lib/palette';
 import { isGameType } from '@/types/media';
 import { buildMonthGrid, toDateKey } from '@/utils/calendar';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { togglePlayedDate } from '@/redux/slices/mediaModalSlice';
+import { useAppSelector } from '@/redux/hooks';
 import { fieldSx } from '../constants';
+import { JournalDayPopover } from './JournalDayPopover';
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 const MONTHS = Array.from({ length: 12 }, (_, month) =>
@@ -41,7 +41,6 @@ function loggedLabel(mediaType: string): string {
  * @returns Journal part bound to the media modal form's played dates.
  */
 export function JournalTab() {
-  const dispatch = useAppDispatch();
   const playedDates = useAppSelector((state) => state.mediaModal.form.playedDates);
   const mediaType = useAppSelector((state) => state.mediaModal.form.mediaType);
   const startedAt = useAppSelector((state) => state.mediaModal.form.startedAt);
@@ -54,6 +53,7 @@ export function JournalTab() {
     const date = latest ? new Date(`${latest}T00:00:00`) : today;
     return { year: date.getFullYear(), month: date.getMonth() };
   });
+  const [dayMenu, setDayMenu] = useState<{ key: string; anchor: HTMLElement } | null>(null);
 
   const played = new Set(playedDates);
   const label = loggedLabel(mediaType);
@@ -165,8 +165,14 @@ export function JournalTab() {
               type="button"
               disabled={isFuture}
               aria-pressed={isPlayed}
+              aria-haspopup="dialog"
               aria-label={`${date.toDateString()}${isPlayed ? `, ${label}` : ''}`}
-              onClick={() => dispatch(togglePlayedDate(key))}
+              onClick={(e) => {
+                const anchor = e.currentTarget;
+                setDayMenu((prev) =>
+                  prev?.key === key ? null : { key, anchor },
+                );
+              }}
               sx={{
                 minHeight: 64,
                 p: 0.75,
@@ -235,6 +241,12 @@ export function JournalTab() {
         {' · '}
         {thisMonthCount} in {MONTHS[view.month]}
       </Typography>
+
+      <JournalDayPopover
+        dateKey={dayMenu?.key ?? null}
+        anchorEl={dayMenu?.anchor ?? null}
+        onClose={() => setDayMenu(null)}
+      />
     </Stack>
   );
 }

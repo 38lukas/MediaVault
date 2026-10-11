@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { Alert, Box, CircularProgress, Stack } from '@mui/material';
 import { MediaGrid } from '@/components/media/MediaGrid';
-import { MediaList } from '@/components/media/MediaList';
 import { SectionDivider } from '@/components/common/SectionDivider';
 import { LibraryToolbar } from '@/components/library/LibraryToolbar';
 import {
@@ -21,8 +20,8 @@ import { openEditMediaModal } from '@/redux/slices/mediaModalSlice';
 import { useGetMediaEntriesQuery } from '@/redux/api/mediaApi';
 import { matchesTypeFilter, type MediaItem } from '@/types/media';
 
-/** Loads media entries and renders filtered/sorted card or list content.
- * 
+/** Loads media entries and renders filtered/sorted card grid content.
+ *
  * @returns Library body including toolbar, loading, and media sections.
  */
 export function LibraryView() {
@@ -32,7 +31,7 @@ export function LibraryView() {
     undefined,
     { skip: !username }
   );
-  const { viewMode, typeFilter, sortField, sortDirection, searchQuery } =
+  const { typeFilter, sortField, sortDirection, searchQuery } =
     useAppSelector((state) => state.libraryUi);
 
   const visibleItems = useMemo(() => {
@@ -68,28 +67,12 @@ export function LibraryView() {
   const hideStatus = sortField === 'status';
 
   /** Opens the edit modal for a selected media item.
-   * 
+   *
    * @param item - Clicked library entry.
    */
   const handleItemClick = (item: MediaItem) => {
     dispatch(openEditMediaModal(item));
   };
-
-  /** Renders the active layout for a list of items.
-   * 
-   * @param sectionItems - Items for one section (or the full library).
-   * @returns Card grid or table list.
-   */
-  const renderLibrary = (sectionItems: MediaItem[]) =>
-    viewMode === 'cards' ? (
-      <MediaGrid items={sectionItems} onItemClick={handleItemClick} />
-    ) : (
-      <MediaList
-        items={sectionItems}
-        hideStatus={hideStatus}
-        onItemClick={handleItemClick}
-      />
-    );
 
   if (isLoading) {
     return (
@@ -119,12 +102,12 @@ export function LibraryView() {
                 rating={section.rating}
                 statusStyle={hideStatus}
               />
-              {renderLibrary(section.items)}
+              <MediaGrid items={section.items} onItemClick={handleItemClick} />
             </Box>
           ))}
         </Stack>
       ) : (
-        renderLibrary(visibleItems)
+        <MediaGrid items={visibleItems} onItemClick={handleItemClick} />
       )}
     </>
   );

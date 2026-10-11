@@ -46,12 +46,21 @@ export function isGameType(mediaType: string): boolean {
   return mediaType === 'Game' || mediaType === 'DLC';
 }
 
-export type ViewMode = 'cards' | 'list';
-/** Card grid density: 0 = extra large … 2 = medium … 4 = extra small. */
+/** Card grid density: 0 = XL … 2 = M … 4 = XS. */
 export type CardSize = 0 | 1 | 2 | 3 | 4;
-export const CARD_SIZE_MIN = 0 as const;
-export const CARD_SIZE_MAX = 4 as const;
-export const CARD_SIZE_DEFAULT = 2 as const; // medium (= former densest size)
+export const CARD_SIZE_DEFAULT = 2 as const;
+export const CARD_SIZE_OPTIONS: { value: CardSize; label: string }[] = [
+  { value: 0, label: 'XL' },
+  { value: 1, label: 'L' },
+  { value: 2, label: 'M' },
+  { value: 3, label: 'S' },
+  { value: 4, label: 'XS' },
+];
+
+/** True when value is a valid CardSize. */
+export function isCardSize(value: unknown): value is CardSize {
+  return value === 0 || value === 1 || value === 2 || value === 3 || value === 4;
+}
 export type TypeFilter = 'All' | 'Game/DLC' | 'Movie' | 'Series' | 'Anime' | 'Book';
 export type SortField =
   | 'title'
@@ -80,6 +89,7 @@ export interface UserSettings {
   username: string;
   joined_date: string;
   default_sort_field: SortField;
+  default_card_size: CardSize;
   avatar_path: string | null;
 }
 

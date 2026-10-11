@@ -14,10 +14,15 @@ import {
   useGetUserSettingsQuery,
   useUpdateUserSettingsMutation,
 } from '@/redux/api/mediaApi';
-import { SORT_FIELD_OPTIONS, type SortField } from '@/types/media';
+import {
+  CARD_SIZE_OPTIONS,
+  SORT_FIELD_OPTIONS,
+  isCardSize,
+  type SortField,
+} from '@/types/media';
 
 /**
- * General settings: default sort field.
+ * General settings: default sort field and default grid size.
  * @returns Form that PATCHes user settings on each change.
  */
 export function GeneralSection() {
@@ -28,6 +33,7 @@ export function GeneralSection() {
   const [updateUserSettings, updateState] = useUpdateUserSettingsMutation();
 
   const defaultSort = settings?.default_sort_field ?? 'status';
+  const defaultCardSize = settings?.default_card_size ?? 2;
 
   /**
    * Persists the default sort field immediately.
@@ -35,6 +41,15 @@ export function GeneralSection() {
    */
   const handleSortChange = (field: SortField) => {
     void updateUserSettings({ default_sort_field: field });
+  };
+
+  /**
+   * Persists the default grid size immediately.
+   * @param size - Card size to use when the library loads.
+   */
+  const handleCardSizeChange = (value: string | number) => {
+    const size = Number(value);
+    if (isCardSize(size)) void updateUserSettings({ default_card_size: size });
   };
 
   if (isLoading && !settings) {
@@ -57,6 +72,23 @@ export function GeneralSection() {
           disabled={updateState.isLoading}
         >
           {SORT_FIELD_OPTIONS.map((opt) => (
+            <MenuItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth>
+        <InputLabel id="default-grid-size-label">Default Grid Size</InputLabel>
+        <Select
+          labelId="default-grid-size-label"
+          label="Default Grid Size"
+          value={defaultCardSize}
+          onChange={(e) => handleCardSizeChange(e.target.value)}
+          disabled={updateState.isLoading}
+        >
+          {CARD_SIZE_OPTIONS.map((opt) => (
             <MenuItem key={opt.value} value={opt.value}>
               {opt.label}
             </MenuItem>
