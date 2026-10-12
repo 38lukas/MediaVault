@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { memo } from 'react';
 import { Grid, Typography, Box } from '@mui/material';
 import { MediaCard } from './MediaCard';
 import { useAppSelector } from '@/redux/hooks';
@@ -13,7 +13,6 @@ interface MediaGridProps {
   emptyMessage?: string;
 }
 
-// MUI Grid column spans per card size (0 XL → 4 XS).
 const CARD_GRID_COLS: Record<
   CardSize,
   { xs: number; sm: number; md: number; lg: number; xl: number }
@@ -26,12 +25,12 @@ const CARD_GRID_COLS: Record<
 };
 
 // Responsive card grid for library and profile media lists.
-export const MediaGrid: React.FC<MediaGridProps> = ({
+export const MediaGrid = memo(function MediaGrid({
   items,
   onItemClick,
   cardSize: cardSizeProp,
   emptyMessage = 'Keine Medien gefunden.',
-}) => {
+}: MediaGridProps) {
   const libraryCardSize = useAppSelector((state) => state.libraryUi.cardSize);
   const cardSize = cardSizeProp ?? libraryCardSize;
 
@@ -56,4 +55,4 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
       ))}
     </Grid>
   );
-};
+});

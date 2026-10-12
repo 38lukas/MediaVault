@@ -110,3 +110,22 @@ export function matchesTypeFilter(mediaType: string, filter: TypeFilter): boolea
   if (filter === 'Game/DLC') return mediaType === 'Game' || mediaType === 'DLC';
   return mediaType === filter;
 }
+
+// Status options for the library status dropdown, scoped to the active type filter
+export function statusesForTypeFilter(filter: TypeFilter): string[] {
+  if (filter === 'All') {
+    return [...new Set(Object.values(STATUSES_BY_TYPE).flat())];
+  }
+  if (filter === 'Game/DLC') return STATUSES_BY_TYPE.Game;
+  return STATUSES_BY_TYPE[filter];
+}
+
+// Display labels for type filter chips
+export const TYPE_FILTER_LABELS: Record<TypeFilter, string> = {
+  All: 'All',
+  'Game/DLC': 'Games',
+  Movie: 'Movies',
+  Series: 'Series',
+  Anime: 'Anime',
+  Book: 'Books',
+};

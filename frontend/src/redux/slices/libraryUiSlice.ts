@@ -5,7 +5,7 @@ import type {
   SortField,
   TypeFilter,
 } from '@/types/media';
-import { CARD_SIZE_DEFAULT } from '@/types/media';
+import { CARD_SIZE_DEFAULT, statusesForTypeFilter } from '@/types/media';
 import { SORT_FIELD_DEFAULT_DIRECTION } from '@/utils/mediaSort';
 import { clearUsername } from './authSlice';
 import { userEndpoints } from '../api/userEndpoints';
@@ -13,9 +13,11 @@ import { userEndpoints } from '../api/userEndpoints';
 interface LibraryUiState {
   cardSize: CardSize;
   typeFilter: TypeFilter;
+  statusFilter: string | null;
   sortField: SortField;
   sortDirection: SortDirection;
   searchQuery: string;
+  filtersOpen: boolean;
   defaultsApplied: boolean;
 }
 
@@ -24,9 +26,11 @@ const initialSortField: SortField = 'status';
 const initialState: LibraryUiState = {
   cardSize: CARD_SIZE_DEFAULT,
   typeFilter: 'All',
+  statusFilter: null,
   sortField: initialSortField,
   sortDirection: SORT_FIELD_DEFAULT_DIRECTION[initialSortField],
   searchQuery: '',
+  filtersOpen: false,
   defaultsApplied: false,
 };
 
@@ -40,6 +44,15 @@ const libraryUiSlice = createSlice({
     },
     setTypeFilter(state, action: PayloadAction<TypeFilter>) {
       state.typeFilter = action.payload;
+      if (
+        state.statusFilter &&
+        !statusesForTypeFilter(action.payload).includes(state.statusFilter)
+      ) {
+        state.statusFilter = null;
+      }
+    },
+    setStatusFilter(state, action: PayloadAction<string | null>) {
+      state.statusFilter = action.payload;
     },
     setSortField(state, action: PayloadAction<SortField>) {
       state.sortField = action.payload;
@@ -51,10 +64,18 @@ const libraryUiSlice = createSlice({
     setSearchQuery(state, action: PayloadAction<string>) {
       state.searchQuery = action.payload;
     },
+    setFiltersOpen(state, action: PayloadAction<boolean>) {
+      state.filtersOpen = action.payload;
+    },
+    toggleFiltersOpen(state) {
+      state.filtersOpen = !state.filtersOpen;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(clearUsername, (state) => {
       state.defaultsApplied = false;
+      state.statusFilter = null;
+      state.filtersOpen = false;
     });
 
     builder.addMatcher(
@@ -84,9 +105,12 @@ const libraryUiSlice = createSlice({
 export const {
   setCardSize,
   setTypeFilter,
+  setStatusFilter,
   setSortField,
   setSortDirection,
   setSearchQuery,
+  setFiltersOpen,
+  toggleFiltersOpen,
 } = libraryUiSlice.actions;
 
 export default libraryUiSlice.reducer;

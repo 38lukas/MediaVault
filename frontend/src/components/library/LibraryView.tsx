@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Alert, Box, CircularProgress, Stack } from '@mui/material';
 import { MediaGrid } from '@/components/media/MediaGrid';
 import { SectionDivider } from '@/components/common/SectionDivider';
@@ -30,13 +30,18 @@ export function LibraryView() {
     undefined,
     { skip: !username }
   );
-  const { typeFilter, sortField, sortDirection, searchQuery } =
-    useAppSelector((state) => state.libraryUi);
+  // Primitive selectors so toggling filtersOpen does not re-render the grid.
+  const typeFilter = useAppSelector((state) => state.libraryUi.typeFilter);
+  const statusFilter = useAppSelector((state) => state.libraryUi.statusFilter);
+  const sortField = useAppSelector((state) => state.libraryUi.sortField);
+  const sortDirection = useAppSelector((state) => state.libraryUi.sortDirection);
+  const searchQuery = useAppSelector((state) => state.libraryUi.searchQuery);
 
   const visibleItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     const filtered = items.filter((item) => {
       if (!matchesTypeFilter(item.media_type, typeFilter)) return false;
+      if (statusFilter && item.status !== statusFilter) return false;
       if (query && !item.title.toLowerCase().includes(query)) return false;
       if (sortField === 'months' && !item.finished_at) return false;
       return true;
@@ -45,7 +50,7 @@ export function LibraryView() {
     return filtered.sort((a, b) =>
       sortMediaItems(a, b, sortField, sortDirection)
     );
-  }, [items, typeFilter, searchQuery, sortField, sortDirection]);
+  }, [items, typeFilter, statusFilter, searchQuery, sortField, sortDirection]);
 
   const sections = useMemo(() => {
     if (sortField === 'status') {
@@ -67,9 +72,12 @@ export function LibraryView() {
 
   const hideStatus = sortField === 'status';
 
-  const handleItemClick = (item: MediaItem) => {
-    dispatch(openEditMediaModal(item));
-  };
+  const handleItemClick = useCallback(
+    (item: MediaItem) => {
+      dispatch(openEditMediaModal(item));
+    },
+    [dispatch]
+  );
 
   if (isLoading) {
     return (
