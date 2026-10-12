@@ -8,7 +8,7 @@ import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
-import { useGetUserSettingsQuery } from '@/redux/api/mediaApi';
+import { useGetUserSettingsQuery } from '@/redux/api';
 
 // Custom bookshelf SVG used as the Library nav icon.
 function BookshelfIcon(props: SvgIconProps) {

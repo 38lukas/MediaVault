@@ -16,7 +16,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Image from 'next/image';
 import { palette } from '@/lib/palette';
 import { useAppDispatch } from '@/redux/hooks';
-import { useLazyFetchIgdbGameQuery } from '@/redux/api/mediaApi';
+import { useLazyFetchIgdbGameQuery } from '@/redux/api';
 import {
   igdbGameLoaded,
   igdbSelectionChanged,

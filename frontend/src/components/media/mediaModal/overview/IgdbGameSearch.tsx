@@ -12,7 +12,7 @@ import {
   useLazySearchIgdbGamesQuery,
   type IgdbGameLookup,
   type IgdbGameSearchResult,
-} from '@/redux/api/mediaApi';
+} from '@/redux/api';
 
 const SEARCH_DEBOUNCE_MS = 650;
 const MIN_QUERY_LENGTH = 3;

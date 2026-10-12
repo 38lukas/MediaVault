@@ -5,7 +5,7 @@ import { Alert, Box, Button, Paper, Stack, TextField, Typography } from '@mui/ma
 import { palette } from '@/lib/palette';
 import { useAppDispatch } from '@/redux/hooks';
 import { setUsername } from '@/redux/slices/authSlice';
-import { useLoginMutation } from '@/redux/api/mediaApi';
+import { useLoginMutation } from '@/redux/api';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 // Full-page login form shown before the library is accessible.

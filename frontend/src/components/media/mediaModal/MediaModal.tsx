@@ -29,7 +29,7 @@ import {
   useCreateMediaEntryMutation,
   useDeleteMediaEntryMutation,
   useUpdateMediaEntryMutation,
-} from '@/redux/api/mediaApi';
+} from '@/redux/api';
 
 function partSx(activeTab: MediaModalTab, tab: MediaModalTab) {
   return {

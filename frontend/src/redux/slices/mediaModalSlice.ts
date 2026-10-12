@@ -8,7 +8,7 @@ import {
 } from '@/types/media';
 import { toDateInputValue } from '@/utils/date';
 import { clearUsername } from './authSlice';
-import type { IgdbGameLookup } from '../api/mediaApi';
+import type { IgdbGameLookup } from '../api';
 
 export type MediaModalTab = 'overview' | 'details' | 'journal';
 

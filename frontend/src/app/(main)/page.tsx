@@ -8,7 +8,7 @@ import { RatingDistributionChart } from '@/components/profile/RatingDistribution
 import { RecentActivity } from '@/components/profile/RecentActivity';
 import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
-import { useGetProfileStatsQuery } from '@/redux/api/mediaApi';
+import { useGetProfileStatsQuery } from '@/redux/api';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 // Home/profile page with stats, avatar, and recent activity

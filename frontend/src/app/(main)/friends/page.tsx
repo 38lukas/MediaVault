@@ -28,7 +28,7 @@ import {
   useAddFriendMutation,
   useGetFriendsQuery,
   useRemoveFriendMutation,
-} from '@/redux/api/mediaApi';
+} from '@/redux/api';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 // Friends page for adding, viewing, and removing friends

@@ -19,7 +19,7 @@ import { getApiErrorMessage } from '@/utils/apiError';
 import { sortMediaItems } from '@/utils/mediaSort';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openEditMediaModal } from '@/redux/slices/mediaModalSlice';
-import { useGetMediaEntriesQuery } from '@/redux/api/mediaApi';
+import { useGetMediaEntriesQuery } from '@/redux/api';
 import { matchesTypeFilter, type MediaItem } from '@/types/media';
 
 // Loads media entries and renders filtered/sorted library sections.

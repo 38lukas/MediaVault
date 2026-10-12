@@ -5,7 +5,7 @@ import { Box, Button, Typography } from '@mui/material';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { exitFriendView } from '@/redux/slices/authSlice';
-import { mediaApi } from '@/redux/api/mediaApi';
+import { mediaApi } from '@/redux/api';
 
 // Banner shown while viewing a friend's library in read-only mode.
 export function FriendViewBanner() {

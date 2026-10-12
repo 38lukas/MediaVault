@@ -8,7 +8,7 @@ import type {
 import { CARD_SIZE_DEFAULT } from '@/types/media';
 import { SORT_FIELD_DEFAULT_DIRECTION } from '@/utils/mediaSort';
 import { clearUsername } from './authSlice';
-import { mediaApi } from '../api/mediaApi';
+import { userEndpoints } from '../api/userEndpoints';
 
 interface LibraryUiState {
   cardSize: CardSize;
@@ -58,7 +58,7 @@ const libraryUiSlice = createSlice({
     });
 
     builder.addMatcher(
-      mediaApi.endpoints.getUserSettings.matchFulfilled,
+      userEndpoints.endpoints.getUserSettings.matchFulfilled,
       (state, action) => {
         if (state.defaultsApplied) return;
 
@@ -71,7 +71,7 @@ const libraryUiSlice = createSlice({
     );
 
     builder.addMatcher(
-      mediaApi.endpoints.updateUserSettings.matchFulfilled,
+      userEndpoints.endpoints.updateUserSettings.matchFulfilled,
       (state, action) => {
         if (action.meta.arg.originalArgs.default_card_size !== undefined) {
           state.cardSize = action.payload.default_card_size;

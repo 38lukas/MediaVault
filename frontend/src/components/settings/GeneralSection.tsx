@@ -13,7 +13,7 @@ import { useAppSelector } from '@/redux/hooks';
 import {
   useGetUserSettingsQuery,
   useUpdateUserSettingsMutation,
-} from '@/redux/api/mediaApi';
+} from '@/redux/api';
 import {
   CARD_SIZE_OPTIONS,
   SORT_FIELD_OPTIONS,

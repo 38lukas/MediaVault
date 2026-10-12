@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { mediaApi } from './api/mediaApi';
+import { mediaApi } from './api';
 import authReducer from './slices/authSlice';
 import libraryUiReducer from './slices/libraryUiSlice';
 import mediaModalReducer from './slices/mediaModalSlice';

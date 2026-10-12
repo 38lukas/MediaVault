@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   useLazyFetchOpenLibraryCoverQuery,
   useLazyFetchTmdbCoverQuery,
-} from '@/redux/api/mediaApi';
+} from '@/redux/api';
 import { applyFetchedCover, coverQueryKey, setFetchError } from '@/redux/slices/mediaModalSlice';
 import { getCoverProvider, type CoverProvider } from './constants';
 

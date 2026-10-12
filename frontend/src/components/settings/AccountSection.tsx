@@ -28,7 +28,7 @@ import {
   mediaApi,
   useGetUserSettingsQuery,
   useUpdateAccountMutation,
-} from '@/redux/api/mediaApi';
+} from '@/redux/api';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const PASSWORD_MASK = '******';
