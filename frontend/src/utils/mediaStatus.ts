@@ -4,7 +4,7 @@ export function getStatusColor(status: string) {
     case 'watching':
     case 'playing':
     case 'reading':
-    case 'playing / watching / reading':
+    case 'active':
       return {
         bg: 'rgba(2, 150, 225, 0.22)',
         border: 'rgba(2, 150, 225, 0.42)',
@@ -13,7 +13,6 @@ export function getStatusColor(status: string) {
     case 'finished':
     case 'watched':
     case 'read':
-    case 'finished / watched / read':
       return {
         bg: 'rgba(56, 142, 60, 0.22)',
         border: 'rgba(56, 142, 60, 0.42)',
@@ -38,8 +37,14 @@ export function getStatusColor(status: string) {
         color: '#ba68c8',
       };
     case 'backlog':
-    case 'wishlist':
     case 'watchlist':
+    case 'queue':
+      return {
+        bg: 'rgba(96, 125, 139, 0.2)',
+        border: 'rgba(96, 125, 139, 0.4)',
+        color: '#90a4ae',
+      };
+    case 'wishlist':
       return {
         bg: 'rgba(158, 158, 158, 0.16)',
         border: 'rgba(158, 158, 158, 0.32)',

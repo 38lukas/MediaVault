@@ -1,4 +1,5 @@
 import type { MediaItem, TypeFilter } from '@/types/media';
+import { unifiedStatusLabel } from '@/types/media';
 import { dateValue, maxDateValue } from '@/utils/date';
 import {
   RATING_SECTION_LABELS,
@@ -65,16 +66,10 @@ export function formatFinishedMonthLabel(key: string): string {
   });
 }
 
-// Section key so equivalent statuses share one divider
+// Section key so equivalent statuses share one divider (All view uses unified labels)
 export function statusSectionKey(item: MediaItem, typeFilter: TypeFilter = 'All'): string {
   if (typeFilter !== 'All') return item.status;
-  if (item.status === 'Playing' || item.status === 'Watching' || item.status === 'Reading') {
-    return 'Playing / Watching / Reading';
-  }
-  if (item.status === 'Finished' || item.status === 'Watched' || item.status === 'Read') {
-    return 'Finished / Watched / Read';
-  }
-  return item.status;
+  return unifiedStatusLabel(item.status);
 }
 
 // Build a rating section key from the DB rating (1–10)

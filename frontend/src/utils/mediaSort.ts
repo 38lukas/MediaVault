@@ -17,11 +17,12 @@ function lastPlayedValue(item: MediaItem): number | null {
   return maxDateValue(...(item.played_dates ?? []));
 }
 
-// Numeric ranks for status sorting
+// Numeric ranks for status sorting (fused groups share a rank)
 const STATUS_RANK: Record<string, number> = {
   Playing: 0,
   Watching: 0,
   Reading: 0,
+  Active: 0,
   Finished: 1,
   Watched: 1,
   Read: 1,
@@ -29,8 +30,9 @@ const STATUS_RANK: Record<string, number> = {
   Dropped: 3,
   Shelved: 4,
   Backlog: 5,
+  Watchlist: 5,
+  Queue: 5,
   Wishlist: 6,
-  Watchlist: 6,
 };
 
 // Map a status label to a sort rank

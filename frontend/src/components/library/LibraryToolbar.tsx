@@ -1,5 +1,6 @@
 'use client';
 
+import { startTransition, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -76,6 +77,16 @@ export function LibraryToolbar() {
     (typeFilter !== 'All' ? 1 : 0) +
     (statusFilter ? 1 : 0) +
     (sortField !== 'status' ? 1 : 0);
+
+  // Keep filter UI responsive while the grid catches up.
+  const deferDispatch = useCallback(
+    (action: Parameters<typeof dispatch>[0]) => {
+      startTransition(() => {
+        dispatch(action);
+      });
+    },
+    [dispatch]
+  );
 
   return (
     <Stack spacing={1.5} sx={{ mb: 3 }}>
@@ -188,7 +199,7 @@ export function LibraryToolbar() {
                     icon={<Icon sx={{ fontSize: 18 }} />}
                     label={TYPE_FILTER_LABELS[type]}
                     clickable
-                    onClick={() => dispatch(setTypeFilter(type))}
+                    onClick={() => deferDispatch(setTypeFilter(type))}
                     variant={selected ? 'filled' : 'outlined'}
                     sx={{
                       height: 36,
@@ -227,7 +238,9 @@ export function LibraryToolbar() {
                 label="Status"
                 value={statusFilter ?? ''}
                 onChange={(e) =>
-                  dispatch(setStatusFilter(e.target.value === '' ? null : e.target.value))
+                  deferDispatch(
+                    setStatusFilter(e.target.value === '' ? null : e.target.value)
+                  )
                 }
               >
                 <MenuItem value="">
@@ -247,7 +260,9 @@ export function LibraryToolbar() {
                 labelId="sort-by-label"
                 label="Sort by"
                 value={sortField}
-                onChange={(e) => dispatch(setSortField(e.target.value as SortField))}
+                onChange={(e) =>
+                  deferDispatch(setSortField(e.target.value as SortField))
+                }
               >
                 {SORT_FIELD_OPTIONS.map((opt) => (
                   <MenuItem key={opt.value} value={opt.value}>
@@ -262,7 +277,7 @@ export function LibraryToolbar() {
               size="small"
               value={sortDirection}
               onChange={(_, next: SortDirection | null) => {
-                if (next) dispatch(setSortDirection(next));
+                if (next) deferDispatch(setSortDirection(next));
               }}
               aria-label="Sort direction"
               sx={{ height: 40 }}
@@ -283,7 +298,7 @@ export function LibraryToolbar() {
                 value={cardSize}
                 onChange={(e) => {
                   const size = Number(e.target.value);
-                  if (isCardSize(size)) dispatch(setCardSize(size));
+                  if (isCardSize(size)) deferDispatch(setCardSize(size));
                 }}
                 aria-label="Grid size"
               >

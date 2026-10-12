@@ -111,13 +111,48 @@ export function matchesTypeFilter(mediaType: string, filter: TypeFilter): boolea
   return mediaType === filter;
 }
 
+// Unified status labels used when the type filter is All
+export const UNIFIED_STATUS_FILTERS = [
+  'Active',
+  'Finished',
+  'Played',
+  'Dropped',
+  'Shelved',
+  'Queue',
+  'Wishlist',
+] as const;
+
+export type UnifiedStatusFilter = (typeof UNIFIED_STATUS_FILTERS)[number];
+
+const ACTIVE_STATUSES = new Set(['Playing', 'Watching', 'Reading']);
+const FINISHED_STATUSES = new Set(['Finished', 'Watched', 'Read']);
+const QUEUE_STATUSES = new Set(['Backlog', 'Watchlist']);
+
 // Status options for the library status dropdown, scoped to the active type filter
 export function statusesForTypeFilter(filter: TypeFilter): string[] {
-  if (filter === 'All') {
-    return [...new Set(Object.values(STATUSES_BY_TYPE).flat())];
-  }
+  if (filter === 'All') return [...UNIFIED_STATUS_FILTERS];
   if (filter === 'Game/DLC') return STATUSES_BY_TYPE.Game;
   return STATUSES_BY_TYPE[filter];
+}
+
+// True when an entry status matches the selected status filter (supports unified All labels)
+export function matchesStatusFilter(
+  itemStatus: string,
+  statusFilter: string | null
+): boolean {
+  if (!statusFilter) return true;
+  if (statusFilter === 'Active') return ACTIVE_STATUSES.has(itemStatus);
+  if (statusFilter === 'Finished') return FINISHED_STATUSES.has(itemStatus);
+  if (statusFilter === 'Queue') return QUEUE_STATUSES.has(itemStatus);
+  return itemStatus === statusFilter;
+}
+
+// Map stored type-specific statuses to a unified section/filter label
+export function unifiedStatusLabel(status: string): string {
+  if (ACTIVE_STATUSES.has(status)) return 'Active';
+  if (FINISHED_STATUSES.has(status)) return 'Finished';
+  if (QUEUE_STATUSES.has(status)) return 'Queue';
+  return status;
 }
 
 // Display labels for type filter chips
