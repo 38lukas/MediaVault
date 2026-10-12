@@ -11,12 +11,12 @@ import { clearUsername } from './authSlice';
 import { mediaApi } from '../api/mediaApi';
 
 interface LibraryUiState {
-  cardSize: CardSize; // 0 XL … 2 medium … 4 XS
-  typeFilter: TypeFilter; // All, Game/DLC, Movie, Series, Anime
-  sortField: SortField; // title, status, rating, started_at, finished_at, last_played, months
-  sortDirection: SortDirection; // asc, desc
-  searchQuery: string; // case-insensitive title substring filter
-  defaultsApplied: boolean; // true after first getUserSettings applies account defaults
+  cardSize: CardSize;
+  typeFilter: TypeFilter;
+  sortField: SortField;
+  sortDirection: SortDirection;
+  searchQuery: string;
+  defaultsApplied: boolean;
 }
 
 const initialSortField: SortField = 'status';
@@ -30,7 +30,6 @@ const initialState: LibraryUiState = {
   defaultsApplied: false,
 };
 
-// UI state for the library page with methods to update the state.
 const libraryUiSlice = createSlice({
   name: 'libraryUi',
   initialState,
@@ -43,7 +42,6 @@ const libraryUiSlice = createSlice({
     },
     setSortField(state, action: PayloadAction<SortField>) {
       state.sortField = action.payload;
-      // Apply the configured default direction for this sort field.
       state.sortDirection = SORT_FIELD_DEFAULT_DIRECTION[action.payload];
     },
     setSortDirection(state, action: PayloadAction<SortDirection>) {
@@ -54,13 +52,10 @@ const libraryUiSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Let the next login apply that user's default sort.
-    // addCase must come before addMatcher (RTK builder rule).
     builder.addCase(clearUsername, (state) => {
       state.defaultsApplied = false;
     });
 
-    // Apply the user's library defaults once on first settings load.
     builder.addMatcher(
       mediaApi.endpoints.getUserSettings.matchFulfilled,
       (state, action) => {
@@ -74,7 +69,6 @@ const libraryUiSlice = createSlice({
       },
     );
 
-    // Keep the live grid size in sync when the account default changes.
     builder.addMatcher(
       mediaApi.endpoints.updateUserSettings.matchFulfilled,
       (state, action) => {
@@ -86,7 +80,6 @@ const libraryUiSlice = createSlice({
   },
 });
 
-// Export the methods to be used in the components.
 export const {
   setCardSize,
   setTypeFilter,
@@ -95,5 +88,4 @@ export const {
   setSearchQuery,
 } = libraryUiSlice.actions;
 
-// Export the reducer to be used in the store.
 export default libraryUiSlice.reducer;

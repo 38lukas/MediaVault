@@ -29,8 +29,8 @@ export const INITIAL_MEDIA_FORM = {
   posterUrl: '',
   startedAt: '',
   finishedAt: '',
-  rating: null as number | null, // DB 1–10, or null when unrated
-  playedDates: [] as string[], // YYYY-MM-DD, sorted
+  rating: null as number | null,
+  playedDates: [] as string[],
 };
 
 export type MediaForm = typeof INITIAL_MEDIA_FORM;
@@ -40,10 +40,10 @@ interface MediaModalState {
   editingItem: MediaItem | null;
   activeTab: MediaModalTab;
   form: MediaForm;
-  igdbSelected: boolean; // an IGDB search result is selected (create flow)
-  igdbLoading: boolean; // IGDB details for the selection are loading
+  igdbSelected: boolean;
+  igdbLoading: boolean;
   fetchError: string | null;
-  lastCoverQueryKey: string | null; // skips repeat cover auto-fetches
+  lastCoverQueryKey: string | null;
 }
 
 const initialState: MediaModalState = {
@@ -67,12 +67,12 @@ const IGDB_FIELDS_RESET = {
   platformPlayedOn: '',
 };
 
-/** Cache key for a title + media-type cover lookup. */
+// Cache key for a title + media-type cover lookup.
 export function coverQueryKey(title: string, mediaType: MediaType): string {
   return `${mediaType}:${title.trim().toLowerCase()}`;
 }
 
-/** Adds YYYY-MM-DD keys to playedDates (sorted, unique). */
+// Adds YYYY-MM-DD keys to playedDates (sorted, unique).
 function withPlayedDates(dates: string[], ...keys: Array<string | null | undefined>): string[] {
   const next = new Set(dates);
   for (const key of keys) {
@@ -81,11 +81,12 @@ function withPlayedDates(dates: string[], ...keys: Array<string | null | undefin
   return [...next].sort();
 }
 
-/** Keeps start / finish days in the journal list. */
+// Keeps start / finish days in the journal list.
 function syncMilestoneDates(form: MediaForm) {
   form.playedDates = withPlayedDates(form.playedDates, form.startedAt, form.finishedAt);
 }
 
+// Creates a form from a media item.
 function formFromItem(item: MediaItem): MediaForm {
   const mediaType = isMediaType(item.media_type) ? item.media_type : 'Game';
   const statuses = STATUSES_BY_TYPE[mediaType];
@@ -113,7 +114,7 @@ function formFromItem(item: MediaItem): MediaForm {
   };
 }
 
-/** Prefers the IGDB/TMDB/Open Library id unless the user typed a custom one. */
+// Prefers the IGDB/TMDB/Open Library id unless the user typed a custom one.
 function pickExternalId(current: string, fetched: string): string {
   return !current.trim() || current.startsWith('manual_') ? fetched : current;
 }

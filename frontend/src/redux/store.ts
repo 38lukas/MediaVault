@@ -5,10 +5,7 @@ import libraryUiReducer from './slices/libraryUiSlice';
 import mediaModalReducer from './slices/mediaModalSlice';
 import settingsReducer from './slices/settingsSlice';
 
-/** Creates the Redux store for a Next.js client tree
- * 
- * @returns Configured store
- */
+// Creates the Redux store for a Next.js client tree
 export const makeStore = () =>
   configureStore({
     reducer: {

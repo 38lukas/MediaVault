@@ -10,10 +10,12 @@ import { createMediaVaultTheme } from '@/lib/theme';
 
 const PRIMARY_COLOR_STORAGE_KEY = 'media-vault-primary-color';
 
+// Checks if a value is a valid hex color.
 function isHexColor(value: string): boolean {
   return /^#[\da-f]{6}$/i.test(value);
 }
 
+// Calculates the contrast color for a given hex color.
 function getContrastColor(hexColor: string): string {
   const channels = [1, 3, 5].map((offset) =>
     Number.parseInt(hexColor.slice(offset, offset + 2), 16) / 255,
@@ -29,6 +31,7 @@ function getContrastColor(hexColor: string): string {
   return luminance > 0.179 ? '#0a0a0a' : '#ffffff';
 }
 
+// Provides the dark MUI theme to the App Router tree.
 function RuntimeThemeProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
   const primaryColor = useAppSelector((state) => state.settings.primaryColor);
@@ -69,11 +72,7 @@ function RuntimeThemeProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Provides Redux + dark MUI theme to the App Router tree.
- * 
- *  @param children - Page content.
- *  @returns Wrapped children with store and theme context.
- */
+// Provides Redux + dark MUI theme to the App Router tree.
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [store] = useState<AppStore>(() => makeStore());
 
