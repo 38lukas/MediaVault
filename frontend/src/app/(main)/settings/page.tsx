@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Box, Paper, Typography } from '@mui/material';
 import { AccountSection } from '@/components/settings/AccountSection';
 import { AppearanceSection } from '@/components/settings/AppearanceSection';
@@ -8,9 +10,18 @@ import { SettingsSidebar } from '@/components/settings/SettingsSidebar';
 import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
 
-// Settings page 
 export default function SettingsPage() {
+  const router = useRouter();
+  const viewingAs = useAppSelector((state) => state.auth.viewingAs);
   const activeSection = useAppSelector((state) => state.settings.activeSection);
+
+  useEffect(() => {
+    if (viewingAs) {
+      router.replace('/');
+    }
+  }, [viewingAs, router]);
+
+  if (viewingAs) return null;
 
   return (
     <>

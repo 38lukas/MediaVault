@@ -31,7 +31,6 @@ import {
   useUpdateMediaEntryMutation,
 } from '@/redux/api/mediaApi';
 
-/** Overview / Details panel: hidden but still sized while the other one is shown, removed on Journal. */
 function partSx(activeTab: MediaModalTab, tab: MediaModalTab) {
   return {
     gridArea: '1 / 1',
@@ -40,13 +39,10 @@ function partSx(activeTab: MediaModalTab, tab: MediaModalTab) {
   } as const;
 }
 
-/**
- * Create/edit media dialog with Overview / Details / Journal parts.
- * Open state, active part and the form draft live in mediaModalSlice.
- * @returns Media entry dialog bound to Redux + RTK Query mutations.
- */
 export function MediaModal() {
   const dispatch = useAppDispatch();
+  const viewingAs = useAppSelector((state) => state.auth.viewingAs);
+  const readOnly = Boolean(viewingAs);
   const { isOpen: open, editingItem: item, activeTab, form, igdbLoading, fetchError } =
     useAppSelector((state) => state.mediaModal);
   const isEdit = item != null;
@@ -76,7 +72,6 @@ export function MediaModal() {
         : 'Failed to create media entry'
   );
 
-  // Clear previous mutation errors when the dialog opens for another entry.
   useEffect(() => {
     if (!open) return;
     createState.reset();
@@ -85,22 +80,14 @@ export function MediaModal() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, item]);
 
-  /**
-   * Closes the dialog via Redux when no request is in flight.
-   * @returns void
-   */
   const handleClose = () => {
     if (isBusy) return;
     dispatch(closeMediaModal());
   };
 
-  /**
-   * Creates or updates the entry, then closes the modal.
-   * @param event - Form submit event.
-   * @returns Promise that settles when the mutation finishes.
-   */
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (readOnly) return;
     const payload = {
       title: form.title.trim(),
       media_type: form.mediaType,
@@ -132,21 +119,15 @@ export function MediaModal() {
       }
       dispatch(closeMediaModal());
     } catch {
-      // Mutation error is surfaced via isError below.
     }
   };
 
-  /**
-   * Deletes the open entry from the database, then closes the dialog.
-   * @returns Promise that settles when the delete mutation finishes.
-   */
   const handleDelete = async () => {
-    if (!item) return;
+    if (readOnly || !item) return;
     try {
       await deleteMediaEntry(item.id).unwrap();
       dispatch(closeMediaModal());
     } catch {
-      // Mutation error is surfaced via isError below.
     }
   };
 
@@ -156,7 +137,6 @@ export function MediaModal() {
       onClose={handleClose}
       fullWidth
       maxWidth="md"
-      // Pinned to the top so a taller part only grows the dialog downward.
       sx={{ '& .MuiDialog-container': { alignItems: 'flex-start' } }}
       slotProps={{
         paper: {
@@ -185,7 +165,6 @@ export function MediaModal() {
           overflow: 'hidden',
         }}
       >
-        {/* Dark header — status colors stay on chips / cover only */}
         <Box
           sx={{
             px: 3,
@@ -197,10 +176,10 @@ export function MediaModal() {
           }}
         >
           <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: 1.2 }}>
-            {isEdit ? 'Edit entry' : 'New entry'}
+            {readOnly ? 'View entry' : isEdit ? 'Edit entry' : 'New entry'}
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
-            {form.title.trim() || (isEdit ? 'Edit media' : 'Add media')}
+            {form.title.trim() || (readOnly ? 'Media' : isEdit ? 'Edit media' : 'Add media')}
           </Typography>
         </Box>
 
@@ -214,45 +193,50 @@ export function MediaModal() {
             scrollbarGutter: 'stable',
           }}
         >
-          <Stack spacing={2.5}>
-            {isError && <Alert severity="error">{errorMessage}</Alert>}
-            {fetchError && <Alert severity="error">{fetchError}</Alert>}
+          <fieldset
+            disabled={readOnly}
+            style={{ border: 'none', margin: 0, padding: 0, minInlineSize: 0 }}
+          >
+            <Stack spacing={2.5}>
+              {isError && <Alert severity="error">{errorMessage}</Alert>}
+              {fetchError && <Alert severity="error">{fetchError}</Alert>}
 
-            <Stack
-              direction={{ xs: 'column', md: 'row' }}
-              spacing={3}
-              sx={{ alignItems: { md: 'flex-start' } }}
-            >
-              <Box sx={{ width: { xs: '100%', md: 220 }, flexShrink: 0 }}>
-                <CoverDetails
-                  key={partKey}
-                  posterUrl={form.posterUrl}
-                  title={form.title}
-                  externalId={form.externalId}
-                  coverProvider={getCoverProvider(form.mediaType)}
-                  statusBorder={statusStyle.border}
-                  statusShadow={statusStyle.bg}
-                  fieldSx={fieldSx}
-                  onApply={(details) => dispatch(patchForm(details))}
-                />
-                <MediaModalTabs />
-              </Box>
+              <Stack
+                direction={{ xs: 'column', md: 'row' }}
+                spacing={3}
+                sx={{ alignItems: { md: 'flex-start' } }}
+              >
+                <Box sx={{ width: { xs: '100%', md: 220 }, flexShrink: 0 }}>
+                  <CoverDetails
+                    key={partKey}
+                    posterUrl={form.posterUrl}
+                    title={form.title}
+                    externalId={form.externalId}
+                    coverProvider={getCoverProvider(form.mediaType)}
+                    statusBorder={statusStyle.border}
+                    statusShadow={statusStyle.bg}
+                    fieldSx={fieldSx}
+                    onApply={(details) => {
+                      if (!readOnly) dispatch(patchForm(details));
+                    }}
+                  />
+                  <MediaModalTabs />
+                </Box>
 
-              {/* Parts stay mounted so IGDB search state and the journal month survive switching.
-                  Overview and Details share one grid cell, so the dialog keeps the same height for both. */}
-              <Box sx={{ flex: 1, minWidth: 0, display: 'grid' }}>
-                <Box sx={partSx(activeTab, 'overview')}>
-                  <OverviewTab isFetchingCover={isFetchingCover} />
+                <Box sx={{ flex: 1, minWidth: 0, display: 'grid' }}>
+                  <Box sx={partSx(activeTab, 'overview')}>
+                    <OverviewTab isFetchingCover={isFetchingCover} />
+                  </Box>
+                  <Box sx={partSx(activeTab, 'details')}>
+                    <DetailsTab />
+                  </Box>
+                  <Box sx={{ gridArea: '1 / 1', display: activeTab === 'journal' ? 'block' : 'none' }}>
+                    <JournalTab key={partKey} />
+                  </Box>
                 </Box>
-                <Box sx={partSx(activeTab, 'details')}>
-                  <DetailsTab />
-                </Box>
-                <Box sx={{ gridArea: '1 / 1', display: activeTab === 'journal' ? 'block' : 'none' }}>
-                  <JournalTab key={partKey} />
-                </Box>
-              </Box>
+              </Stack>
             </Stack>
-          </Stack>
+          </fieldset>
         </DialogContent>
 
         <DialogActions
@@ -264,7 +248,7 @@ export function MediaModal() {
             backgroundColor: palette.footerBg,
           }}
         >
-          {isEdit && item && (
+          {!readOnly && isEdit && item && (
             <Button
               color="error"
               variant="text"
@@ -276,21 +260,23 @@ export function MediaModal() {
             </Button>
           )}
           <Button onClick={handleClose} disabled={isBusy} sx={{ borderRadius: 2 }}>
-            Cancel
+            {readOnly ? 'Close' : 'Cancel'}
           </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            disabled={isBusy || !form.title.trim()}
-            sx={{
-              borderRadius: 2,
-              px: 2.5,
-              fontWeight: 700,
-            }}
-          >
-            {createState.isLoading || updateState.isLoading ? 'Saving…' : 'Save'}
-          </Button>
+          {!readOnly && (
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={isBusy || !form.title.trim()}
+              sx={{
+                borderRadius: 2,
+                px: 2.5,
+                fontWeight: 700,
+              }}
+            >
+              {createState.isLoading || updateState.isLoading ? 'Saving…' : 'Save'}
+            </Button>
+          )}
         </DialogActions>
       </Box>
     </Dialog>

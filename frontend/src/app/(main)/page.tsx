@@ -11,10 +11,10 @@ import { useAppSelector } from '@/redux/hooks';
 import { useGetProfileStatsQuery } from '@/redux/api/mediaApi';
 import { getApiErrorMessage } from '@/utils/apiError';
 
-// Profile page (home route)
 export default function ProfilePage() {
-  // Get the username from the auth state
   const username = useAppSelector((state) => state.auth.username);
+  const viewingAs = useAppSelector((state) => state.auth.viewingAs);
+  const displayName = viewingAs ?? username;
   const { data, isLoading, isError, error } = useGetProfileStatsQuery(undefined, {
     skip: !username,
   });
@@ -46,8 +46,8 @@ export default function ProfilePage() {
               flexWrap: 'wrap',
             }}
           >
-            <Avatar username={username} />
-            {username && (
+            <Avatar username={displayName} readOnly={Boolean(viewingAs)} />
+            {displayName && (
               <Typography
                 variant="h3"
                 component="h1"
@@ -57,7 +57,7 @@ export default function ProfilePage() {
                   lineHeight: 1.15,
                 }}
               >
-                {username}
+                {displayName}
               </Typography>
             )}
             <RatingDistributionChart distribution={data.rating_distribution} />

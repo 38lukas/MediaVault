@@ -1,18 +1,14 @@
-"""FastAPI application entrypoint for MediaVault."""
-
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from app.database import get_db, engine, Base
-from app import models  # noqa: F401 — register models on Base.metadata
-from app.routers import auth, entries, igdb, openlibrary, profile, tmdb, users
+from app import models  # noqa: F401
+from app.routers import auth, entries, friends, igdb, openlibrary, profile, tmdb, users
 
-# Create all tables in PostgreSQL that inherit from Base
 Base.metadata.create_all(bind=engine)
 
-# Sync columns after changes to the models
 with engine.begin() as connection:
     connection.execute(text("ALTER TABLE media_entries DROP COLUMN IF EXISTS created_at"))
     connection.execute(text("ALTER TABLE media_entries DROP COLUMN IF EXISTS watched_at"))
@@ -32,7 +28,6 @@ with engine.begin() as connection:
     connection.execute(text('ALTER TABLE "user" DROP COLUMN IF EXISTS ratings_enabled'))
     connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_sort_field VARCHAR NOT NULL DEFAULT 'status'"""))
     connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_card_size INTEGER NOT NULL DEFAULT 2"""))
-    # Prefer avatar_path; migrate the older profile_picture_path column if present.
     connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS avatar_path VARCHAR'))
     connection.execute(text("""
         DO $$
@@ -48,7 +43,6 @@ with engine.begin() as connection:
             END IF;
         END $$;
     """))
-    # Recreate the username FK so renaming a user cascades into media_entries.
     connection.execute(text("ALTER TABLE media_entries DROP CONSTRAINT IF EXISTS media_entries_username_fkey"))
     connection.execute(text(
         'ALTER TABLE media_entries '
@@ -56,11 +50,25 @@ with engine.begin() as connection:
         'FOREIGN KEY (username) REFERENCES "user"(username) '
         'ON UPDATE CASCADE'
     ))
+    connection.execute(text("""
+        CREATE TABLE IF NOT EXISTS friendships (
+            id SERIAL PRIMARY KEY,
+            owner_username VARCHAR NOT NULL REFERENCES "user"(username)
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            friend_username VARCHAR NOT NULL REFERENCES "user"(username)
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            CONSTRAINT uq_friendships_owner_friend UNIQUE (owner_username, friend_username)
+        )
+    """))
+    connection.execute(text(
+        "CREATE INDEX IF NOT EXISTS ix_friendships_owner_username ON friendships (owner_username)"
+    ))
+    connection.execute(text(
+        "CREATE INDEX IF NOT EXISTS ix_friendships_friend_username ON friendships (friend_username)"
+    ))
 
-# /entries and /entries/ both resolve cleanly.
 app = FastAPI(title="Media Tracker API", redirect_slashes=True)
 
-# CORS: allow browser calls from the static frontend (and local Next.js).
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -69,10 +77,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API routes
 app.include_router(auth.router, prefix="/api")
 app.include_router(entries.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
+app.include_router(friends.router, prefix="/api")
 app.include_router(profile.router, prefix="/api")
 app.include_router(igdb.router, prefix="/api")
 app.include_router(openlibrary.router, prefix="/api")
@@ -81,19 +89,16 @@ app.include_router(tmdb.router, prefix="/api")
 
 @app.get("/")
 def root():
-    """Return a simple welcome payload for the API root."""
     return {"message": "Willkommen zur Media Tracker API!"}
 
 
 @app.get("/health")
 def health():
-    """Lightweight healthcheck for Render / uptime monitors."""
     return {"status": "ok"}
 
 
 @app.get("/ping-db")
 def ping_db(db: Session = Depends(get_db)):
-    """Verify the PostgreSQL connection with a trivial SELECT."""
     try:
         db.execute(text("SELECT 1"))
         return {"status": "success", "message": "Erfolgreich mit PostgreSQL verbunden!"}

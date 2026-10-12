@@ -31,12 +31,9 @@ import {
   type TypeFilter,
 } from '@/types/media';
 
-/** Type filter, title search, sort controls, grid size, and add-media action.
- *
- *  @returns Toolbar bound to Redux library UI state.
- */
 export function LibraryToolbar() {
   const dispatch = useAppDispatch();
+  const viewingAs = useAppSelector((state) => state.auth.viewingAs);
   const {
     typeFilter,
     sortField,
@@ -158,18 +155,20 @@ export function LibraryToolbar() {
             </Select>
           </FormControl>
 
-          <Button
-            variant="contained"
-            startIcon={
-              <SvgIcon fontSize="small">
-                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-              </SvgIcon>
-            }
-            onClick={() => dispatch(openCreateMediaModal())}
-            sx={{ whiteSpace: 'nowrap' }}
-          >
-            Add Media
-          </Button>
+          {!viewingAs && (
+            <Button
+              variant="contained"
+              startIcon={
+                <SvgIcon fontSize="small">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </SvgIcon>
+              }
+              onClick={() => dispatch(openCreateMediaModal())}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              Add Media
+            </Button>
+          )}
         </Box>
       </Box>
     </>

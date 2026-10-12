@@ -1,4 +1,10 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import {
+  createApi,
+  fetchBaseQuery,
+  type BaseQueryFn,
+  type FetchArgs,
+  type FetchBaseQueryError,
+} from '@reduxjs/toolkit/query/react';
 import type {
   CardSize,
   MediaEntryPayload,
@@ -10,20 +16,17 @@ import type { ProfileStats } from '@/types/profile';
 
 export type { MediaEntryPayload };
 
-// Partial general-settings update for PATCH /users/me/settings.
 export interface UserSettingsUpdate {
   default_sort_field?: SortField;
   default_card_size?: CardSize;
 }
 
-// Account rename/password change for PATCH /users/me/account.
 export interface AccountUpdate {
   current_password?: string;
   new_username?: string;
   new_password?: string;
 }
 
-// User payload returned by POST /auth/login.
 export interface AuthUser {
   username: string;
   joined_date: string;
@@ -47,15 +50,14 @@ export interface IgdbGameSearchResult {
   first_release_date: number | null;
 }
 
-/** Resolves the RTK Query base URL from env, with a local fallback
- *  Strips trailing slashes and collapses accidental duplicated origins
- * 
- * @returns Absolute API base URL without a trailing slash
- */
+export interface Friend {
+  username: string;
+  avatar_path: string | null;
+}
+
 export function resolveApiBaseUrl(): string {
   let raw = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api').trim();
 
-  // Clean up the URL to remove markdown links, quotes, trailing slashes, and duplicated origins.
   const markdownLink = raw.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
   if (markdownLink) {
     raw = markdownLink[1] || markdownLink[2]; 
@@ -66,24 +68,54 @@ export function resolveApiBaseUrl(): string {
   return raw;
 }
 
-// RTK Query API slice for media entries and cover lookups (IGDB / TMDB / OpenLibrary)
+type AuthStateSlice = {
+  auth: { username: string | null; viewingAs: string | null };
+};
+
+const FRIENDS_ENDPOINTS = new Set(['getFriends', 'addFriend', 'removeFriend']);
+
+const rawBaseQuery = fetchBaseQuery({
+  baseUrl: resolveApiBaseUrl(),
+  prepareHeaders: (headers, { getState, endpoint }) => {
+    const auth = (getState() as AuthStateSlice).auth;
+    const username = FRIENDS_ENDPOINTS.has(endpoint)
+      ? auth.username
+      : (auth.viewingAs ?? auth.username);
+    if (username) {
+      headers.set('X-Username', username);
+    }
+    return headers;
+  },
+});
+
+const baseQueryWithViewGuard: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const viewingAs = (api.getState() as AuthStateSlice).auth.viewingAs;
+  if (viewingAs) {
+    const method =
+      typeof args === 'string' ? 'GET' : (args.method ?? 'GET').toUpperCase();
+    if (method !== 'GET' && method !== 'HEAD') {
+      return {
+        error: {
+          status: 403,
+          data: { detail: 'Read-only while viewing a friend' },
+        },
+      };
+    }
+  }
+  return rawBaseQuery(args, api, extraOptions);
+};
+
 export const mediaApi = createApi({
   reducerPath: 'mediaApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: resolveApiBaseUrl(),
-    prepareHeaders: (headers, { getState }) => {
-      const username = (getState() as { auth: { username: string | null } }).auth.username;
-      if (username) {
-        headers.set('X-Username', username);
-      }
-      return headers;
-    },
-  }),
-  tagTypes: ['MediaEntries', 'UserSettings', 'ProfileStats'],
+  baseQuery: baseQueryWithViewGuard,
+  tagTypes: ['MediaEntries', 'UserSettings', 'ProfileStats', 'Friends'],
 
   endpoints: (builder) => ({
 
-    // 1. AUTH & ACCOUNT
     login: builder.mutation<AuthUser, { username: string; password: string }>({
       query: (body) => ({ url: '/auth/login', method: 'POST', body }),
     }),
@@ -93,7 +125,6 @@ export const mediaApi = createApi({
       invalidatesTags: ['UserSettings', 'MediaEntries', 'ProfileStats'],
     }),
 
-    // 2. USER SETTINGS
     getUserSettings: builder.query<UserSettings, void>({
       query: () => '/users/me',
       providesTags: ['UserSettings'],
@@ -113,7 +144,6 @@ export const mediaApi = createApi({
       invalidatesTags: ['UserSettings'],
     }),
 
-    // 3. MEDIA ENTRIES (CRUD)
     getMediaEntries: builder.query<MediaItem[], void>({
       query: () => '/entries',
       transformResponse: (response: MediaItem[]) =>
@@ -136,13 +166,33 @@ export const mediaApi = createApi({
       invalidatesTags: ['MediaEntries', 'ProfileStats'],
     }),
 
-    // 4. PROFILE STATS
     getProfileStats: builder.query<ProfileStats, void>({
       query: () => '/profile/stats',
       providesTags: ['ProfileStats'],
     }),
 
-    // 5. EXTERNAL COVER LOOKUPS (IGDB / TMDB / OpenLibrary)
+    getFriends: builder.query<Friend[], void>({
+      query: () => '/friends',
+      providesTags: ['Friends'],
+    }),
+
+    addFriend: builder.mutation<Friend, string>({
+      query: (username) => ({
+        url: '/friends',
+        method: 'POST',
+        body: { username },
+      }),
+      invalidatesTags: ['Friends'],
+    }),
+
+    removeFriend: builder.mutation<void, string>({
+      query: (username) => ({
+        url: `/friends/${encodeURIComponent(username)}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Friends'],
+    }),
+
     fetchIgdbCover: builder.query<IgdbGameLookup, string>({
       query: (name) => ({ url: '/igdb/cover', params: { name } }),
     }),
@@ -174,7 +224,6 @@ export const mediaApi = createApi({
   }),
 });
 
-// Export the hooks from the mediaApi slice
 export const {
   useLoginMutation,
   useGetUserSettingsQuery,
@@ -186,6 +235,9 @@ export const {
   useUpdateMediaEntryMutation,
   useDeleteMediaEntryMutation,
   useGetProfileStatsQuery,
+  useGetFriendsQuery,
+  useAddFriendMutation,
+  useRemoveFriendMutation,
   useLazyFetchIgdbCoverQuery,
   useLazySearchIgdbGamesQuery,
   useLazyFetchIgdbGameQuery,

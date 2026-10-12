@@ -3,13 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Box, Button, SvgIcon, Typography, type SvgIconProps } from '@mui/material';
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetUserSettingsQuery } from '@/redux/api/mediaApi';
 
-/** Three books stacked flat — MUI has no stacked-books icon. */
 function BookshelfIcon(props: SvgIconProps) {
   return (
     <SvgIcon {...props} viewBox="0 0 24 24">
@@ -20,13 +20,10 @@ function BookshelfIcon(props: SvgIconProps) {
         strokeLinejoin="round"
         strokeLinecap="round"
       >
-        {/* Top book */}
         <rect x={5} y={3.5} width={14} height={5} rx={0.7} />
         <path d="M7.25 3.5v5" />
-        {/* Middle book (offset) */}
         <rect x={3.5} y={9.5} width={15} height={5} rx={0.7} />
         <path d="M5.75 9.5v5" />
-        {/* Bottom book */}
         <rect x={4.5} y={15.5} width={16} height={5} rx={0.7} />
         <path d="M6.75 15.5v5" />
       </g>
@@ -34,7 +31,6 @@ function BookshelfIcon(props: SvgIconProps) {
   );
 }
 
-// Define the navigation buttons for the app header
 const NAV_ITEMS = [
   {
     id: 'profile',
@@ -42,6 +38,15 @@ const NAV_ITEMS = [
     href: '/',
     icon: PersonOutlinedIcon,
     isActive: (pathname: string) => pathname === '/',
+    hideWhileViewing: false,
+  },
+  {
+    id: 'friends',
+    label: 'Friends',
+    href: '/friends',
+    icon: PeopleOutlinedIcon,
+    isActive: (pathname: string) => pathname.startsWith('/friends'),
+    hideWhileViewing: true,
   },
   {
     id: 'library',
@@ -49,6 +54,7 @@ const NAV_ITEMS = [
     href: '/library',
     icon: BookshelfIcon,
     isActive: (pathname: string) => pathname.startsWith('/library'),
+    hideWhileViewing: false,
   },
   {
     id: 'settings',
@@ -56,10 +62,10 @@ const NAV_ITEMS = [
     href: '/settings',
     icon: SettingsIcon,
     isActive: (pathname: string) => pathname.startsWith('/settings'),
+    hideWhileViewing: true,
   },
 ] as const;
 
-// Shared size for nav buttons (fixed height so a larger avatar doesn't stretch them)
 const NAV_BUTTON_SX = {
   whiteSpace: 'nowrap',
   px: 2.25,
@@ -72,7 +78,6 @@ const NAV_BUTTON_SX = {
   '& .MuiButton-startIcon > *:nth-of-type(1)': { fontSize: 24 },
 } as const;
 
-// Define the styles for the active button
 const ACTIVE_BUTTON_SX = {
   ...NAV_BUTTON_SX,
   border: `1px solid ${palette.primary}`,
@@ -85,13 +90,10 @@ const ACTIVE_BUTTON_SX = {
   },
 } as const;
 
-/** Shared app header with brand title and Library / Profile / Settings nav.
- *
- * @returns Header row shown on authenticated pages; active route is non-clickable.
- */
 export function AppHeader() {
   const pathname = usePathname();
   const username = useAppSelector((state) => state.auth.username);
+  const viewingAs = useAppSelector((state) => state.auth.viewingAs);
   const { data: settings } = useGetUserSettingsQuery(undefined, {
     skip: !username,
   });
@@ -132,56 +134,58 @@ export function AppHeader() {
           justifyContent: { xs: 'flex-start', sm: 'flex-end' },
         }}
       >
-        {NAV_ITEMS.map(({ id, label, href, icon: Icon, isActive }) => {
-          const active = isActive(pathname);
-          const startIcon =
-            id === 'profile' && avatarSrc ? (
-              <Box
-                component="img"
-                src={avatarSrc}
-                alt=""
-                draggable={false}
-                sx={{
-                  width: 32,
-                  height: 32,
-                  marginBlock: '-5px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
-              />
-            ) : (
-              <Icon />
-            );
+        {NAV_ITEMS.filter((item) => !(viewingAs && item.hideWhileViewing)).map(
+          ({ id, label, href, icon: Icon, isActive }) => {
+            const active = isActive(pathname);
+            const startIcon =
+              id === 'profile' && avatarSrc ? (
+                <Box
+                  component="img"
+                  src={avatarSrc}
+                  alt=""
+                  draggable={false}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    marginBlock: '-5px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                />
+              ) : (
+                <Icon />
+              );
 
-          if (active) {
+            if (active) {
+              return (
+                <Button
+                  key={id}
+                  variant="outlined"
+                  disabled
+                  startIcon={startIcon}
+                  aria-current="page"
+                  sx={ACTIVE_BUTTON_SX}
+                >
+                  {label}
+                </Button>
+              );
+            }
+
             return (
               <Button
                 key={id}
                 variant="outlined"
-                disabled
+                component={Link}
+                href={href}
                 startIcon={startIcon}
-                aria-current="page"
-                sx={ACTIVE_BUTTON_SX}
+                sx={NAV_BUTTON_SX}
               >
                 {label}
               </Button>
             );
           }
-
-          return (
-            <Button
-              key={id}
-              variant="outlined"
-              component={Link}
-              href={href}
-              startIcon={startIcon}
-              sx={NAV_BUTTON_SX}
-            >
-              {label}
-            </Button>
-          );
-        })}
+        )}
       </Box>
     </Box>
   );
