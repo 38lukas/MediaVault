@@ -31,6 +31,7 @@ import {
 } from '@/redux/api/mediaApi';
 import { getApiErrorMessage } from '@/utils/apiError';
 
+// Friends page for adding, viewing, and removing friends
 export default function FriendsPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();

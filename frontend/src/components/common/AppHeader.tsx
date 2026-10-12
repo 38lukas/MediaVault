@@ -10,6 +10,7 @@ import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetUserSettingsQuery } from '@/redux/api/mediaApi';
 
+// Custom bookshelf SVG used as the Library nav icon.
 function BookshelfIcon(props: SvgIconProps) {
   return (
     <SvgIcon {...props} viewBox="0 0 24 24">
@@ -31,6 +32,7 @@ function BookshelfIcon(props: SvgIconProps) {
   );
 }
 
+// Top-level app navigation entries and active-route matchers.
 const NAV_ITEMS = [
   {
     id: 'profile',
@@ -66,6 +68,7 @@ const NAV_ITEMS = [
   },
 ] as const;
 
+// Shared sizing for inactive header nav buttons.
 const NAV_BUTTON_SX = {
   whiteSpace: 'nowrap',
   px: 2.25,
@@ -78,6 +81,7 @@ const NAV_BUTTON_SX = {
   '& .MuiButton-startIcon > *:nth-of-type(1)': { fontSize: 24 },
 } as const;
 
+// Active/disabled nav button styles (selected route look).
 const ACTIVE_BUTTON_SX = {
   ...NAV_BUTTON_SX,
   border: `1px solid ${palette.primary}`,
@@ -90,6 +94,7 @@ const ACTIVE_BUTTON_SX = {
   },
 } as const;
 
+// App brand header with profile avatar and section navigation.
 export function AppHeader() {
   const pathname = usePathname();
   const username = useAppSelector((state) => state.auth.username);

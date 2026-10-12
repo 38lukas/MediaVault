@@ -5,7 +5,7 @@ import libraryUiReducer from './slices/libraryUiSlice';
 import mediaModalReducer from './slices/mediaModalSlice';
 import settingsReducer from './slices/settingsSlice';
 
-// Creates the Redux store for a Next.js client tree
+// Creates the Redux store for a Next.js client tree.
 export const makeStore = () =>
   configureStore({
     reducer: {
@@ -19,7 +19,6 @@ export const makeStore = () =>
       getDefaultMiddleware().concat(mediaApi.middleware),
   });
 
-// Export the types for the store, state, and dispatch.
 export type AppStore = ReturnType<typeof makeStore>;
-export type RootState = ReturnType<AppStore['getState']>; 
-export type AppDispatch = AppStore['dispatch']; 
+export type RootState = ReturnType<AppStore['getState']>;
+export type AppDispatch = AppStore['dispatch'];

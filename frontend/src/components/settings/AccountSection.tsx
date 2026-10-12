@@ -33,10 +33,7 @@ import { getApiErrorMessage } from '@/utils/apiError';
 
 const PASSWORD_MASK = '******';
 
-/** Account settings: rename, change password, and log out
- * 
- * @returns Account form bound to settingsSlice drafts and updateAccount
- */
+// Account settings: rename, change password, and log out.
 export function AccountSection() {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -55,7 +52,6 @@ export function AccountSection() {
 
   const currentName = settings?.username ?? username ?? '';
 
-  // Seed the username field once settings (or auth username) are known.
   useEffect(() => {
     if (settings?.username) {
       dispatch(initAccountDrafts(settings.username));
@@ -76,10 +72,6 @@ export function AccountSection() {
     passwordsMatch;
   const canSave = canSaveUsername || canSavePassword;
 
-  /** Submits rename and/or password change via updateAccount
-   * 
-   * @returns Promise that settles when the mutation finishes
-   */
   const handleSave = async () => {
     if (!canSave) return;
 
@@ -95,22 +87,18 @@ export function AccountSection() {
           : {}),
       }).unwrap();
 
-      // X-Username headers read auth.username; keep it in sync after rename.
       dispatch(setUsername(result.username));
       dispatch(resetAccountDrafts());
     } catch {
-      // Error is surfaced via updateState.isError below.
     }
   };
 
- // Clears the session and returns to the library (login gate)
   const handleLogout = () => {
     dispatch(clearUsername());
     dispatch(mediaApi.util.resetApiState());
     router.push('/');
   };
 
-  // Toggles username edit mode; cancel restores the saved username
   const handleUsernameEditToggle = () => {
     if (editingUsername) {
       dispatch(cancelEditingUsername(currentName));
@@ -119,7 +107,6 @@ export function AccountSection() {
     }
   };
 
-  // Toggles password edit mode; start clears the mask so the user can type
   const handlePasswordEditToggle = () => {
     if (editingPassword) {
       dispatch(cancelEditingPassword());

@@ -2,7 +2,7 @@
 
 import { LibraryView } from '@/components/library/LibraryView';
 
-// Library page
+// Library page listing the user's media collection
 export default function LibraryPage() {
   return <LibraryView />;
 }

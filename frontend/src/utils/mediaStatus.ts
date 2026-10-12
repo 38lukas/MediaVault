@@ -1,8 +1,4 @@
-/** Returns soft status colors for chips and badges
- *
- *  @param status - Media status label (e.g. "Playing")
- *  @returns Background, border, and text colors
- */
+// Return soft status colors for chips and badges
 export function getStatusColor(status: string) {
   switch (status.toLowerCase()) {
     case 'watching':

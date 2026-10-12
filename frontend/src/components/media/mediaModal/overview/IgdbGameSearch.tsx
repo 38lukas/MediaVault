@@ -32,6 +32,7 @@ function formatReleaseYear(timestamp: number): string {
   return String(new Date(timestamp * 1000).getUTCFullYear());
 }
 
+// Debounced IGDB title autocomplete that loads full game details on select.
 export function IgdbGameSearch({
   open,
   title,

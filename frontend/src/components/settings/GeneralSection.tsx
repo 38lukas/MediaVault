@@ -21,10 +21,7 @@ import {
   type SortField,
 } from '@/types/media';
 
-/**
- * General settings: default sort field and default grid size.
- * @returns Form that PATCHes user settings on each change.
- */
+// General settings: default library sort field and grid size.
 export function GeneralSection() {
   const username = useAppSelector((state) => state.auth.username);
   const { data: settings, isLoading } = useGetUserSettingsQuery(undefined, {
@@ -35,18 +32,10 @@ export function GeneralSection() {
   const defaultSort = settings?.default_sort_field ?? 'status';
   const defaultCardSize = settings?.default_card_size ?? 2;
 
-  /**
-   * Persists the default sort field immediately.
-   * @param field - Sort field to use when the library loads.
-   */
   const handleSortChange = (field: SortField) => {
     void updateUserSettings({ default_sort_field: field });
   };
 
-  /**
-   * Persists the default grid size immediately.
-   * @param size - Card size to use when the library loads.
-   */
   const handleCardSizeChange = (value: string | number) => {
     const size = Number(value);
     if (isCardSize(size)) void updateUserSettings({ default_card_size: size });

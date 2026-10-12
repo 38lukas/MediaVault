@@ -9,16 +9,14 @@ import { isGameType } from '@/types/media';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setMediaModalTab, type MediaModalTab } from '@/redux/slices/mediaModalSlice';
 
+// Modal tab definitions shown under the cover.
 const TABS: { id: MediaModalTab; label: string; icon: typeof InfoOutlinedIcon }[] = [
   { id: 'overview', label: 'Overview', icon: InfoOutlinedIcon },
   { id: 'details', label: 'Details', icon: ListAltIcon },
   { id: 'journal', label: 'Journal', icon: CalendarMonthOutlinedIcon },
 ];
 
-/** Overview / Details / Journal switcher shown under the media cover.
- *
- * @returns Button group bound to mediaModalSlice.activeTab.
- */
+// Overview / Details / Journal switcher under the media cover.
 export function MediaModalTabs() {
   const dispatch = useAppDispatch();
   const activeTab = useAppSelector((state) => state.mediaModal.activeTab);

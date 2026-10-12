@@ -10,16 +10,10 @@ interface RatingDistributionChartProps {
   distribution: RatingBucket[];
 }
 
-/** Interactive bar chart of rating distribution (DB ratings 1–10)
- * 
- * @param props.distribution - Histogram buckets from profile stats
- * @returns Compact vertical bar chart (section label lives on the profile page)
- */
+// Interactive bar chart of rating distribution (DB ratings 1–10).
 export function RatingDistributionChart({
   distribution,
 }: RatingDistributionChartProps) {
-
-  // Find the maximum count of ratings
   const maxCount = Math.max(0, ...distribution.map((bucket) => bucket.count));
   const hasAny = maxCount > 0;
 
@@ -46,13 +40,11 @@ export function RatingDistributionChart({
         backgroundColor: palette.surface,
       }}
     >
-      {/* Render a bar for each rating bucket */}
       {distribution.map((bucket) => {
         const stars = toStars(bucket.rating) ?? 0;
         const label = RATING_SECTION_LABELS[stars] ?? `${stars} stars`;
         const heightPct = maxCount === 0 ? 0 : (bucket.count / maxCount) * 100;
 
-        // Render a tooltip for the rating and count
         return (
           <Tooltip
             key={bucket.rating}

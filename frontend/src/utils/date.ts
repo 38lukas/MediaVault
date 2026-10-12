@@ -1,19 +1,11 @@
-/**
- * Parses an ISO date string into a timestamp.
- * @param value - ISO date/datetime or nullish.
- * @returns Epoch ms, or null when missing/invalid.
- */
+// Parse an ISO date string into an epoch timestamp
 export function dateValue(value?: string | null): number | null {
   if (!value) return null;
   const time = new Date(value).getTime();
   return Number.isNaN(time) ? null : time;
 }
 
-/**
- * Returns the latest valid timestamp among the given date strings.
- * @param values - ISO date/datetime strings (nullish ignored).
- * @returns Epoch ms of the newest date, or null when none are valid.
- */
+// Return the latest valid timestamp among the given date strings
 export function maxDateValue(
   ...values: Array<string | null | undefined>
 ): number | null {
@@ -25,11 +17,7 @@ export function maxDateValue(
   return max;
 }
 
-/**
- * Formats an ISO date for display.
- * @param value - ISO date/datetime or nullish.
- * @returns Localized short date, or an em dash.
- */
+// Format an ISO date for localized short display
 export function formatDisplayDate(value?: string | null): string {
   const time = dateValue(value);
   if (time === null) return '—';
@@ -40,21 +28,13 @@ export function formatDisplayDate(value?: string | null): string {
   });
 }
 
-/**
- * Converts an API ISO datetime to a date-input value.
- * @param value - ISO date/datetime or nullish.
- * @returns YYYY-MM-DD, or empty string.
- */
+// Convert an API ISO datetime to a YYYY-MM-DD date-input value
 export function toDateInputValue(value?: string | null): string {
   if (!value) return '';
   return value.slice(0, 10);
 }
 
-/**
- * Converts a date-input value to an ISO midnight UTC string.
- * @param value - YYYY-MM-DD from an input.
- * @returns ISO string, or null when empty.
- */
+// Convert a YYYY-MM-DD date-input value to an ISO midnight UTC string
 export function toIsoDateOrNull(value: string): string | null {
   const trimmed = value.trim();
   return trimmed ? `${trimmed}T00:00:00.000Z` : null;

@@ -11,6 +11,7 @@ import { useAppSelector } from '@/redux/hooks';
 import { useGetProfileStatsQuery } from '@/redux/api/mediaApi';
 import { getApiErrorMessage } from '@/utils/apiError';
 
+// Home/profile page with stats, avatar, and recent activity
 export default function ProfilePage() {
   const username = useAppSelector((state) => state.auth.username);
   const viewingAs = useAppSelector((state) => state.auth.viewingAs);

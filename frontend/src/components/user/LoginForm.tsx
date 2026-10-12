@@ -8,11 +8,7 @@ import { setUsername } from '@/redux/slices/authSlice';
 import { useLoginMutation } from '@/redux/api/mediaApi';
 import { getApiErrorMessage } from '@/utils/apiError';
 
-/** Full-page login form shown before the library is accessible.
- *  Creates the user on first successful submit if the username does not exist.
- * 
- * @returns Login form UI.
- */
+// Full-page login form shown before the library is accessible.
 export function LoginForm() {
   const dispatch = useAppDispatch();
   const [login, loginState] = useLoginMutation();
@@ -21,11 +17,6 @@ export function LoginForm() {
 
   const errorMessage = getApiErrorMessage(loginState.error, 'Login failed');
 
-  /** Submits credentials to the API and stores the username on success.
-   * 
-   * @param event - Form submit event.
-   * @returns Promise that settles when login finishes.
-   */
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const trimmed = username.trim();
@@ -35,7 +26,6 @@ export function LoginForm() {
       const user = await login({ username: trimmed, password }).unwrap();
       dispatch(setUsername(user.username));
     } catch {
-      // Error is surfaced via loginState.isError below.
     }
   };
 

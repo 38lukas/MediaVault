@@ -8,18 +8,10 @@ import {
 import { applyFetchedCover, coverQueryKey, setFetchError } from '@/redux/slices/mediaModalSlice';
 import { getCoverProvider, type CoverProvider } from './constants';
 
-/** Wait for typing to settle before auto-fetching a cover. */
 const AUTO_FETCH_DEBOUNCE_MS = 650;
-/** Ignore short / incomplete titles for auto-fetch. */
 const AUTO_FETCH_MIN_TITLE_LENGTH = 3;
 
-/**
- * Builds a short cover-fetch error from an RTK / HTTP failure.
- *
- * @param err - Error thrown by a lazy query unwrap.
- * @param provider - IGDB, TMDB or Open Library label for the message.
- * @returns Short user-facing error text.
- */
+// Builds a short cover-fetch error from an RTK / HTTP failure.
 export function coverFetchErrorMessage(err: unknown, provider: CoverProvider): string {
   const status: number | string | null =
     err && typeof err === 'object' && 'status' in err
@@ -51,12 +43,7 @@ function isAbortError(err: unknown): boolean {
   );
 }
 
-/**
- * Debounced TMDB / Open Library cover lookup while the title is being typed.
- * Games use the IGDB search instead.
- *
- * @returns True while a cover request is in flight.
- */
+// Debounced TMDB / Open Library cover lookup while typing a title.
 export function useCoverAutoFetch(): boolean {
   const dispatch = useAppDispatch();
   const open = useAppSelector((state) => state.mediaModal.isOpen);

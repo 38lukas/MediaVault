@@ -25,7 +25,7 @@ const initialState: SettingsState = {
   primaryColor: DEFAULT_PRIMARY_COLOR,
 };
 
-// Local UI state for the settings page (sidebar + account form drafts).
+// Settings page UI: active section, account drafts, and primary color.
 const settingsSlice = createSlice({
   name: 'settings',
   initialState,
@@ -84,7 +84,6 @@ const settingsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Drop drafts when the user logs out so the next session starts clean.
     builder.addCase(clearUsername, (state) => ({
       ...initialState,
       primaryColor: state.primaryColor,

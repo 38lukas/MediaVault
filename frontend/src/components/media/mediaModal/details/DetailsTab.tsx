@@ -4,10 +4,7 @@ import { Box, CircularProgress, Stack, Typography } from '@mui/material';
 import { formatDisplayDate } from '@/utils/date';
 import { useAppSelector } from '@/redux/hooks';
 
-/** Read-only IGDB metadata for the entry in the media modal.
- *
- * @returns Details part bound to the media modal form.
- */
+// Read-only IGDB metadata panel for the media modal.
 export function DetailsTab() {
   const form = useAppSelector((state) => state.mediaModal.form);
   const loading = useAppSelector(

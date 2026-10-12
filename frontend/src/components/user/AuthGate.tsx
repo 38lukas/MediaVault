@@ -6,18 +6,12 @@ import { LoginForm } from './LoginForm';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { AUTH_STORAGE_KEY, hydrateAuth } from '@/redux/slices/authSlice';
 
-/** Restores auth from localStorage, shows a spinner until hydrated, then
- *  either the login form or the authenticated children.
- * 
- * @param props.children Content shown when a username is present.
- * @returns Spinner, login form, or authenticated children.
- */
+// Restores auth from localStorage, then shows login or children.
 export function AuthGate({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
   const username = useAppSelector((state) => state.auth.username);
   const hydrated = useAppSelector((state) => state.auth.hydrated);
 
-  // Restore session from localStorage after mount.
   useEffect(() => {
     dispatch(hydrateAuth(localStorage.getItem(AUTH_STORAGE_KEY)));
   }, [dispatch]);

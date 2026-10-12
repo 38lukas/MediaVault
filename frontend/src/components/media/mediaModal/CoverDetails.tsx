@@ -37,13 +37,7 @@ interface CoverDetailsProps {
   onApply: (details: { externalId: string; posterUrl: string }) => void;
 }
 
-/**
- * Clickable cover preview and nested dialog for editing external id / poster URL.
- * For games, applying a numeric or `igdb_<id>` external id fetches IGDB cover + details.
- *
- * @param props - Current cover values and apply handler from MediaModal.
- * @returns Cover preview button plus cover-details dialog.
- */
+// Clickable cover preview with dialog to edit external id and poster URL.
 export function CoverDetails({
   posterUrl,
   title,
@@ -92,7 +86,6 @@ export function CoverDetails({
     try {
       const result = await fetchIgdbGame(igdbId).unwrap();
       dispatch(igdbGameLoaded(result));
-      // Force the canonical igdb_* id (and keep a poster URL typed in this dialog).
       dispatch(
         patchForm({
           externalId: result.external_id,

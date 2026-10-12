@@ -5,6 +5,7 @@ import { DEFAULT_PRIMARY_COLOR } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setPrimaryColor } from '@/redux/slices/settingsSlice';
 
+// Appearance settings: primary accent color picker and reset.
 export function AppearanceSection() {
   const dispatch = useAppDispatch();
   const primaryColor = useAppSelector((state) => state.settings.primaryColor);

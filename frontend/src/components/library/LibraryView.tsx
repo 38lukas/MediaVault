@@ -22,10 +22,7 @@ import { openEditMediaModal } from '@/redux/slices/mediaModalSlice';
 import { useGetMediaEntriesQuery } from '@/redux/api/mediaApi';
 import { matchesTypeFilter, type MediaItem } from '@/types/media';
 
-/** Loads media entries and renders filtered/sorted card grid content.
- *
- * @returns Library body including toolbar, loading, and media sections.
- */
+// Loads media entries and renders filtered/sorted library sections.
 export function LibraryView() {
   const dispatch = useAppDispatch();
   const username = useAppSelector((state) => state.auth.username);
@@ -41,7 +38,6 @@ export function LibraryView() {
     const filtered = items.filter((item) => {
       if (!matchesTypeFilter(item.media_type, typeFilter)) return false;
       if (query && !item.title.toLowerCase().includes(query)) return false;
-      // Months view: only finished media (grouped by finished_at).
       if (sortField === 'months' && !item.finished_at) return false;
       return true;
     });
@@ -71,10 +67,6 @@ export function LibraryView() {
 
   const hideStatus = sortField === 'status';
 
-  /** Opens the edit modal for a selected media item.
-   *
-   * @param item - Clicked library entry.
-   */
   const handleItemClick = (item: MediaItem) => {
     dispatch(openEditMediaModal(item));
   };

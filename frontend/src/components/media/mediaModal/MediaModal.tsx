@@ -39,6 +39,7 @@ function partSx(activeTab: MediaModalTab, tab: MediaModalTab) {
   } as const;
 }
 
+// Create/edit media dialog with overview, details, and journal tabs.
 export function MediaModal() {
   const dispatch = useAppDispatch();
   const viewingAs = useAppSelector((state) => state.auth.viewingAs);

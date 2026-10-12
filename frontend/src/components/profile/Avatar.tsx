@@ -13,6 +13,7 @@ interface AvatarProps {
   readOnly?: boolean;
 }
 
+// Profile avatar with optional click-to-upload overlay.
 export function Avatar({ username, readOnly = false }: AvatarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { data: settings } = useGetUserSettingsQuery(undefined, {

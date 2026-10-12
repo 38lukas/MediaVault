@@ -11,12 +11,15 @@ import { useAppSelector } from '@/redux/hooks';
 import { fieldSx } from '../constants';
 import { JournalDayPopover } from './JournalDayPopover';
 
+// Calendar weekday headers (Monday-first).
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+// Localized month names for the journal month selector.
 const MONTHS = Array.from({ length: 12 }, (_, month) =>
   new Date(2000, month, 1).toLocaleString('en', { month: 'long' }),
 );
 const YEARS_BACK = 10;
 
+// Start/finish day markers shown in calendar cells.
 const markerSx = {
   width: 16,
   height: 16,
@@ -30,16 +33,12 @@ const markerSx = {
   color: palette.primaryContrast,
 };
 
-/** Played label for the entry's media type. */
 function loggedLabel(mediaType: string): string {
   if (isGameType(mediaType)) return 'Played';
   return mediaType === 'Book' ? 'Read' : 'Watched';
 }
 
-/** Month calendar for logging the days an entry was played / watched / read.
- *
- * @returns Journal part bound to the media modal form's played dates.
- */
+// Month calendar for logging played / watched / read days.
 export function JournalTab() {
   const playedDates = useAppSelector((state) => state.mediaModal.form.playedDates);
   const mediaType = useAppSelector((state) => state.mediaModal.form.mediaType);
@@ -47,7 +46,6 @@ export function JournalTab() {
   const finishedAt = useAppSelector((state) => state.mediaModal.form.finishedAt);
   const today = new Date();
   const todayKey = toDateKey(today);
-  // Open on the most recent logged day, or the current month.
   const [view, setView] = useState(() => {
     const latest = playedDates.at(-1);
     const date = latest ? new Date(`${latest}T00:00:00`) : today;

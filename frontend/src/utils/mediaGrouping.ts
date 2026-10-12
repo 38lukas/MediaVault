@@ -18,14 +18,7 @@ export interface LibrarySection {
   rating?: number | null;
 }
 
-/** Groups already-sorted items into consecutive sections.
- * 
- * @param items - Sorted media list.
- * @param keyOf - Section key for each item.
- * @param labelOf - Optional label formatter (defaults to the key).
- * @param ratingOf - Optional DB rating for divider star icons.
- * @returns Ordered sections for divider rendering.
- */
+// Group already-sorted items into consecutive sections for dividers
 export function groupConsecutive(
   items: MediaItem[],
   keyOf: (item: MediaItem) => string,
@@ -51,11 +44,7 @@ export function groupConsecutive(
   return sections;
 }
 
-/** Builds a YYYY-MM group key from finished_at.
- * 
- * @param item - Media entry.
- * @returns Month key, or NO_FINISH_KEY when finished_at is missing.
- */
+// Build a YYYY-MM group key from finished_at
 export function finishedMonthKey(item: MediaItem): string {
   const time = dateValue(item.finished_at);
   if (time === null) return NO_FINISH_KEY;
@@ -65,11 +54,7 @@ export function finishedMonthKey(item: MediaItem): string {
   return `${year}-${month}`;
 }
 
-/** Formats a month group key for UI display.
- * 
- * @param key - YYYY-MM or NO_FINISH_KEY.
- * @returns Human-readable month label.
- */
+// Format a finished-month group key for UI display
 export function formatFinishedMonthLabel(key: string): string {
   if (key === NO_FINISH_KEY) return 'No date';
   const [year, month] = key.split('-').map(Number);
@@ -80,13 +65,7 @@ export function formatFinishedMonthLabel(key: string): string {
   });
 }
 
-/** Section key so equivalent statuses share one divider.
- * When a specific media type is filtered, uses the item's actual status label.
- * 
- * @param item - Media entry.
- * @param typeFilter - Active library type filter.
- * @returns Section key.
- */
+// Section key so equivalent statuses share one divider
 export function statusSectionKey(item: MediaItem, typeFilter: TypeFilter = 'All'): string {
   if (typeFilter !== 'All') return item.status;
   if (item.status === 'Playing' || item.status === 'Watching' || item.status === 'Reading') {
@@ -98,21 +77,13 @@ export function statusSectionKey(item: MediaItem, typeFilter: TypeFilter = 'All'
   return item.status;
 }
 
-/** Builds a half-star section key from the DB rating (1–10).
- * 
- * @param item - Media entry.
- * @returns Rating key, or NO_RATING_KEY when unrated.
- */
+// Build a rating section key from the DB rating (1–10)
 export function ratingSectionKey(item: MediaItem): string {
   if (item.rating == null) return NO_RATING_KEY;
   return String(item.rating);
 }
 
-/** Formats a rating group key for UI display.
- * 
- * @param key - DB rating string or NO_RATING_KEY.
- * @returns Custom label from config (falls back to star count).
- */
+// Format a rating group key for UI display
 export function formatRatingLabel(key: string): string {
   if (key === NO_RATING_KEY) return UNRATED_SECTION_LABEL;
   const stars = toStars(Number(key));
@@ -120,17 +91,17 @@ export function formatRatingLabel(key: string): string {
   return RATING_SECTION_LABELS[stars] ?? `${stars}`;
 }
 
-/** True when the entry has at least one journal day. */
+// True when the entry has at least one journal day
 export function hasLastPlayedDate(item: MediaItem): boolean {
   return maxDateValue(...(item.played_dates ?? [])) !== null;
 }
 
-/** Section key for Last Played sort: dated entries vs no journal days. */
+// Section key for Last Played sort: dated vs no journal days
 export function lastPlayedSectionKey(item: MediaItem): string {
   return hasLastPlayedDate(item) ? HAS_LAST_PLAYED_KEY : NO_LAST_PLAYED_KEY;
 }
 
-/** Formats a Last Played section key; dated group has no divider label. */
+// Format a Last Played section key; dated group has no divider label
 export function formatLastPlayedLabel(key: string): string {
   return key === NO_LAST_PLAYED_KEY ? 'No Date' : '';
 }

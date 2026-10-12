@@ -5,7 +5,7 @@ import { SectionDivider } from '@/components/common/SectionDivider';
 import { palette } from '@/lib/palette';
 import type { FinishedCounts } from '@/types/profile';
 
-// Rows of finished media types
+// Per-type rows shown next to the all-time finished total.
 const TYPE_ROWS: { key: keyof Omit<FinishedCounts, 'total'>; label: string }[] = [
   { key: 'game', label: 'Games' },
   { key: 'dlc', label: 'DLC' },
@@ -19,11 +19,7 @@ interface FinishedStatsProps {
   finished: FinishedCounts;
 }
 
-/** All-time finished media counts: total plus per media type
- * 
- * @param props.finished - Aggregated finished counts from profile stats
- * @returns Compact finished stats section
- */ 
+// All-time finished counts: total plus per media type.
 export function FinishedStats({ finished }: FinishedStatsProps) {
   return (
     <Box>

@@ -13,26 +13,19 @@ interface MediaGridProps {
   emptyMessage?: string;
 }
 
-/** MUI Grid column spans per card size (0 XL → 2 M → 4 XS). */
+// MUI Grid column spans per card size (0 XL → 4 XS).
 const CARD_GRID_COLS: Record<
   CardSize,
   { xs: number; sm: number; md: number; lg: number; xl: number }
 > = {
-  0: { xs: 6, sm: 4, md: 3, lg: 2.4, xl: 2 }, // Extra large
-  1: { xs: 4, sm: 3, md: 2.4, lg: 2, xl: 1.5 }, // Large
-  2: { xs: 3, sm: 2.4, md: 2, lg: 1.5, xl: 1.2 }, // Medium
-  3: { xs: 2.4, sm: 2, md: 1.5, lg: 1.2, xl: 1 }, // Small
-  4: { xs: 2, sm: 1.5, md: 1.2, lg: 1, xl: 12 / 14 }, // Extra small
+  0: { xs: 6, sm: 4, md: 3, lg: 2.4, xl: 2 },
+  1: { xs: 4, sm: 3, md: 2.4, lg: 2, xl: 1.5 },
+  2: { xs: 3, sm: 2.4, md: 2, lg: 1.5, xl: 1.2 },
+  3: { xs: 2.4, sm: 2, md: 1.5, lg: 1.2, xl: 1 },
+  4: { xs: 2, sm: 1.5, md: 1.2, lg: 1, xl: 12 / 14 },
 };
 
-/** Responsive card grid for the library
- * 
- * @param props.items - Media entries to display
- * @param props.onItemClick - Optional per-item click handler
- * @param props.cardSize - Optional fixed size; defaults to libraryUi.cardSize
- * @param props.emptyMessage - Optional empty-state text
- * @returns Grid of MediaCard components, or an empty state
- */
+// Responsive card grid for library and profile media lists.
 export const MediaGrid: React.FC<MediaGridProps> = ({
   items,
   onItemClick,

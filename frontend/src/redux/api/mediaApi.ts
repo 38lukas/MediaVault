@@ -55,15 +55,16 @@ export interface Friend {
   avatar_path: string | null;
 }
 
+// Normalizes NEXT_PUBLIC_API_URL into a clean base URL for RTK Query.
 export function resolveApiBaseUrl(): string {
   let raw = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api').trim();
 
   const markdownLink = raw.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
   if (markdownLink) {
-    raw = markdownLink[1] || markdownLink[2]; 
+    raw = markdownLink[1] || markdownLink[2];
   }
-  raw = raw.replace(/^['"]|['"]$/g, ''); 
-  raw = raw.replace(/\/+$/, ''); 
+  raw = raw.replace(/^['"]|['"]$/g, '');
+  raw = raw.replace(/\/+$/, '');
   raw = raw.replace(/^(https?:\/\/[^/]+)\/\1(?=\/|$)/i, '$1');
   return raw;
 }
@@ -74,6 +75,7 @@ type AuthStateSlice = {
 
 const FRIENDS_ENDPOINTS = new Set(['getFriends', 'addFriend', 'removeFriend']);
 
+// Attaches X-Username from auth state (owner for friends, viewingAs otherwise).
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: resolveApiBaseUrl(),
   prepareHeaders: (headers, { getState, endpoint }) => {
@@ -88,6 +90,7 @@ const rawBaseQuery = fetchBaseQuery({
   },
 });
 
+// Blocks non-GET mutations while viewing a friend's library.
 const baseQueryWithViewGuard: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -109,6 +112,7 @@ const baseQueryWithViewGuard: BaseQueryFn<
   return rawBaseQuery(args, api, extraOptions);
 };
 
+// RTK Query API for media, auth, settings, friends, and cover lookups.
 export const mediaApi = createApi({
   reducerPath: 'mediaApi',
   baseQuery: baseQueryWithViewGuard,

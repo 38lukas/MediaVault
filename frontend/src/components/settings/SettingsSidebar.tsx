@@ -9,15 +9,14 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setActiveSection } from '@/redux/slices/settingsSlice';
 import type { SettingsSection } from '@/types/media';
 
+// Settings sidebar section list (account, general, appearance).
 const SECTIONS: { id: SettingsSection; label: string; icon: typeof PersonIcon }[] = [
   { id: 'account', label: 'Account', icon: PersonIcon },
   { id: 'general', label: 'General', icon: TuneIcon },
   { id: 'appearance', label: 'Appearance', icon: PaletteIcon }
 ];
 
-/** Settings sidebar: Account and General navigation.
- * @returns MUI list bound to settingsSlice.activeSection.
- */
+// Settings sidebar navigation bound to the active section.
 export function SettingsSidebar() {
   const dispatch = useAppDispatch();
   const activeSection = useAppSelector((state) => state.settings.activeSection);

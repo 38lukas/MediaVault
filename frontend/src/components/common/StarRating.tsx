@@ -11,14 +11,7 @@ interface StarRatingProps {
   size?: 'small' | 'medium' | 'large';
 }
 
-/** Half-star rating control mapped from DB 1–10 values.
- * 
- * @param props.value - DB rating 1–10, or null when unrated
- * @param props.readOnly - When true, display only (no interaction)
- * @param props.onChange - Called with star value (0.5–5) or null when cleared
- * @param props.size - MUI Rating size
- * @returns MUI Rating with primary filled and gray empty icons
- */
+// Half-star rating control mapped from DB ratings 1–10.
 export function StarRating({
   value,
   readOnly = false,

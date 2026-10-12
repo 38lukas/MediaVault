@@ -30,6 +30,7 @@ const initialState: LibraryUiState = {
   defaultsApplied: false,
 };
 
+// Library toolbar UI: card size, filters, sort, search, and settings defaults.
 const libraryUiSlice = createSlice({
   name: 'libraryUi',
   initialState,

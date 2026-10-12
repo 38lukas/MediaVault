@@ -11,11 +11,7 @@ interface RecentActivityProps {
   items: MediaItem[];
 }
 
-/** Up to eight most recently played / watched / read media cards
- * 
- * @param props.items - Recently active entries from profile stats
- * @returns Recent activities section with MediaGrid
- */ 
+// Recent activity section with a compact media card grid.
 export function RecentActivity({ items }: RecentActivityProps) {
   const dispatch = useAppDispatch();
 

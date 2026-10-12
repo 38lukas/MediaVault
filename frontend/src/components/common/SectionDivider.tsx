@@ -11,13 +11,7 @@ interface SectionDividerProps {
   statusStyle?: boolean; 
 }
 
-/** Shared section divider used by the library and profile pages.
- *
- * @param props.label - Section title
- * @param props.rating - Optional DB rating for star icons next to the label
- * @param props.statusStyle - Styles the label (used when sorting by status)
- * @returns Divider row with label and horizontal rule
- */
+// Section title row with optional rating stars and a horizontal rule.
 export function SectionDivider({ label, rating, statusStyle = false }: SectionDividerProps) {
   const colors = statusStyle ? getStatusColor(label) : null;
 

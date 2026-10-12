@@ -31,6 +31,7 @@ import {
   type TypeFilter,
 } from '@/types/media';
 
+// Library filters, sort controls, grid size, and add-media action.
 export function LibraryToolbar() {
   const dispatch = useAppDispatch();
   const viewingAs = useAppSelector((state) => state.auth.viewingAs);

@@ -14,6 +14,7 @@ const initialState: AuthState = {
   hydrated: false,
 };
 
+// Session username, friend-view target, and localStorage hydration.
 const authSlice = createSlice({
   name: 'auth',
   initialState,

@@ -10,6 +10,7 @@ import { SettingsSidebar } from '@/components/settings/SettingsSidebar';
 import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
 
+// Settings page with account, general, and appearance sections
 export default function SettingsPage() {
   const router = useRouter();
   const viewingAs = useAppSelector((state) => state.auth.viewingAs);

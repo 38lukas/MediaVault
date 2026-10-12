@@ -18,11 +18,7 @@ interface ChipPickerProps<T extends string> {
   sx?: SxProps<Theme>;
 }
 
-/** Labeled row of pill buttons with a single selected option.
- *
- * @param props - Options, current value and selected-chip colors.
- * @returns Caption plus wrapping pill buttons.
- */
+// Labeled row of pill buttons with a single selected option.
 export function ChipPicker<T extends string>({
   label,
   options,

@@ -15,12 +15,7 @@ interface MediaCardProps {
   onClick?: () => void;
 }
 
-/**
- * Poster card with hover overlay and status-colored outline glow.
- * @param props.item - Media entry to render.
- * @param props.onClick - Optional click handler (opens edit modal).
- * @returns Interactive media card.
- */
+// Poster card with hover overlay and status-colored outline glow.
 export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
   const fallbackImage = 'https://via.placeholder.com/300x450?text=No+Cover';
   const statusStyle = getStatusColor(item.status);
@@ -45,7 +40,6 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
       <Box
         sx={{
           borderRadius: 2,
-          // Hairline + soft bloom sit outside the clipped image so the glow is visible.
           boxShadow: `
             0 0 0 1.5px ${statusStyle.color}55,
             0 0 10px ${statusStyle.color}40,

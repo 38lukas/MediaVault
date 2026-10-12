@@ -12,6 +12,7 @@ import type { IgdbGameLookup } from '../api/mediaApi';
 
 export type MediaModalTab = 'overview' | 'details' | 'journal';
 
+// Default empty form for create/edit media dialogs.
 export const INITIAL_MEDIA_FORM = {
   title: '',
   mediaType: 'Game' as MediaType,
@@ -57,6 +58,7 @@ const initialState: MediaModalState = {
   lastCoverQueryKey: null,
 };
 
+// Fields cleared when media type changes or IGDB selection resets.
 const IGDB_FIELDS_RESET = {
   releaseDate: '',
   platforms: [],
@@ -86,7 +88,7 @@ function syncMilestoneDates(form: MediaForm) {
   form.playedDates = withPlayedDates(form.playedDates, form.startedAt, form.finishedAt);
 }
 
-// Creates a form from a media item.
+// Builds a form draft from an existing media entry.
 function formFromItem(item: MediaItem): MediaForm {
   const mediaType = isMediaType(item.media_type) ? item.media_type : 'Game';
   const statuses = STATUSES_BY_TYPE[mediaType];
@@ -114,12 +116,12 @@ function formFromItem(item: MediaItem): MediaForm {
   };
 }
 
-// Prefers the IGDB/TMDB/Open Library id unless the user typed a custom one.
+// Prefers the fetched external id unless the user typed a custom one.
 function pickExternalId(current: string, fetched: string): string {
   return !current.trim() || current.startsWith('manual_') ? fetched : current;
 }
 
-// Create/edit media dialog: open state, active part and the form draft.
+// Create/edit media dialog: open state, active tab, and form draft.
 const mediaModalSlice = createSlice({
   name: 'mediaModal',
   initialState,
@@ -134,7 +136,6 @@ const mediaModalSlice = createSlice({
         isOpen: true,
         editingItem: action.payload,
         form,
-        // Editing: do not auto-refetch the cover already on the entry.
         lastCoverQueryKey: coverQueryKey(form.title, form.mediaType),
       };
     },
@@ -183,7 +184,6 @@ const mediaModalSlice = createSlice({
       const { title, mediaType, posterUrl, externalId } = action.payload;
       const form = state.form;
       state.lastCoverQueryKey = coverQueryKey(title, mediaType);
-      // Drop stale responses if the user kept typing or changed type.
       if (
         form.title.trim().toLowerCase() !== title.toLowerCase() ||
         form.mediaType !== mediaType

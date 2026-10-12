@@ -21,7 +21,6 @@ interface JournalDayPopoverProps {
   onClose: () => void;
 }
 
-/** Type-aware labels for the day popover actions. */
 function dayLabels(mediaType: string) {
   if (isGameType(mediaType)) {
     return {
@@ -44,7 +43,6 @@ function dayLabels(mediaType: string) {
   };
 }
 
-/** Formats YYYY-MM-DD for the popover heading. */
 function formatDayHeading(dateKey: string): string {
   return new Date(`${dateKey}T00:00:00`).toLocaleDateString('en', {
     weekday: 'short',
@@ -54,12 +52,7 @@ function formatDayHeading(dateKey: string): string {
   });
 }
 
-/** Small non-modal popup to log a calendar day and optionally set start / finish.
- *
- * Uses Popper (not Popover/Modal) so no backdrop blocks the calendar inside the dialog.
- *
- * @returns Anchored day menu, or null when closed.
- */
+// Day popup to log play/watch/read and set start or finish dates.
 export function JournalDayPopover({ dateKey, anchorEl, onClose }: JournalDayPopoverProps) {
   const dispatch = useAppDispatch();
   const mediaType = useAppSelector((state) => state.mediaModal.form.mediaType);
@@ -75,7 +68,6 @@ export function JournalDayPopover({ dateKey, anchorEl, onClose }: JournalDayPopo
   const isStarted = startedAt === dateKey;
   const isFinished = finishedAt === dateKey;
 
-  /** Ensures the day is in playedDates (no-op if already logged). */
   const ensureLogged = () => {
     if (!playedDates.includes(dateKey)) dispatch(togglePlayedDate(dateKey));
   };

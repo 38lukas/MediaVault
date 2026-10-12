@@ -1,6 +1,7 @@
 import { createTheme } from '@mui/material';
 import { palette } from '@/lib/palette';
 
+// Build the dark MUI theme for MediaVault
 export function createMediaVaultTheme(primaryColor: string, primaryContrast: string) {
   return createTheme({
     palette: {

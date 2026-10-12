@@ -35,6 +35,7 @@ const blockNonIntegerKeys = (event: KeyboardEvent) => {
   if (['e', 'E', '+', '-', '.', ','].includes(event.key)) event.preventDefault();
 };
 
+// Selected-chip colors for the media type picker.
 const MEDIA_TYPE_SELECTED_COLORS = {
   bg: palette.primary,
   border: palette.primary,
@@ -45,11 +46,7 @@ interface OverviewTabProps {
   isFetchingCover: boolean;
 }
 
-/** Editable core fields of a media entry (title, type, status, rating, dates).
- *
- * @param props - Whether a cover lookup is in flight (title spinner).
- * @returns Overview part bound to the media modal form.
- */
+// Editable core fields of a media entry in the modal overview tab.
 export function OverviewTab({ isFetchingCover }: OverviewTabProps) {
   const dispatch = useAppDispatch();
   const open = useAppSelector((state) => state.mediaModal.isOpen);
