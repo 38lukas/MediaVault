@@ -55,6 +55,24 @@ export interface TmdbSearchResult {
   release_date: string | null;
 }
 
+export interface OpenLibraryBookSearchResult {
+  id: string;
+  name: string;
+  first_publish_year: number | null;
+}
+
+// first_publish_date is free text from Open Library, e.g. "1937" or "September 21, 1937".
+export interface OpenLibraryBookLookup {
+  name: string;
+  external_id: string;
+  poster_path: string | null;
+  author_name: string[];
+  first_publish_date: string | null;
+  subjects: string[];
+  publishers: string[];
+  series: string[];
+}
+
 export interface IgdbGameSearchResult {
   id: number;
   name: string;

@@ -24,7 +24,7 @@ import {
   setFetchError,
 } from '@/redux/slices/mediaModalSlice';
 import { parseIgdbExternalId, type CoverProvider } from './constants';
-import { coverFetchErrorMessage } from './useCoverAutoFetch';
+import { coverFetchErrorMessage } from './coverFetchError';
 
 interface CoverDetailsProps {
   posterUrl: string;

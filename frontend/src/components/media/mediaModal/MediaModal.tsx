@@ -14,7 +14,6 @@ import {
 import { CoverDetails } from './CoverDetails';
 import { MediaModalTabs } from './MediaModalTabs';
 import { getCoverProvider, fieldSx } from './constants';
-import { useCoverAutoFetch } from './useCoverAutoFetch';
 import { OverviewTab } from './overview/OverviewTab';
 import { DetailsTab } from './details/DetailsTab';
 import { JournalTab } from './journal/JournalTab';
@@ -50,16 +49,16 @@ export function MediaModal() {
   const [createMediaEntry, createState] = useCreateMediaEntryMutation();
   const [updateMediaEntry, updateState] = useUpdateMediaEntryMutation();
   const [deleteMediaEntry, deleteState] = useDeleteMediaEntryMutation();
-  const isFetchingCover = useCoverAutoFetch() || lookupLoading;
   const usesIgdb = isGameType(form.mediaType);
   const isMovie = form.mediaType === 'Movie';
   const isTv = form.mediaType === 'Series' || form.mediaType === 'Anime';
   const usesTmdb = isMovie || isTv;
+  const isBook = form.mediaType === 'Book';
   const statusStyle = getStatusColor(form.status);
   const partKey = `${open}:${item?.id ?? 'new'}`;
 
   const isBusy =
-    createState.isLoading || updateState.isLoading || deleteState.isLoading || isFetchingCover;
+    createState.isLoading || updateState.isLoading || deleteState.isLoading || lookupLoading;
   const isError =
     (isEdit ? updateState.isError : createState.isError) || deleteState.isError;
   const error = deleteState.isError
@@ -107,10 +106,10 @@ export function MediaModal() {
       rating: form.rating,
       release_date: usesIgdb || usesTmdb ? form.releaseDate || null : null,
       platforms: usesIgdb ? form.platforms : null,
-      franchises: usesIgdb || isMovie ? form.franchises : null,
-      genres: usesIgdb || usesTmdb ? form.genres : null,
+      franchises: usesIgdb || isMovie || isBook ? form.franchises : null,
+      genres: usesIgdb || usesTmdb || isBook ? form.genres : null,
       developers: usesIgdb ? form.developers : null,
-      publishers: usesIgdb ? form.publishers : null,
+      publishers: usesIgdb || isBook ? form.publishers : null,
       directors: isMovie ? form.directors : null,
       creators: isTv ? form.creators : null,
       production_companies: usesTmdb ? form.productionCompanies : null,
@@ -119,6 +118,8 @@ export function MediaModal() {
       number_of_seasons: isTv ? form.numberOfSeasons : null,
       number_of_episodes: isTv ? form.numberOfEpisodes : null,
       original_title: form.mediaType === 'Anime' ? form.originalTitle || null : null,
+      authors: isBook ? form.authors : null,
+      first_publish_date: isBook ? form.firstPublishDate || null : null,
       platform_played_on: usesIgdb ? form.platformPlayedOn || null : null,
       played_dates: form.playedDates,
     };
@@ -237,7 +238,7 @@ export function MediaModal() {
 
                 <Box sx={{ flex: 1, minWidth: 0, display: 'grid' }}>
                   <Box sx={partSx(activeTab, 'overview')}>
-                    <OverviewTab isFetchingCover={isFetchingCover} />
+                    <OverviewTab />
                   </Box>
                   <Box sx={partSx(activeTab, 'details')}>
                     <DetailsTab />

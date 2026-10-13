@@ -8,7 +8,7 @@ import {
 } from '@/types/media';
 import { toDateInputValue, toIsoDateOrNull } from '@/utils/date';
 import { clearUsername } from './authSlice';
-import type { IgdbGameLookup, TmdbLookup } from '../api';
+import type { IgdbGameLookup, OpenLibraryBookLookup, TmdbLookup } from '../api';
 
 export type MediaModalTab = 'overview' | 'details' | 'journal';
 
@@ -33,6 +33,8 @@ export const INITIAL_MEDIA_FORM = {
   numberOfSeasons: null as number | null,
   numberOfEpisodes: null as number | null,
   originalTitle: '',
+  authors: [] as string[],
+  firstPublishDate: '',
   platformPlayedOn: '',
   externalId: '',
   posterUrl: '',
@@ -49,11 +51,10 @@ interface MediaModalState {
   editingItem: MediaItem | null;
   activeTab: MediaModalTab;
   form: MediaForm;
-  // IGDB / TMDB search result picked, and whether its details are still loading.
+  // IGDB / TMDB / Open Library search result picked, and whether its details are still loading.
   lookupSelected: boolean;
   lookupLoading: boolean;
   fetchError: string | null;
-  lastCoverQueryKey: string | null;
 }
 
 const initialState: MediaModalState = {
@@ -64,10 +65,9 @@ const initialState: MediaModalState = {
   lookupSelected: false,
   lookupLoading: false,
   fetchError: null,
-  lastCoverQueryKey: null,
 };
 
-// IGDB / TMDB fields cleared when media type changes or the looked-up title resets.
+// IGDB / TMDB / Open Library fields cleared when media type changes or the looked-up title resets.
 const METADATA_FIELDS_RESET = {
   releaseDate: '',
   platforms: [],
@@ -83,6 +83,8 @@ const METADATA_FIELDS_RESET = {
   numberOfSeasons: null,
   numberOfEpisodes: null,
   originalTitle: '',
+  authors: [],
+  firstPublishDate: '',
   platformPlayedOn: '',
 };
 
@@ -101,11 +103,6 @@ function formFieldsFromTmdb(result: TmdbLookup): Partial<MediaForm> {
     numberOfEpisodes: result.number_of_episodes ?? null,
     originalTitle: result.original_title ?? '',
   };
-}
-
-// Cache key for a title + media-type cover lookup.
-export function coverQueryKey(title: string, mediaType: MediaType): string {
-  return `${mediaType}:${title.trim().toLowerCase()}`;
 }
 
 // Adds YYYY-MM-DD keys to playedDates (sorted, unique).
@@ -148,6 +145,8 @@ function formFromItem(item: MediaItem): MediaForm {
     numberOfSeasons: item.number_of_seasons ?? null,
     numberOfEpisodes: item.number_of_episodes ?? null,
     originalTitle: item.original_title ?? '',
+    authors: item.authors ?? [],
+    firstPublishDate: item.first_publish_date ?? '',
     platformPlayedOn: item.platform_played_on ?? '',
     externalId: item.external_id ?? '',
     posterUrl: item.poster_path ?? '',
@@ -172,13 +171,11 @@ const mediaModalSlice = createSlice({
       return { ...initialState, isOpen: true };
     },
     openEditMediaModal(_state, action: PayloadAction<MediaItem>) {
-      const form = formFromItem(action.payload);
       return {
         ...initialState,
         isOpen: true,
         editingItem: action.payload,
-        form,
-        lastCoverQueryKey: coverQueryKey(form.title, form.mediaType),
+        form: formFromItem(action.payload),
       };
     },
     closeMediaModal(state) {
@@ -201,7 +198,6 @@ const mediaModalSlice = createSlice({
         Object.assign(form, METADATA_FIELDS_RESET);
         state.lookupSelected = false;
         state.lookupLoading = false;
-        state.lastCoverQueryKey = null;
       }
       if (!isGameType(type)) {
         form.playtimeHours = '';
@@ -214,37 +210,15 @@ const mediaModalSlice = createSlice({
     setFetchError(state, action: PayloadAction<string | null>) {
       state.fetchError = action.payload;
     },
-    applyFetchedCover(
-      state,
-      action: PayloadAction<{
-        title: string;
-        mediaType: MediaType;
-        posterUrl: string;
-        externalId: string;
-      }>,
-    ) {
-      const { title, mediaType, posterUrl, externalId } = action.payload;
-      const form = state.form;
-      state.lastCoverQueryKey = coverQueryKey(title, mediaType);
-      if (
-        form.title.trim().toLowerCase() !== title.toLowerCase() ||
-        form.mediaType !== mediaType
-      ) {
-        return;
-      }
-      form.posterUrl = posterUrl;
-      form.externalId = pickExternalId(form.externalId, externalId);
-    },
     lookupTitleChanged(state, action: PayloadAction<{ title: string; hadSelection: boolean }>) {
       const { title, hadSelection } = action.payload;
       const form = state.form;
       state.lookupSelected = false;
       state.lookupLoading = false;
       state.fetchError = null;
-      state.lastCoverQueryKey = null;
       if (hadSelection) {
         form.posterUrl = '';
-        if (/^(igdb|tmdb)_/.test(form.externalId)) form.externalId = '';
+        if (/^(igdb|tmdb|openlibrary)_/.test(form.externalId)) form.externalId = '';
       }
       form.title = title;
       Object.assign(form, METADATA_FIELDS_RESET);
@@ -256,10 +230,7 @@ const mediaModalSlice = createSlice({
       const { name, loading } = action.payload;
       state.lookupSelected = name != null;
       state.lookupLoading = loading;
-      if (name != null) {
-        state.lastCoverQueryKey = coverQueryKey(name, state.form.mediaType);
-        state.form.title = name;
-      }
+      if (name != null) state.form.title = name;
     },
     igdbGameLoaded(state, action: PayloadAction<IgdbGameLookup>) {
       const result = action.payload;
@@ -283,6 +254,19 @@ const mediaModalSlice = createSlice({
       Object.assign(state.form, METADATA_FIELDS_RESET, formFieldsFromTmdb(result), {
         title: result.name,
         posterUrl: result.poster_path ?? '',
+        externalId: pickExternalId(state.form.externalId, result.external_id),
+      });
+    },
+    openLibraryBookLoaded(state, action: PayloadAction<OpenLibraryBookLookup>) {
+      const result = action.payload;
+      Object.assign(state.form, METADATA_FIELDS_RESET, {
+        title: result.name,
+        posterUrl: result.poster_path ?? '',
+        authors: result.author_name,
+        firstPublishDate: result.first_publish_date ?? '',
+        genres: result.subjects,
+        publishers: result.publishers,
+        franchises: result.series,
         externalId: pickExternalId(state.form.externalId, result.external_id),
       });
     },
@@ -310,11 +294,11 @@ export const {
   patchForm,
   setMediaType,
   setFetchError,
-  applyFetchedCover,
   lookupTitleChanged,
   lookupSelectionChanged,
   igdbGameLoaded,
   tmdbTitleLoaded,
+  openLibraryBookLoaded,
   togglePlayedDate,
 } = mediaModalSlice.actions;
 

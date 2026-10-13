@@ -13,6 +13,8 @@ export type {
   Friend,
   IgdbGameLookup,
   IgdbGameSearchResult,
+  OpenLibraryBookLookup,
+  OpenLibraryBookSearchResult,
   TmdbLookup,
   TmdbMediaType,
   TmdbSearchResult,
@@ -53,4 +55,6 @@ export {
   useLazySearchTmdbTitlesQuery,
   useLazyFetchTmdbTitleQuery,
   useLazyFetchOpenLibraryCoverQuery,
+  useLazySearchOpenLibraryBooksQuery,
+  useLazyFetchOpenLibraryBookQuery,
 } from './coversEndpoints';
