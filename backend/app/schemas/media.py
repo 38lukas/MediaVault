@@ -21,6 +21,14 @@ class MediaEntryBase(BaseModel):
     genres: Optional[list[str]] = None
     developers: Optional[list[str]] = None
     publishers: Optional[list[str]] = None
+    directors: Optional[list[str]] = None
+    creators: Optional[list[str]] = None
+    production_companies: Optional[list[str]] = None
+    runtime: Optional[int] = Field(default=None, ge=0)  # Minutes.
+    last_air_date: Optional[datetime] = None
+    number_of_seasons: Optional[int] = Field(default=None, ge=0)
+    number_of_episodes: Optional[int] = Field(default=None, ge=0)
+    original_title: Optional[str] = None
     platform_played_on: Optional[str] = None
     external_id: str
     poster_path: Optional[str] = None

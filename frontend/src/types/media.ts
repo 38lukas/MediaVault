@@ -11,6 +11,14 @@ export interface MediaItem {
   genres?: string[] | null;
   developers?: string[] | null;
   publishers?: string[] | null;
+  directors?: string[] | null;
+  creators?: string[] | null;
+  production_companies?: string[] | null;
+  runtime?: number | null;
+  last_air_date?: string | null;
+  number_of_seasons?: number | null;
+  number_of_episodes?: number | null;
+  original_title?: string | null;
   platform_played_on?: string | null;
   external_id: string;
   poster_path?: string | null;

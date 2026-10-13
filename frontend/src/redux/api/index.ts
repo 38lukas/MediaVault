@@ -13,6 +13,9 @@ export type {
   Friend,
   IgdbGameLookup,
   IgdbGameSearchResult,
+  TmdbLookup,
+  TmdbMediaType,
+  TmdbSearchResult,
   UserSettingsUpdate,
 } from './types';
 
@@ -47,5 +50,7 @@ export {
   useLazySearchIgdbGamesQuery,
   useLazyFetchIgdbGameQuery,
   useLazyFetchTmdbCoverQuery,
+  useLazySearchTmdbTitlesQuery,
+  useLazyFetchTmdbTitleQuery,
   useLazyFetchOpenLibraryCoverQuery,
 } from './coversEndpoints';

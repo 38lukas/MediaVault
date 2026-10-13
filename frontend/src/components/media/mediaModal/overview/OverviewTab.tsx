@@ -18,18 +18,21 @@ import { MEDIA_TYPES, STATUSES_BY_TYPE, isGameType } from '@/types/media';
 import { getStatusColor } from '@/utils/mediaStatus';
 import { toDbRating } from '@/utils/rating';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import type { TmdbMediaType } from '@/redux/api';
 import {
   igdbGameLoaded,
-  igdbSelectionChanged,
-  igdbTitleChanged,
+  lookupSelectionChanged,
+  lookupTitleChanged,
   patchForm,
   setFetchError,
   setMediaType,
+  tmdbTitleLoaded,
 } from '@/redux/slices/mediaModalSlice';
-import { fieldSx, sanitizeIntegerInput } from '../constants';
+import { fieldSx, getCoverProvider, sanitizeIntegerInput } from '../constants';
 import { coverFetchErrorMessage } from '../useCoverAutoFetch';
 import { ChipPicker } from './ChipPicker';
 import { IgdbGameSearch } from './IgdbGameSearch';
+import { TmdbTitleSearch } from './TmdbTitleSearch';
 
 const blockNonIntegerKeys = (event: KeyboardEvent) => {
   if (['e', 'E', '+', '-', '.', ','].includes(event.key)) event.preventDefault();
@@ -53,29 +56,48 @@ export function OverviewTab({ isFetchingCover }: OverviewTabProps) {
   const item = useAppSelector((state) => state.mediaModal.editingItem);
   const form = useAppSelector((state) => state.mediaModal.form);
   const supportsPlaytime = isGameType(form.mediaType);
+  const provider = getCoverProvider(form.mediaType);
+  const searchKey = `${open}:${item?.id ?? 'new'}:${form.mediaType}`;
 
   const handleIgdbSearchError = useCallback(
     (err: unknown) => dispatch(setFetchError(coverFetchErrorMessage(err, 'IGDB'))),
     [dispatch],
   );
+  const handleTmdbSearchError = useCallback(
+    (err: unknown) => dispatch(setFetchError(coverFetchErrorMessage(err, 'TMDB'))),
+    [dispatch],
+  );
+  const handleTitleChange = (title: string, hadSelection: boolean) =>
+    dispatch(lookupTitleChanged({ title, hadSelection }));
+  const handleSelectionChange = (result: { name: string } | null, loading: boolean) =>
+    dispatch(lookupSelectionChanged({ name: result?.name ?? null, loading }));
 
   return (
     <Stack spacing={2.25}>
-      {supportsPlaytime ? (
+      {provider === 'IGDB' ? (
         <IgdbGameSearch
-          key={`${open}:${item?.id ?? 'new'}:${form.mediaType}`}
+          key={searchKey}
           open={open}
           title={form.title}
           skipSearchForTitle={item && isGameType(item.media_type) ? item.title : undefined}
           fieldSx={fieldSx}
-          onTitleChange={(title, hadSelection) =>
-            dispatch(igdbTitleChanged({ title, hadSelection }))
-          }
-          onSelectionChange={(game, loading) =>
-            dispatch(igdbSelectionChanged({ name: game?.name ?? null, loading }))
-          }
+          onTitleChange={handleTitleChange}
+          onSelectionChange={handleSelectionChange}
           onGameLoaded={(game) => dispatch(igdbGameLoaded(game))}
           onError={handleIgdbSearchError}
+        />
+      ) : provider === 'TMDB' ? (
+        <TmdbTitleSearch
+          key={searchKey}
+          open={open}
+          title={form.title}
+          mediaType={form.mediaType as TmdbMediaType}
+          skipSearchForTitle={item?.media_type === form.mediaType ? item.title : undefined}
+          fieldSx={fieldSx}
+          onTitleChange={handleTitleChange}
+          onSelectionChange={handleSelectionChange}
+          onTitleLoaded={(result) => dispatch(tmdbTitleLoaded(result))}
+          onError={handleTmdbSearchError}
         />
       ) : (
         <TextField

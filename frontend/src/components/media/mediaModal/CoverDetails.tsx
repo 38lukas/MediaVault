@@ -19,7 +19,7 @@ import { useAppDispatch } from '@/redux/hooks';
 import { useLazyFetchIgdbGameQuery } from '@/redux/api';
 import {
   igdbGameLoaded,
-  igdbSelectionChanged,
+  lookupSelectionChanged,
   patchForm,
   setFetchError,
 } from '@/redux/slices/mediaModalSlice';
@@ -82,7 +82,7 @@ export function CoverDetails({
 
     setApplying(true);
     dispatch(setFetchError(null));
-    dispatch(igdbSelectionChanged({ name: title.trim() || null, loading: true }));
+    dispatch(lookupSelectionChanged({ name: title.trim() || null, loading: true }));
     try {
       const result = await fetchIgdbGame(igdbId).unwrap();
       dispatch(igdbGameLoaded(result));
@@ -92,10 +92,10 @@ export function CoverDetails({
           ...(nextPosterUrl ? { posterUrl: nextPosterUrl } : {}),
         }),
       );
-      dispatch(igdbSelectionChanged({ name: result.name, loading: false }));
+      dispatch(lookupSelectionChanged({ name: result.name, loading: false }));
       setOpen(false);
     } catch (err) {
-      dispatch(igdbSelectionChanged({ name: null, loading: false }));
+      dispatch(lookupSelectionChanged({ name: null, loading: false }));
       dispatch(setFetchError(coverFetchErrorMessage(err, 'IGDB')));
       onApply({
         externalId: nextExternalId,

@@ -1,10 +1,7 @@
 import { useEffect } from 'react';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import {
-  useLazyFetchOpenLibraryCoverQuery,
-  useLazyFetchTmdbCoverQuery,
-} from '@/redux/api';
+import { useLazyFetchOpenLibraryCoverQuery } from '@/redux/api';
 import { applyFetchedCover, coverQueryKey, setFetchError } from '@/redux/slices/mediaModalSlice';
 import { getCoverProvider, type CoverProvider } from './constants';
 
@@ -43,7 +40,7 @@ function isAbortError(err: unknown): boolean {
   );
 }
 
-// Debounced TMDB / Open Library cover lookup while typing a title.
+// Debounced Open Library cover lookup while typing a book title.
 export function useCoverAutoFetch(): boolean {
   const dispatch = useAppDispatch();
   const open = useAppSelector((state) => state.mediaModal.isOpen);
@@ -51,24 +48,19 @@ export function useCoverAutoFetch(): boolean {
   const mediaType = useAppSelector((state) => state.mediaModal.form.mediaType);
   const lastKey = useAppSelector((state) => state.mediaModal.lastCoverQueryKey);
   const [fetchOpenLibraryCover, openLibraryState] = useLazyFetchOpenLibraryCoverQuery();
-  const [fetchTmdbCover, tmdbState] = useLazyFetchTmdbCoverQuery();
   const provider = getCoverProvider(mediaType);
 
   useEffect(() => {
     const trimmed = title.trim();
-    if (!open || provider === 'IGDB' || trimmed.length < AUTO_FETCH_MIN_TITLE_LENGTH) return;
+    if (!open || provider !== 'Open Library' || trimmed.length < AUTO_FETCH_MIN_TITLE_LENGTH) {
+      return;
+    }
     if (coverQueryKey(trimmed, mediaType) === lastKey) return;
 
     const timer = window.setTimeout(async () => {
       dispatch(setFetchError(null));
       try {
-        const result =
-          provider === 'TMDB'
-            ? await fetchTmdbCover(
-                { name: trimmed, mediaType: mediaType as 'Movie' | 'Series' | 'Anime' },
-                true,
-              ).unwrap()
-            : await fetchOpenLibraryCover(trimmed, true).unwrap();
+        const result = await fetchOpenLibraryCover(trimmed, true).unwrap();
         dispatch(
           applyFetchedCover({
             title: trimmed,
@@ -83,7 +75,7 @@ export function useCoverAutoFetch(): boolean {
     }, AUTO_FETCH_DEBOUNCE_MS);
 
     return () => window.clearTimeout(timer);
-  }, [open, title, mediaType, lastKey, provider, dispatch, fetchTmdbCover, fetchOpenLibraryCover]);
+  }, [open, title, mediaType, lastKey, provider, dispatch, fetchOpenLibraryCover]);
 
-  return tmdbState.isFetching || openLibraryState.isFetching;
+  return openLibraryState.isFetching;
 }
