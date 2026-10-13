@@ -1,8 +1,9 @@
-import type { CardSize, SortField } from '@/types/media';
+import type { CardSize, SortField, TypeFilter } from '@/types/media';
 
 export interface UserSettingsUpdate {
   default_sort_field?: SortField;
   default_card_size?: CardSize;
+  default_type_filter?: TypeFilter;
 }
 
 export interface AccountUpdate {

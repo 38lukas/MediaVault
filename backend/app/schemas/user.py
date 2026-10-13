@@ -5,11 +5,12 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-# Must match the frontend SortField / CardSize unions.
+# Must match the frontend SortField / CardSize / TypeFilter unions.
 SortField = Literal[
     "title", "status", "rating", "started_at", "finished_at", "months", "last_played"
 ]
 CardSize = Literal[0, 1, 2, 3, 4]
+TypeFilter = Literal["All", "Game/DLC", "Movie", "Series", "Anime", "Book"]
 
 
 class LoginRequest(BaseModel):
@@ -35,6 +36,7 @@ class UserSettingsResponse(BaseModel):
     joined_date: datetime
     default_sort_field: SortField
     default_card_size: CardSize
+    default_type_filter: TypeFilter
     avatar_path: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -45,6 +47,7 @@ class UserSettingsUpdate(BaseModel):
 
     default_sort_field: Optional[SortField] = None
     default_card_size: Optional[CardSize] = None
+    default_type_filter: Optional[TypeFilter] = None
 
 
 class UserAccountUpdate(BaseModel):

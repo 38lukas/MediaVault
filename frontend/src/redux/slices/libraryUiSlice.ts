@@ -83,10 +83,11 @@ const libraryUiSlice = createSlice({
       (state, action) => {
         if (state.defaultsApplied) return;
 
-        const { default_sort_field, default_card_size } = action.payload;
+        const { default_sort_field, default_card_size, default_type_filter } = action.payload;
         state.sortField = default_sort_field;
         state.sortDirection = SORT_FIELD_DEFAULT_DIRECTION[default_sort_field];
         state.cardSize = default_card_size;
+        state.typeFilter = default_type_filter ?? 'All';
         state.defaultsApplied = true;
       },
     );

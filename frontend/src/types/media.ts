@@ -101,6 +101,7 @@ export interface UserSettings {
   joined_date: string;
   default_sort_field: SortField;
   default_card_size: CardSize;
+  default_type_filter: TypeFilter;
   avatar_path: string | null;
 }
 
