@@ -5,9 +5,9 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import { palette } from '@/lib/palette';
-import { isGameType } from '@/types/media';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setMediaModalTab, type MediaModalTab } from '@/redux/slices/mediaModalSlice';
+import { getCoverProvider } from './constants';
 
 // Modal tab definitions shown under the cover.
 const TABS: { id: MediaModalTab; label: string; icon: typeof InfoOutlinedIcon }[] = [
@@ -22,8 +22,8 @@ export function MediaModalTabs() {
   const activeTab = useAppSelector((state) => state.mediaModal.activeTab);
   const mediaType = useAppSelector((state) => state.mediaModal.form.mediaType);
   const isEdit = useAppSelector((state) => state.mediaModal.editingItem != null);
-  const igdbSelected = useAppSelector((state) => state.mediaModal.igdbSelected);
-  const detailsAvailable = isGameType(mediaType) && (isEdit || igdbSelected);
+  const lookupSelected = useAppSelector((state) => state.mediaModal.lookupSelected);
+  const detailsAvailable = getCoverProvider(mediaType) !== 'Open Library' && (isEdit || lookupSelected);
 
   return (
     <Stack

@@ -44,14 +44,17 @@ export function MediaModal() {
   const dispatch = useAppDispatch();
   const viewingAs = useAppSelector((state) => state.auth.viewingAs);
   const readOnly = Boolean(viewingAs);
-  const { isOpen: open, editingItem: item, activeTab, form, igdbLoading, fetchError } =
+  const { isOpen: open, editingItem: item, activeTab, form, lookupLoading, fetchError } =
     useAppSelector((state) => state.mediaModal);
   const isEdit = item != null;
   const [createMediaEntry, createState] = useCreateMediaEntryMutation();
   const [updateMediaEntry, updateState] = useUpdateMediaEntryMutation();
   const [deleteMediaEntry, deleteState] = useDeleteMediaEntryMutation();
-  const isFetchingCover = useCoverAutoFetch() || igdbLoading;
+  const isFetchingCover = useCoverAutoFetch() || lookupLoading;
   const usesIgdb = isGameType(form.mediaType);
+  const isMovie = form.mediaType === 'Movie';
+  const isTv = form.mediaType === 'Series' || form.mediaType === 'Anime';
+  const usesTmdb = isMovie || isTv;
   const statusStyle = getStatusColor(form.status);
   const partKey = `${open}:${item?.id ?? 'new'}`;
 
@@ -102,12 +105,20 @@ export function MediaModal() {
       started_at: toIsoDateOrNull(form.startedAt),
       finished_at: toIsoDateOrNull(form.finishedAt),
       rating: form.rating,
-      release_date: usesIgdb ? form.releaseDate || null : null,
+      release_date: usesIgdb || usesTmdb ? form.releaseDate || null : null,
       platforms: usesIgdb ? form.platforms : null,
-      franchises: usesIgdb ? form.franchises : null,
-      genres: usesIgdb ? form.genres : null,
+      franchises: usesIgdb || isMovie ? form.franchises : null,
+      genres: usesIgdb || usesTmdb ? form.genres : null,
       developers: usesIgdb ? form.developers : null,
       publishers: usesIgdb ? form.publishers : null,
+      directors: isMovie ? form.directors : null,
+      creators: isTv ? form.creators : null,
+      production_companies: usesTmdb ? form.productionCompanies : null,
+      runtime: isMovie ? form.runtime : null,
+      last_air_date: isTv ? form.lastAirDate || null : null,
+      number_of_seasons: isTv ? form.numberOfSeasons : null,
+      number_of_episodes: isTv ? form.numberOfEpisodes : null,
+      original_title: form.mediaType === 'Anime' ? form.originalTitle || null : null,
       platform_played_on: usesIgdb ? form.platformPlayedOn || null : null,
       played_dates: form.playedDates,
     };
