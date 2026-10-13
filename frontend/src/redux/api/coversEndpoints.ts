@@ -2,6 +2,8 @@ import { mediaApi } from './baseApi';
 import type {
   IgdbGameLookup,
   IgdbGameSearchResult,
+  OpenLibraryBookLookup,
+  OpenLibraryBookSearchResult,
   TmdbLookup,
   TmdbMediaType,
   TmdbSearchResult,
@@ -46,11 +48,16 @@ export const coversEndpoints = mediaApi.injectEndpoints({
       }),
     }),
 
-    fetchOpenLibraryCover: builder.query<
-      { name: string; external_id: string; poster_path: string },
-      string
-    >({
+    fetchOpenLibraryCover: builder.query<OpenLibraryBookLookup, string>({
       query: (name) => ({ url: '/openlibrary/cover', params: { name } }),
+    }),
+
+    searchOpenLibraryBooks: builder.query<OpenLibraryBookSearchResult[], string>({
+      query: (name) => ({ url: '/openlibrary/search', params: { name } }),
+    }),
+
+    fetchOpenLibraryBook: builder.query<OpenLibraryBookLookup, string>({
+      query: (id) => `/openlibrary/books/${encodeURIComponent(id)}`,
     }),
   }),
 });
@@ -63,4 +70,6 @@ export const {
   useLazySearchTmdbTitlesQuery,
   useLazyFetchTmdbTitleQuery,
   useLazyFetchOpenLibraryCoverQuery,
+  useLazySearchOpenLibraryBooksQuery,
+  useLazyFetchOpenLibraryBookQuery,
 } = coversEndpoints;

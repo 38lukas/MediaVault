@@ -3,9 +3,7 @@
 import { useCallback, type KeyboardEvent } from 'react';
 import {
   Box,
-  CircularProgress,
   FormControl,
-  InputAdornment,
   MenuItem,
   Select,
   Stack,
@@ -23,15 +21,17 @@ import {
   igdbGameLoaded,
   lookupSelectionChanged,
   lookupTitleChanged,
+  openLibraryBookLoaded,
   patchForm,
   setFetchError,
   setMediaType,
   tmdbTitleLoaded,
 } from '@/redux/slices/mediaModalSlice';
 import { fieldSx, getCoverProvider, sanitizeIntegerInput } from '../constants';
-import { coverFetchErrorMessage } from '../useCoverAutoFetch';
+import { coverFetchErrorMessage } from '../coverFetchError';
 import { ChipPicker } from './ChipPicker';
 import { IgdbGameSearch } from './IgdbGameSearch';
+import { OpenLibraryBookSearch } from './OpenLibraryBookSearch';
 import { TmdbTitleSearch } from './TmdbTitleSearch';
 
 const blockNonIntegerKeys = (event: KeyboardEvent) => {
@@ -45,12 +45,8 @@ const MEDIA_TYPE_SELECTED_COLORS = {
   color: palette.primaryContrast,
 };
 
-interface OverviewTabProps {
-  isFetchingCover: boolean;
-}
-
 // Editable core fields of a media entry in the modal overview tab.
-export function OverviewTab({ isFetchingCover }: OverviewTabProps) {
+export function OverviewTab() {
   const dispatch = useAppDispatch();
   const open = useAppSelector((state) => state.mediaModal.isOpen);
   const item = useAppSelector((state) => state.mediaModal.editingItem);
@@ -65,6 +61,10 @@ export function OverviewTab({ isFetchingCover }: OverviewTabProps) {
   );
   const handleTmdbSearchError = useCallback(
     (err: unknown) => dispatch(setFetchError(coverFetchErrorMessage(err, 'TMDB'))),
+    [dispatch],
+  );
+  const handleOpenLibrarySearchError = useCallback(
+    (err: unknown) => dispatch(setFetchError(coverFetchErrorMessage(err, 'Open Library'))),
     [dispatch],
   );
   const handleTitleChange = (title: string, hadSelection: boolean) =>
@@ -100,22 +100,16 @@ export function OverviewTab({ isFetchingCover }: OverviewTabProps) {
           onError={handleTmdbSearchError}
         />
       ) : (
-        <TextField
-          required
-          label="Title"
-          value={form.title}
-          onChange={(e) => dispatch(patchForm({ title: e.target.value }))}
-          fullWidth
-          sx={fieldSx}
-          slotProps={{
-            input: {
-              endAdornment: isFetchingCover ? (
-                <InputAdornment position="end">
-                  <CircularProgress size={16} thickness={5} color="inherit" />
-                </InputAdornment>
-              ) : null,
-            },
-          }}
+        <OpenLibraryBookSearch
+          key={searchKey}
+          open={open}
+          title={form.title}
+          skipSearchForTitle={item?.media_type === form.mediaType ? item.title : undefined}
+          fieldSx={fieldSx}
+          onTitleChange={handleTitleChange}
+          onSelectionChange={handleSelectionChange}
+          onBookLoaded={(book) => dispatch(openLibraryBookLoaded(book))}
+          onError={handleOpenLibrarySearchError}
         />
       )}
 

@@ -15,7 +15,7 @@ function formatCount(value: number | null, unit = ''): string {
   return value == null ? '' : `${value}${unit}`;
 }
 
-// Rows shown for the form's media type (IGDB fields for games, TMDB fields otherwise).
+// Rows shown for the form's media type (TMDB for movies / shows, Open Library for books, IGDB otherwise).
 function metadataRows(form: MediaForm): MetadataRow[] {
   if (form.mediaType === 'Movie') {
     return [
@@ -41,6 +41,15 @@ function metadataRows(form: MediaForm): MetadataRow[] {
       { label: 'Episodes', value: formatCount(form.numberOfEpisodes) },
     ];
   }
+  if (form.mediaType === 'Book') {
+    return [
+      { label: 'Author', value: form.authors.join(', ') },
+      { label: 'First published', value: form.firstPublishDate },
+      { label: 'Subjects', value: form.genres.join(', ') },
+      { label: 'Publishers', value: form.publishers.join(', ') },
+      { label: 'Series', value: form.franchises.join(', ') },
+    ];
+  }
   return [
     { label: 'Platforms', value: form.platforms.join(', ') },
     { label: 'Genres', value: form.genres.join(', ') },
@@ -51,7 +60,7 @@ function metadataRows(form: MediaForm): MetadataRow[] {
   ];
 }
 
-// Read-only IGDB / TMDB metadata panel for the media modal.
+// Read-only IGDB / TMDB / Open Library metadata panel for the media modal.
 export function DetailsTab() {
   const form = useAppSelector((state) => state.mediaModal.form);
   const loading = useAppSelector(

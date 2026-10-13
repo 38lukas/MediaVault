@@ -31,6 +31,8 @@ with engine.begin() as connection:
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS number_of_seasons INTEGER"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS number_of_episodes INTEGER"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS original_title VARCHAR"))
+    connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS authors VARCHAR[]"))
+    connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS first_publish_date VARCHAR"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS platform_played_on VARCHAR"))
     connection.execute(text("ALTER TABLE media_entries ADD COLUMN IF NOT EXISTS played_dates DATE[]"))
     connection.execute(text('ALTER TABLE "user" DROP COLUMN IF EXISTS ratings_enabled'))

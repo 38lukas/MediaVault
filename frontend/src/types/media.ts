@@ -19,6 +19,8 @@ export interface MediaItem {
   number_of_seasons?: number | null;
   number_of_episodes?: number | null;
   original_title?: string | null;
+  authors?: string[] | null;
+  first_publish_date?: string | null;
   platform_played_on?: string | null;
   external_id: string;
   poster_path?: string | null;
