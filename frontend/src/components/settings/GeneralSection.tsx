@@ -17,11 +17,14 @@ import {
 import {
   CARD_SIZE_OPTIONS,
   SORT_FIELD_OPTIONS,
+  TYPE_FILTERS,
+  TYPE_FILTER_LABELS,
   isCardSize,
   type SortField,
+  type TypeFilter,
 } from '@/types/media';
 
-// General settings: default library sort field and grid size.
+// General settings: default library sort field, media type filter, and grid size.
 export function GeneralSection() {
   const username = useAppSelector((state) => state.auth.username);
   const { data: settings, isLoading } = useGetUserSettingsQuery(undefined, {
@@ -31,9 +34,14 @@ export function GeneralSection() {
 
   const defaultSort = settings?.default_sort_field ?? 'status';
   const defaultCardSize = settings?.default_card_size ?? 2;
+  const defaultTypeFilter = settings?.default_type_filter ?? 'All';
 
   const handleSortChange = (field: SortField) => {
     void updateUserSettings({ default_sort_field: field });
+  };
+
+  const handleTypeFilterChange = (filter: TypeFilter) => {
+    void updateUserSettings({ default_type_filter: filter });
   };
 
   const handleCardSizeChange = (value: string | number) => {
@@ -63,6 +71,23 @@ export function GeneralSection() {
           {SORT_FIELD_OPTIONS.map((opt) => (
             <MenuItem key={opt.value} value={opt.value}>
               {opt.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth>
+        <InputLabel id="default-type-filter-label">Default Media Type</InputLabel>
+        <Select
+          labelId="default-type-filter-label"
+          label="Default Media Type"
+          value={defaultTypeFilter}
+          onChange={(e) => handleTypeFilterChange(e.target.value as TypeFilter)}
+          disabled={updateState.isLoading}
+        >
+          {TYPE_FILTERS.map((filter) => (
+            <MenuItem key={filter} value={filter}>
+              {TYPE_FILTER_LABELS[filter]}
             </MenuItem>
           ))}
         </Select>

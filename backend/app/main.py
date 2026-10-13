@@ -38,6 +38,7 @@ with engine.begin() as connection:
     connection.execute(text('ALTER TABLE "user" DROP COLUMN IF EXISTS ratings_enabled'))
     connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_sort_field VARCHAR NOT NULL DEFAULT 'status'"""))
     connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_card_size INTEGER NOT NULL DEFAULT 2"""))
+    connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_type_filter VARCHAR NOT NULL DEFAULT 'All'"""))
     connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS avatar_path VARCHAR'))
     connection.execute(text("""
         DO $$
