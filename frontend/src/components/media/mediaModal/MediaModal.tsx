@@ -18,7 +18,7 @@ import { OverviewTab } from './overview/OverviewTab';
 import { DetailsTab } from './details/DetailsTab';
 import { JournalTab } from './journal/JournalTab';
 import { palette } from '@/lib/palette';
-import { isGameType } from '@/types/media';
+import { formatMediaTitle, isGameType } from '@/types/media';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { toIsoDateOrNull } from '@/utils/date';
 import { getStatusColor } from '@/utils/mediaStatus';
@@ -118,6 +118,8 @@ export function MediaModal() {
       number_of_seasons: isTv ? form.numberOfSeasons : null,
       number_of_episodes: isTv ? form.numberOfEpisodes : null,
       original_title: form.mediaType === 'Anime' ? form.originalTitle || null : null,
+      season_number: isTv ? form.seasonNumber : null,
+      season_name: isTv && form.seasonNumber != null ? form.seasonName || null : null,
       authors: isBook ? form.authors : null,
       first_publish_date: isBook ? form.firstPublishDate || null : null,
       platform_played_on: usesIgdb ? form.platformPlayedOn || null : null,
@@ -192,7 +194,8 @@ export function MediaModal() {
             {readOnly ? 'View entry' : isEdit ? 'Edit entry' : 'New entry'}
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
-            {form.title.trim() || (readOnly ? 'Media' : isEdit ? 'Edit media' : 'Add media')}
+            {formatMediaTitle(form.title.trim(), form.seasonName) ||
+              (readOnly ? 'Media' : isEdit ? 'Edit media' : 'Add media')}
           </Typography>
         </Box>
 

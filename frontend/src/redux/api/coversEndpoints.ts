@@ -7,6 +7,7 @@ import type {
   TmdbLookup,
   TmdbMediaType,
   TmdbSearchResult,
+  TmdbSeasonLookup,
 } from './types';
 
 // External cover lookup endpoints (IGDB / TMDB / OpenLibrary).
@@ -48,6 +49,10 @@ export const coversEndpoints = mediaApi.injectEndpoints({
       }),
     }),
 
+    fetchTmdbSeason: builder.query<TmdbSeasonLookup, { showId: number; seasonNumber: number }>({
+      query: ({ showId, seasonNumber }) => `/tmdb/titles/${showId}/seasons/${seasonNumber}`,
+    }),
+
     fetchOpenLibraryCover: builder.query<OpenLibraryBookLookup, string>({
       query: (name) => ({ url: '/openlibrary/cover', params: { name } }),
     }),
@@ -69,6 +74,8 @@ export const {
   useLazyFetchTmdbCoverQuery,
   useLazySearchTmdbTitlesQuery,
   useLazyFetchTmdbTitleQuery,
+  useFetchTmdbTitleQuery,
+  useLazyFetchTmdbSeasonQuery,
   useLazyFetchOpenLibraryCoverQuery,
   useLazySearchOpenLibraryBooksQuery,
   useLazyFetchOpenLibraryBookQuery,

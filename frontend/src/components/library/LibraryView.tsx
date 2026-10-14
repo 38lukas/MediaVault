@@ -20,7 +20,12 @@ import { sortMediaItems } from '@/utils/mediaSort';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openEditMediaModal } from '@/redux/slices/mediaModalSlice';
 import { useGetMediaEntriesQuery } from '@/redux/api';
-import { matchesStatusFilter, matchesTypeFilter, type MediaItem } from '@/types/media';
+import {
+  matchesStatusFilter,
+  matchesTypeFilter,
+  mediaDisplayTitle,
+  type MediaItem,
+} from '@/types/media';
 
 // Loads media entries and renders filtered/sorted library sections.
 export function LibraryView() {
@@ -59,7 +64,7 @@ export function LibraryView() {
     const filtered = items.filter((item) => {
       if (!matchesTypeFilter(item.media_type, deferredTypeFilter)) return false;
       if (!matchesStatusFilter(item.status, deferredStatusFilter)) return false;
-      if (query && !item.title.toLowerCase().includes(query)) return false;
+      if (query && !mediaDisplayTitle(item).toLowerCase().includes(query)) return false;
       if (deferredSortField === 'months' && !item.finished_at) return false;
       return true;
     });

@@ -19,6 +19,8 @@ export interface MediaItem {
   number_of_seasons?: number | null;
   number_of_episodes?: number | null;
   original_title?: string | null;
+  season_number?: number | null;
+  season_name?: string | null;
   authors?: string[] | null;
   first_publish_date?: string | null;
   platform_played_on?: string | null;
@@ -54,6 +56,16 @@ export function isMediaType(value: string): value is MediaType {
 // True when the media type is Game or DLC
 export function isGameType(mediaType: string): boolean {
   return mediaType === 'Game' || mediaType === 'DLC';
+}
+
+// "Show: Season name" for season entries, otherwise the plain title
+export function formatMediaTitle(title: string, seasonName?: string | null): string {
+  return seasonName ? `${title}: ${seasonName}` : title;
+}
+
+// Display title for a library entry
+export function mediaDisplayTitle(item: MediaItem): string {
+  return formatMediaTitle(item.title, item.season_name);
 }
 
 export type CardSize = 0 | 1 | 2 | 3 | 4;

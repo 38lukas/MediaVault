@@ -3,7 +3,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
-import type { MediaItem } from '@/types/media';
+import { mediaDisplayTitle, type MediaItem } from '@/types/media';
 import { palette } from '@/lib/palette';
 import { getStatusColor } from '@/utils/mediaStatus';
 import { StarRating } from '@/components/common/StarRating';
@@ -19,6 +19,7 @@ interface MediaCardProps {
 export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
   const fallbackImage = 'https://via.placeholder.com/300x450?text=No+Cover';
   const statusStyle = getStatusColor(item.status);
+  const title = mediaDisplayTitle(item);
 
   return (
     <Box
@@ -59,7 +60,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
         >
           <Image
             src={item.poster_path || fallbackImage}
-            alt={item.title}
+            alt={title}
             fill
             sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 20vw"
             style={{ objectFit: 'cover' }}
@@ -84,7 +85,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
               variant="subtitle2"
               sx={{ fontWeight: 'bold', color: 'white', lineHeight: 1.2 }}
             >
-              {item.title}
+              {title}
             </Typography>
             <Box
               sx={{

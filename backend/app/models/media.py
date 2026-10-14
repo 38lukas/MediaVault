@@ -32,6 +32,8 @@ class MediaEntry(Base):
     number_of_seasons = Column(Integer, nullable=True)
     number_of_episodes = Column(Integer, nullable=True)
     original_title = Column(String, nullable=True)
+    season_number = Column(Integer, nullable=True)  # Null = entry covers the whole show.
+    season_name = Column(String, nullable=True)
     authors = Column(ARRAY(String), nullable=True)
     first_publish_date = Column(String, nullable=True)  # Free text from Open Library, e.g. "1937" or "September 21, 1937".
     platform_played_on = Column(String, nullable=True)

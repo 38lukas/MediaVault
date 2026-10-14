@@ -45,6 +45,22 @@ def get_tmdb_title(tmdb_id: int, media_type: TmdbMediaType = Query(...)):
         )
 
 
+@router.get("/titles/{tmdb_id}/seasons/{season_number}")
+def get_tmdb_season(tmdb_id: int, season_number: int):
+    """Return poster and metadata for one season of a TMDB show."""
+    try:
+        return tmdb_service.fetch_season(tmdb_id, season_number)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except httpx.HTTPError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"TMDB request failed: {e}",
+        )
+
+
 @router.get("/cover")
 def get_tmdb_cover(
     name: str = Query(..., min_length=1),

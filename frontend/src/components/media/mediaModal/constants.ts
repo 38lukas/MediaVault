@@ -37,3 +37,11 @@ export function parseIgdbExternalId(value: string): number | null {
   const id = Number(match[1]);
   return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
+
+// Parses tmdb_tv_<id> or a season id like tmdb_tv_<id>_s<n> into the TMDB show id.
+export function parseTmdbShowId(externalId: string): number | null {
+  const match = externalId.trim().match(/^tmdb_tv_(\d+)(?:_s\d+)?$/);
+  if (!match) return null;
+  const id = Number(match[1]);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}

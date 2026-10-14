@@ -63,6 +63,8 @@ def create_entry(
         number_of_seasons=entry_in.number_of_seasons,
         number_of_episodes=entry_in.number_of_episodes,
         original_title=entry_in.original_title,
+        season_number=entry_in.season_number,
+        season_name=entry_in.season_name,
         authors=entry_in.authors,
         first_publish_date=entry_in.first_publish_date,
         platform_played_on=entry_in.platform_played_on,
@@ -117,6 +119,8 @@ def update_entry(
     entry.number_of_seasons = entry_in.number_of_seasons
     entry.number_of_episodes = entry_in.number_of_episodes
     entry.original_title = entry_in.original_title
+    entry.season_number = entry_in.season_number
+    entry.season_name = entry_in.season_name
     entry.authors = entry_in.authors
     entry.first_publish_date = entry_in.first_publish_date
     entry.platform_played_on = entry_in.platform_played_on

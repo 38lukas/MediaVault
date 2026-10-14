@@ -8,7 +8,12 @@ import {
 } from '@/types/media';
 import { toDateInputValue, toIsoDateOrNull } from '@/utils/date';
 import { clearUsername } from './authSlice';
-import type { IgdbGameLookup, OpenLibraryBookLookup, TmdbLookup } from '../api';
+import type {
+  IgdbGameLookup,
+  OpenLibraryBookLookup,
+  TmdbLookup,
+  TmdbSeasonLookup,
+} from '../api';
 
 export type MediaModalTab = 'overview' | 'details' | 'journal';
 
@@ -33,6 +38,9 @@ export const INITIAL_MEDIA_FORM = {
   numberOfSeasons: null as number | null,
   numberOfEpisodes: null as number | null,
   originalTitle: '',
+  // Null = entry covers the whole show.
+  seasonNumber: null as number | null,
+  seasonName: '',
   authors: [] as string[],
   firstPublishDate: '',
   platformPlayedOn: '',
@@ -83,6 +91,8 @@ const METADATA_FIELDS_RESET = {
   numberOfSeasons: null,
   numberOfEpisodes: null,
   originalTitle: '',
+  seasonNumber: null,
+  seasonName: '',
   authors: [],
   firstPublishDate: '',
   platformPlayedOn: '',
@@ -145,6 +155,8 @@ function formFromItem(item: MediaItem): MediaForm {
     numberOfSeasons: item.number_of_seasons ?? null,
     numberOfEpisodes: item.number_of_episodes ?? null,
     originalTitle: item.original_title ?? '',
+    seasonNumber: item.season_number ?? null,
+    seasonName: item.season_name ?? '',
     authors: item.authors ?? [],
     firstPublishDate: item.first_publish_date ?? '',
     platformPlayedOn: item.platform_played_on ?? '',
@@ -159,7 +171,7 @@ function formFromItem(item: MediaItem): MediaForm {
 
 // Prefers the fetched external id unless the user typed a custom one.
 function pickExternalId(current: string, fetched: string): string {
-  return !current.trim() || current.startsWith('manual_') ? fetched : current;
+  return !current.trim() || /^(manual|igdb|tmdb|openlibrary)_/.test(current) ? fetched : current;
 }
 
 // Create/edit media dialog: open state, active tab, and form draft.
@@ -196,6 +208,7 @@ const mediaModalSlice = createSlice({
       const form = state.form;
       if (type !== form.mediaType) {
         Object.assign(form, METADATA_FIELDS_RESET);
+        form.externalId = form.externalId.replace(/^(tmdb_tv_\d+)_s\d+$/, '$1');
         state.lookupSelected = false;
         state.lookupLoading = false;
       }
@@ -257,6 +270,28 @@ const mediaModalSlice = createSlice({
         externalId: pickExternalId(state.form.externalId, result.external_id),
       });
     },
+    // Applies show-wide TMDB data, then the picked season's overrides (null = whole show).
+    tmdbSeasonSelected(
+      state,
+      action: PayloadAction<{ show: TmdbLookup; season: TmdbSeasonLookup | null }>,
+    ) {
+      const { show, season } = action.payload;
+      Object.assign(state.form, METADATA_FIELDS_RESET, formFieldsFromTmdb(show), {
+        title: show.name,
+        posterUrl: show.poster_path ?? '',
+        externalId: show.external_id,
+      });
+      if (!season) return;
+      Object.assign(state.form, {
+        seasonNumber: season.season_number,
+        seasonName: season.name,
+        posterUrl: season.poster_path ?? show.poster_path ?? '',
+        externalId: season.external_id,
+        releaseDate: toIsoDateOrNull(season.air_date ?? '') ?? '',
+        lastAirDate: toIsoDateOrNull(season.last_air_date ?? '') ?? '',
+        numberOfEpisodes: season.episode_count,
+      });
+    },
     openLibraryBookLoaded(state, action: PayloadAction<OpenLibraryBookLookup>) {
       const result = action.payload;
       Object.assign(state.form, METADATA_FIELDS_RESET, {
@@ -298,6 +333,7 @@ export const {
   lookupSelectionChanged,
   igdbGameLoaded,
   tmdbTitleLoaded,
+  tmdbSeasonSelected,
   openLibraryBookLoaded,
   togglePlayedDate,
 } = mediaModalSlice.actions;

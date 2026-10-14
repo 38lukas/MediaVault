@@ -18,6 +18,8 @@ export type {
   TmdbLookup,
   TmdbMediaType,
   TmdbSearchResult,
+  TmdbSeasonLookup,
+  TmdbSeasonSummary,
   UserSettingsUpdate,
 } from './types';
 
@@ -54,6 +56,8 @@ export {
   useLazyFetchTmdbCoverQuery,
   useLazySearchTmdbTitlesQuery,
   useLazyFetchTmdbTitleQuery,
+  useFetchTmdbTitleQuery,
+  useLazyFetchTmdbSeasonQuery,
   useLazyFetchOpenLibraryCoverQuery,
   useLazySearchOpenLibraryBooksQuery,
   useLazyFetchOpenLibraryBookQuery,

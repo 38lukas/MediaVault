@@ -27,11 +27,17 @@ import {
   setMediaType,
   tmdbTitleLoaded,
 } from '@/redux/slices/mediaModalSlice';
-import { fieldSx, getCoverProvider, sanitizeIntegerInput } from '../constants';
+import {
+  fieldSx,
+  getCoverProvider,
+  parseTmdbShowId,
+  sanitizeIntegerInput,
+} from '../constants';
 import { coverFetchErrorMessage } from '../coverFetchError';
 import { ChipPicker } from './ChipPicker';
 import { IgdbGameSearch } from './IgdbGameSearch';
 import { OpenLibraryBookSearch } from './OpenLibraryBookSearch';
+import { TmdbSeasonSelect } from './TmdbSeasonSelect';
 import { TmdbTitleSearch } from './TmdbTitleSearch';
 
 const blockNonIntegerKeys = (event: KeyboardEvent) => {
@@ -54,6 +60,8 @@ export function OverviewTab() {
   const supportsPlaytime = isGameType(form.mediaType);
   const provider = getCoverProvider(form.mediaType);
   const searchKey = `${open}:${item?.id ?? 'new'}:${form.mediaType}`;
+  const isTv = form.mediaType === 'Series' || form.mediaType === 'Anime';
+  const tmdbShowId = isTv ? parseTmdbShowId(form.externalId) : null;
 
   const handleIgdbSearchError = useCallback(
     (err: unknown) => dispatch(setFetchError(coverFetchErrorMessage(err, 'IGDB'))),
@@ -110,6 +118,16 @@ export function OverviewTab() {
           onSelectionChange={handleSelectionChange}
           onBookLoaded={(book) => dispatch(openLibraryBookLoaded(book))}
           onError={handleOpenLibrarySearchError}
+        />
+      )}
+
+      {isTv && (
+        <TmdbSeasonSelect
+          key={`${searchKey}:${tmdbShowId ?? 'none'}`}
+          showId={tmdbShowId}
+          mediaType={form.mediaType as TmdbMediaType}
+          fieldSx={fieldSx}
+          onError={handleTmdbSearchError}
         />
       )}
 

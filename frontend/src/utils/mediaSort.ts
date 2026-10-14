@@ -17,6 +17,13 @@ function lastPlayedValue(item: MediaItem): number | null {
   return maxDateValue(...(item.played_dates ?? []));
 }
 
+// Title order; seasons of the same show follow the whole-show entry in season order
+function compareTitles(a: MediaItem, b: MediaItem): number {
+  const result = a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+  if (result !== 0) return result;
+  return (a.season_number ?? 0) - (b.season_number ?? 0);
+}
+
 // Numeric ranks for status sorting (fused groups share a rank)
 const STATUS_RANK: Record<string, number> = {
   Playing: 0,
@@ -50,7 +57,7 @@ export function sortMediaItems(
   let result = 0;
 
   if (field === 'title') {
-    result = a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+    result = compareTitles(a, b);
   }
 
   else if (field === 'status') {
@@ -62,7 +69,7 @@ export function sortMediaItems(
     const aDate = dateValue(a.finished_at) ?? dateValue(a.started_at);
     const bDate = dateValue(b.finished_at) ?? dateValue(b.started_at);
     if (aDate === null && bDate === null) {
-      return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+      return compareTitles(a, b);
     }
     if (aDate === null) return 1;
     if (bDate === null) return -1;
@@ -73,13 +80,13 @@ export function sortMediaItems(
     const aRating = a.rating ?? null;
     const bRating = b.rating ?? null;
     if (aRating === null && bRating === null) {
-      return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+      return compareTitles(a, b);
     }
     if (aRating === null) return 1;
     if (bRating === null) return -1;
     result = aRating - bRating;
     if (result === 0) {
-      return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+      return compareTitles(a, b);
     }
   }
 
@@ -96,13 +103,13 @@ export function sortMediaItems(
     const aDate = lastPlayedValue(a);
     const bDate = lastPlayedValue(b);
     if (aDate === null && bDate === null) {
-      return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+      return compareTitles(a, b);
     }
     if (aDate === null) return 1;
     if (bDate === null) return -1;
     result = aDate - bDate;
     if (result === 0) {
-      return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+      return compareTitles(a, b);
     }
   }
 

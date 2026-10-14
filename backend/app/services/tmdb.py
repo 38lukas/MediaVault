@@ -11,6 +11,7 @@ TMDB_SEARCH_MOVIE_URL = "https://api.themoviedb.org/3/search/movie"
 TMDB_SEARCH_TV_URL = "https://api.themoviedb.org/3/search/tv"
 TMDB_MOVIE_DETAILS_URL = "https://api.themoviedb.org/3/movie/{tmdb_id}"
 TMDB_TV_DETAILS_URL = "https://api.themoviedb.org/3/tv/{tmdb_id}"
+TMDB_TV_SEASON_URL = "https://api.themoviedb.org/3/tv/{tmdb_id}/season/{season_number}"
 POSTER_URL_TEMPLATE = "https://image.tmdb.org/t/p/w500{poster_path}"
 
 MediaType = Literal["Movie", "Series", "Anime"]
@@ -85,10 +86,60 @@ def _tv_details(tmdb_id: int, include_original_title: bool) -> dict[str, Any]:
         "production_companies": _names(data.get("production_companies")),
         "number_of_seasons": data.get("number_of_seasons"),
         "number_of_episodes": data.get("number_of_episodes"),
+        "seasons": _season_summaries(data.get("seasons")),
     }
     if include_original_title:
         details["original_title"] = data.get("original_name") or None
     return details
+
+
+def _season_name(season: dict[str, Any], season_number: int) -> str:
+    return season.get("name") or f"Season {season_number}"
+
+
+def _season_summaries(seasons: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+    """List a show's regular seasons; season 0 holds TMDB "Specials" and is skipped."""
+    return [
+        {
+            "season_number": season["season_number"],
+            "name": _season_name(season, season["season_number"]),
+            "poster_path": _poster_url(season.get("poster_path")),
+            "air_date": season.get("air_date") or None,
+            "episode_count": season.get("episode_count"),
+        }
+        for season in sorted(seasons or [], key=lambda s: s.get("season_number") or 0)
+        if (season.get("season_number") or 0) > 0
+    ]
+
+
+def fetch_season(tmdb_id: int, season_number: int) -> dict[str, Any]:
+    """Return display-ready metadata for one season of a TMDB TV show."""
+    if tmdb_id < 1 or season_number < 1:
+        raise ValueError("TMDB ID and season number must be positive")
+
+    try:
+        data = _get_tmdb(
+            TMDB_TV_SEASON_URL.format(tmdb_id=tmdb_id, season_number=season_number),
+            {},
+        )
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            raise LookupError(
+                f"No season {season_number} found for TMDB show {tmdb_id}"
+            ) from e
+        raise
+
+    episodes = data.get("episodes") or []
+    episode_dates = [ep["air_date"] for ep in episodes if ep.get("air_date")]
+    return {
+        "season_number": season_number,
+        "name": _season_name(data, season_number),
+        "external_id": f"tmdb_tv_{tmdb_id}_s{season_number}",
+        "poster_path": _poster_url(data.get("poster_path")),
+        "air_date": data.get("air_date") or (min(episode_dates) if episode_dates else None),
+        "last_air_date": max(episode_dates) if episode_dates else None,
+        "episode_count": len(episodes),
+    }
 
 
 def search_titles_by_name(name: str, media_type: MediaType) -> list[dict[str, Any]]:

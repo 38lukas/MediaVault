@@ -29,6 +29,8 @@ class MediaEntryBase(BaseModel):
     number_of_seasons: Optional[int] = Field(default=None, ge=0)
     number_of_episodes: Optional[int] = Field(default=None, ge=0)
     original_title: Optional[str] = None
+    season_number: Optional[int] = Field(default=None, ge=1)  # Null = entry covers the whole show.
+    season_name: Optional[str] = None
     authors: Optional[list[str]] = None
     first_publish_date: Optional[str] = None
     platform_played_on: Optional[str] = None

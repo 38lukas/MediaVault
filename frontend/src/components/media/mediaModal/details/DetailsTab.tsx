@@ -37,7 +37,9 @@ function metadataRows(form: MediaForm): MetadataRow[] {
       { label: 'Genres', value: form.genres.join(', ') },
       { label: 'Created by', value: form.creators.join(', ') },
       { label: 'Production companies', value: form.productionCompanies.join(', ') },
-      { label: 'Seasons', value: formatCount(form.numberOfSeasons) },
+      form.seasonNumber != null
+        ? { label: 'Season', value: form.seasonName }
+        : { label: 'Seasons', value: formatCount(form.numberOfSeasons) },
       { label: 'Episodes', value: formatCount(form.numberOfEpisodes) },
     ];
   }

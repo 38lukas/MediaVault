@@ -46,6 +46,26 @@ export interface TmdbLookup {
   number_of_seasons?: number | null;
   number_of_episodes?: number | null;
   original_title?: string | null;
+  seasons?: TmdbSeasonSummary[];
+}
+
+// Regular seasons only (TMDB season 0 "Specials" is excluded); name may be custom, e.g. "Stardust Crusaders".
+export interface TmdbSeasonSummary {
+  season_number: number;
+  name: string;
+  poster_path: string | null;
+  air_date: string | null;
+  episode_count: number | null;
+}
+
+export interface TmdbSeasonLookup {
+  season_number: number;
+  name: string;
+  external_id: string;
+  poster_path: string | null;
+  air_date: string | null;
+  last_air_date: string | null;
+  episode_count: number;
 }
 
 export type TmdbMediaType = 'Movie' | 'Series' | 'Anime';
