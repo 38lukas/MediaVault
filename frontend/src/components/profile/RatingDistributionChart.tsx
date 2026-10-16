@@ -1,8 +1,12 @@
 'use client';
 
+import type { KeyboardEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { Box, Tooltip, Typography } from '@mui/material';
 import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';
+import { useAppDispatch } from '@/redux/hooks';
+import { showOnlyRating } from '@/redux/slices/libraryUiSlice';
 import type { RatingBucket } from '@/types/profile';
 import { RATING_SECTION_LABELS, toStars } from '@/utils/rating';
 
@@ -14,6 +18,12 @@ interface RatingDistributionChartProps {
 export function RatingDistributionChart({
   distribution,
 }: RatingDistributionChartProps) {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const openLibraryForRating = (rating: number) => {
+    dispatch(showOnlyRating(rating));
+    router.push('/library');
+  };
   const maxCount = Math.max(0, ...distribution.map((bucket) => bucket.count));
   const hasAny = maxCount > 0;
 
@@ -44,6 +54,7 @@ export function RatingDistributionChart({
         const stars = toStars(bucket.rating) ?? 0;
         const label = RATING_SECTION_LABELS[stars] ?? `${stars} stars`;
         const heightPct = maxCount === 0 ? 0 : (bucket.count / maxCount) * 100;
+        const clickable = bucket.count > 0;
 
         return (
           <Tooltip
@@ -93,6 +104,17 @@ export function RatingDistributionChart({
             }}
           >
             <Box
+              {...(clickable && {
+                role: 'button',
+                tabIndex: 0,
+                'aria-label': `Show media rated ${stars} stars in the library`,
+                onClick: () => openLibraryForRating(bucket.rating),
+                onKeyDown: (event: KeyboardEvent) => {
+                  if (event.key !== 'Enter' && event.key !== ' ') return;
+                  event.preventDefault();
+                  openLibraryForRating(bucket.rating);
+                },
+              })}
               sx={{
                 width: 32,
                 display: 'flex',
@@ -100,8 +122,9 @@ export function RatingDistributionChart({
                 alignItems: 'center',
                 justifyContent: 'flex-end',
                 height: '100%',
-                cursor: 'pointer',
-                '&:hover .rating-bar': {
+                cursor: clickable ? 'pointer' : 'default',
+                outline: 'none',
+                '&:hover .rating-bar, &:focus-visible .rating-bar': {
                   filter: 'brightness(1.15)',
                   transform: 'scaleX(1.2) scaleY(1.04)',
                 },

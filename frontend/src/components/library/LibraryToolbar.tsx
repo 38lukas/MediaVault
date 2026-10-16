@@ -25,11 +25,13 @@ import SportsEsportsOutlinedIcon from '@mui/icons-material/SportsEsportsOutlined
 import TvOutlinedIcon from '@mui/icons-material/TvOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
+import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openCreateMediaModal } from '@/redux/slices/mediaModalSlice';
 import {
   setCardSize,
+  setRatingFilter,
   setSearchQuery,
   setSortDirection,
   setSortField,
@@ -48,6 +50,10 @@ import {
   type SortField,
   type TypeFilter,
 } from '@/types/media';
+import { RATING_SECTION_LABELS, toStars } from '@/utils/rating';
+
+// DB ratings, best first.
+const RATING_FILTER_OPTIONS = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 
 const TYPE_FILTER_ICONS: Record<TypeFilter, typeof AppsOutlinedIcon> = {
   All: AppsOutlinedIcon,
@@ -65,6 +71,7 @@ export function LibraryToolbar() {
   const {
     typeFilter,
     statusFilter,
+    ratingFilter,
     sortField,
     sortDirection,
     searchQuery,
@@ -76,6 +83,7 @@ export function LibraryToolbar() {
   const activeFilterCount =
     (typeFilter !== 'All' ? 1 : 0) +
     (statusFilter ? 1 : 0) +
+    (ratingFilter != null ? 1 : 0) +
     (sortField !== 'status' ? 1 : 0);
 
   // Keep filter UI responsive while the grid catches up.
@@ -249,6 +257,34 @@ export function LibraryToolbar() {
                 {statusOptions.map((status) => (
                   <MenuItem key={status} value={status}>
                     {status}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 200, flex: '1 1 180px' }}>
+              <InputLabel id="rating-filter-label">Rating</InputLabel>
+              <Select
+                labelId="rating-filter-label"
+                label="Rating"
+                value={ratingFilter == null ? '' : String(ratingFilter)}
+                onChange={(e) =>
+                  deferDispatch(
+                    setRatingFilter(e.target.value === '' ? null : Number(e.target.value))
+                  )
+                }
+              >
+                <MenuItem value="">
+                  <em>All ratings</em>
+                </MenuItem>
+                {RATING_FILTER_OPTIONS.map((rating) => (
+                  <MenuItem key={rating} value={String(rating)}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <StarRating value={rating} readOnly size="small" />
+                      <Typography variant="body2" component="span">
+                        {RATING_SECTION_LABELS[toStars(rating) ?? 0]}
+                      </Typography>
+                    </Box>
                   </MenuItem>
                 ))}
               </Select>

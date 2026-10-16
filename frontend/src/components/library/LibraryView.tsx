@@ -41,6 +41,7 @@ export function LibraryView() {
 
   const typeFilter = useAppSelector((state) => state.libraryUi.typeFilter);
   const statusFilter = useAppSelector((state) => state.libraryUi.statusFilter);
+  const ratingFilter = useAppSelector((state) => state.libraryUi.ratingFilter);
   const sortField = useAppSelector((state) => state.libraryUi.sortField);
   const sortDirection = useAppSelector((state) => state.libraryUi.sortDirection);
   const searchQuery = useAppSelector((state) => state.libraryUi.searchQuery);
@@ -48,6 +49,7 @@ export function LibraryView() {
   // Defer heavy filter/sort work so toolbar clicks stay responsive.
   const deferredTypeFilter = useDeferredValue(typeFilter);
   const deferredStatusFilter = useDeferredValue(statusFilter);
+  const deferredRatingFilter = useDeferredValue(ratingFilter);
   const deferredSortField = useDeferredValue(sortField);
   const deferredSortDirection = useDeferredValue(sortDirection);
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -55,6 +57,7 @@ export function LibraryView() {
   const isFilterPending =
     deferredTypeFilter !== typeFilter ||
     deferredStatusFilter !== statusFilter ||
+    deferredRatingFilter !== ratingFilter ||
     deferredSortField !== sortField ||
     deferredSortDirection !== sortDirection ||
     deferredSearchQuery !== searchQuery;
@@ -64,6 +67,7 @@ export function LibraryView() {
     const filtered = items.filter((item) => {
       if (!matchesTypeFilter(item.media_type, deferredTypeFilter)) return false;
       if (!matchesStatusFilter(item.status, deferredStatusFilter)) return false;
+      if (deferredRatingFilter != null && item.rating !== deferredRatingFilter) return false;
       if (query && !mediaDisplayTitle(item).toLowerCase().includes(query)) return false;
       if (deferredSortField === 'months' && !item.finished_at) return false;
       return true;
@@ -76,6 +80,7 @@ export function LibraryView() {
     items,
     deferredTypeFilter,
     deferredStatusFilter,
+    deferredRatingFilter,
     deferredSearchQuery,
     deferredSortField,
     deferredSortDirection,

@@ -14,6 +14,8 @@ interface LibraryUiState {
   cardSize: CardSize;
   typeFilter: TypeFilter;
   statusFilter: string | null;
+  // DB rating (1–10); null = any rating.
+  ratingFilter: number | null;
   sortField: SortField;
   sortDirection: SortDirection;
   searchQuery: string;
@@ -27,6 +29,7 @@ const initialState: LibraryUiState = {
   cardSize: CARD_SIZE_DEFAULT,
   typeFilter: 'All',
   statusFilter: null,
+  ratingFilter: null,
   sortField: initialSortField,
   sortDirection: SORT_FIELD_DEFAULT_DIRECTION[initialSortField],
   searchQuery: '',
@@ -54,6 +57,17 @@ const libraryUiSlice = createSlice({
     setStatusFilter(state, action: PayloadAction<string | null>) {
       state.statusFilter = action.payload;
     },
+    setRatingFilter(state, action: PayloadAction<number | null>) {
+      state.ratingFilter = action.payload;
+    },
+    // Shows every entry with one rating, clearing the other filters (profile chart drill-down).
+    showOnlyRating(state, action: PayloadAction<number>) {
+      state.ratingFilter = action.payload;
+      state.typeFilter = 'All';
+      state.statusFilter = null;
+      state.searchQuery = '';
+      state.filtersOpen = true;
+    },
     setSortField(state, action: PayloadAction<SortField>) {
       state.sortField = action.payload;
       state.sortDirection = SORT_FIELD_DEFAULT_DIRECTION[action.payload];
@@ -75,6 +89,7 @@ const libraryUiSlice = createSlice({
     builder.addCase(clearUsername, (state) => {
       state.defaultsApplied = false;
       state.statusFilter = null;
+      state.ratingFilter = null;
       state.filtersOpen = false;
     });
 
@@ -107,6 +122,8 @@ export const {
   setCardSize,
   setTypeFilter,
   setStatusFilter,
+  setRatingFilter,
+  showOnlyRating,
   setSortField,
   setSortDirection,
   setSearchQuery,
