@@ -77,6 +77,9 @@ with engine.begin() as connection:
         "CREATE INDEX IF NOT EXISTS ix_friendships_owner_username ON friendships (owner_username)"
     ))
     connection.execute(text(
+        "CREATE INDEX IF NOT EXISTS ix_media_entries_external_id ON media_entries (external_id)"
+    ))
+    connection.execute(text(
         "CREATE INDEX IF NOT EXISTS ix_friendships_friend_username ON friendships (friend_username)"
     ))
 

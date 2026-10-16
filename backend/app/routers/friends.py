@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_username
 from app import models
-from app.schemas.friends import FriendAddRequest, FriendResponse
+from app.schemas.friends import FriendAddRequest, FriendEntryResponse, FriendResponse
 
 router = APIRouter(prefix="/friends", tags=["friends"])
 
@@ -27,6 +27,39 @@ def list_friends(
     return [
         FriendResponse(username=friendship.friend_username, avatar_path=avatar_path)
         for friendship, avatar_path in rows
+    ]
+
+
+@router.get("/entries", response_model=list[FriendEntryResponse])
+def list_friend_entries(
+    external_id: str = Query(..., min_length=1),
+    db: Session = Depends(get_db),
+    username: str = Depends(get_current_username),
+):
+    """Return the logged-in user's friends who logged the media with this external id."""
+    rows = (
+        db.query(models.MediaEntry, models.User.avatar_path)
+        .join(
+            models.Friendship,
+            models.Friendship.friend_username == models.MediaEntry.username,
+        )
+        .join(models.User, models.User.username == models.MediaEntry.username)
+        .filter(
+            models.Friendship.owner_username == username,
+            models.MediaEntry.external_id == external_id.strip(),
+        )
+        .order_by(models.MediaEntry.username.asc())
+        .all()
+    )
+    return [
+        FriendEntryResponse(
+            username=entry.username,
+            avatar_path=avatar_path,
+            status=entry.status,
+            rating=entry.rating,
+            finished_at=entry.finished_at,
+        )
+        for entry, avatar_path in rows
     ]
 
 

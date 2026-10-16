@@ -37,7 +37,7 @@ class MediaEntry(Base):
     authors = Column(ARRAY(String), nullable=True)
     first_publish_date = Column(String, nullable=True)  # Free text from Open Library, e.g. "1937" or "September 21, 1937".
     platform_played_on = Column(String, nullable=True)
-    external_id = Column(String, nullable=False)
+    external_id = Column(String, nullable=False, index=True)
     poster_path = Column(String, nullable=True)
     started_at = Column(DateTime(timezone=True), nullable=True)
     finished_at = Column(DateTime(timezone=True), nullable=True)

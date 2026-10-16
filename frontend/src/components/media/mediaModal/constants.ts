@@ -38,6 +38,11 @@ export function parseIgdbExternalId(value: string): number | null {
   return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
+// True for ids from IGDB / TMDB / Open Library that other users' entries can share.
+export function isMatchableExternalId(externalId: string): boolean {
+  return /^(igdb|tmdb|openlibrary)_/.test(externalId.trim());
+}
+
 // Parses tmdb_tv_<id> or a season id like tmdb_tv_<id>_s<n> into the TMDB show id.
 export function parseTmdbShowId(externalId: string): number | null {
   const match = externalId.trim().match(/^tmdb_tv_(\d+)(?:_s\d+)?$/);

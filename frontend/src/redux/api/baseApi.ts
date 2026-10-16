@@ -24,7 +24,12 @@ type AuthStateSlice = {
   auth: { username: string | null; viewingAs: string | null };
 };
 
-const FRIENDS_ENDPOINTS = new Set(['getFriends', 'addFriend', 'removeFriend']);
+const FRIENDS_ENDPOINTS = new Set([
+  'getFriends',
+  'getFriendEntries',
+  'addFriend',
+  'removeFriend',
+]);
 
 // Attaches X-Username from auth state (owner for friends, viewingAs otherwise).
 const rawBaseQuery = fetchBaseQuery({

@@ -11,6 +11,7 @@ export type {
   AccountUpdate,
   AuthUser,
   Friend,
+  FriendEntry,
   IgdbGameLookup,
   IgdbGameSearchResult,
   OpenLibraryBookLookup,
@@ -45,6 +46,7 @@ export { useGetProfileStatsQuery } from './profileEndpoints';
 
 export {
   useGetFriendsQuery,
+  useGetFriendEntriesQuery,
   useAddFriendMutation,
   useRemoveFriendMutation,
 } from './friendsEndpoints';

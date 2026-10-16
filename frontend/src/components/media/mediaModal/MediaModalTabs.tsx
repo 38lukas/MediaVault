@@ -4,24 +4,34 @@ import { Button, Stack } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setMediaModalTab, type MediaModalTab } from '@/redux/slices/mediaModalSlice';
+import { isMatchableExternalId } from './constants';
 
 // Modal tab definitions shown under the cover.
 const TABS: { id: MediaModalTab; label: string; icon: typeof InfoOutlinedIcon }[] = [
   { id: 'overview', label: 'Overview', icon: InfoOutlinedIcon },
   { id: 'details', label: 'Details', icon: ListAltIcon },
   { id: 'journal', label: 'Journal', icon: CalendarMonthOutlinedIcon },
+  { id: 'friends', label: 'Friends', icon: PeopleOutlinedIcon },
 ];
 
-// Overview / Details / Journal switcher under the media cover.
+// Overview / Details / Journal / Friends switcher under the media cover.
 export function MediaModalTabs() {
   const dispatch = useAppDispatch();
   const activeTab = useAppSelector((state) => state.mediaModal.activeTab);
   const isEdit = useAppSelector((state) => state.mediaModal.editingItem != null);
   const lookupSelected = useAppSelector((state) => state.mediaModal.lookupSelected);
+  const externalId = useAppSelector((state) => state.mediaModal.form.externalId);
+  const viewingAs = useAppSelector((state) => state.auth.viewingAs);
   const detailsAvailable = isEdit || lookupSelected;
+  // Friend matches need a provider id; disabled in friend view since the list would be your friends, not theirs.
+  const friendsAvailable = !viewingAs && isMatchableExternalId(externalId);
+
+  const isDisabled = (id: MediaModalTab) =>
+    (id === 'details' && !detailsAvailable) || (id === 'friends' && !friendsAvailable);
 
   return (
     <Stack
@@ -37,7 +47,7 @@ export function MediaModalTabs() {
             type="button"
             variant="outlined"
             startIcon={<Icon />}
-            disabled={id === 'details' && !detailsAvailable}
+            disabled={isDisabled(id)}
             aria-pressed={active}
             onClick={() => dispatch(setMediaModalTab(id))}
             sx={{

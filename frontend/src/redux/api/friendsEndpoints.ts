@@ -1,11 +1,17 @@
 import { mediaApi } from './baseApi';
-import type { Friend } from './types';
+import type { Friend, FriendEntry } from './types';
 
 // Friends list add/remove endpoints.
 export const friendsEndpoints = mediaApi.injectEndpoints({
   endpoints: (builder) => ({
     getFriends: builder.query<Friend[], void>({
       query: () => '/friends',
+      providesTags: ['Friends'],
+    }),
+
+    // Friends' entries for the media with this external id.
+    getFriendEntries: builder.query<FriendEntry[], string>({
+      query: (externalId) => ({ url: '/friends/entries', params: { external_id: externalId } }),
       providesTags: ['Friends'],
     }),
 
@@ -30,6 +36,7 @@ export const friendsEndpoints = mediaApi.injectEndpoints({
 
 export const {
   useGetFriendsQuery,
+  useGetFriendEntriesQuery,
   useAddFriendMutation,
   useRemoveFriendMutation,
 } = friendsEndpoints;

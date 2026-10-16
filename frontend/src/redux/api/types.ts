@@ -104,3 +104,11 @@ export interface Friend {
   username: string;
   avatar_path: string | null;
 }
+
+export interface FriendEntry {
+  username: string;
+  avatar_path: string | null;
+  status: string;
+  rating: number | null;
+  finished_at: string | null;
+}

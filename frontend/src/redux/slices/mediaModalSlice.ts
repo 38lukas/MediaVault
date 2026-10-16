@@ -15,7 +15,7 @@ import type {
   TmdbSeasonLookup,
 } from '../api';
 
-export type MediaModalTab = 'overview' | 'details' | 'journal';
+export type MediaModalTab = 'overview' | 'details' | 'journal' | 'friends';
 
 // Default empty form for create/edit media dialogs.
 export const INITIAL_MEDIA_FORM = {

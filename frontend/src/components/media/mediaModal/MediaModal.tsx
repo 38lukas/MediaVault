@@ -17,6 +17,7 @@ import { getCoverProvider, fieldSx } from './constants';
 import { OverviewTab } from './overview/OverviewTab';
 import { DetailsTab } from './details/DetailsTab';
 import { JournalTab } from './journal/JournalTab';
+import { FriendsTab } from './friends/FriendsTab';
 import { palette } from '@/lib/palette';
 import { formatMediaTitle, isGameType } from '@/types/media';
 import { getApiErrorMessage } from '@/utils/apiError';
@@ -30,10 +31,11 @@ import {
   useUpdateMediaEntryMutation,
 } from '@/redux/api';
 
+// Overview and details share one grid cell so the modal keeps a stable height; journal and friends replace them.
 function partSx(activeTab: MediaModalTab, tab: MediaModalTab) {
   return {
     gridArea: '1 / 1',
-    display: activeTab === 'journal' ? 'none' : 'block',
+    display: activeTab === 'journal' || activeTab === 'friends' ? 'none' : 'block',
     visibility: activeTab === tab ? 'visible' : 'hidden',
   } as const;
 }
@@ -249,6 +251,11 @@ export function MediaModal() {
                   <Box sx={{ gridArea: '1 / 1', display: activeTab === 'journal' ? 'block' : 'none' }}>
                     <JournalTab key={partKey} />
                   </Box>
+                  {activeTab === 'friends' && (
+                    <Box sx={{ gridArea: '1 / 1' }}>
+                      <FriendsTab />
+                    </Box>
+                  )}
                 </Box>
               </Stack>
             </Stack>
