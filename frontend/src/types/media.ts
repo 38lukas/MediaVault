@@ -40,8 +40,8 @@ export type MediaType = (typeof MEDIA_TYPES)[number];
 
 // Statuses allowed per media type (mirrors backend ALLOWED_STATUSES)
 export const STATUSES_BY_TYPE: Record<MediaType, string[]> = {
-  Game: ['Playing', 'Finished', 'Played', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
-  DLC: ['Playing', 'Finished', 'Played', 'Dropped', 'Shelved', 'Backlog', 'Wishlist'],
+  Game: ['Playing', 'Finished', 'Played', 'Shelved', 'Dropped', 'Backlog', 'Wishlist'],
+  DLC: ['Playing', 'Finished', 'Played', 'Shelved', 'Dropped', 'Backlog', 'Wishlist'],
   Movie: ['Watching', 'Watched', 'Dropped', 'Watchlist'],
   Series: ['Watching', 'Watched', 'Shelved', 'Dropped', 'Watchlist'],
   Anime: ['Watching', 'Watched', 'Shelved', 'Dropped', 'Watchlist'],
@@ -139,8 +139,8 @@ export const UNIFIED_STATUS_FILTERS = [
   'Active',
   'Finished',
   'Played',
-  'Dropped',
   'Shelved',
+  'Dropped',
   'Queue',
   'Wishlist',
 ] as const;
