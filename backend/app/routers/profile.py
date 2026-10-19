@@ -14,50 +14,74 @@ from app import models, schemas
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 
-class _GameLogAchievement(NamedTuple):
+class _LogAchievement(NamedTuple):
     id: str
     title: str
     description: str
+    media_type: str
     threshold: int
     image: str | None
     rarity: str
 
 
-# Game-log milestones. Drop icons in frontend/public/achievements and set image
-# to the public URL, e.g. "/achievements/getting-started.svg".
-# Rarer tiers are the harder milestones.
-_GAME_LOG_ACHIEVEMENTS = [
-    _GameLogAchievement(
-        "game_log_10",
-        "Getting Started",
-        "Log 10 games on your profile",
-        10,
+def _log_milestones(
+    prefix: str,
+    media_type: str,
+    noun: str,
+    titles: tuple[str, str, str, str],
+    image: str | None = None,
+) -> list[_LogAchievement]:
+    """Bronze/silver/gold/platinum milestones for logging one media type."""
+    steps = (
+        (10, "Bronze"),
+        (50, "Silver"),
+        (100, "Gold"),
+        (250, "Platinum"),
+    )
+    return [
+        _LogAchievement(
+            f"{prefix}_log_{threshold}",
+            title,
+            f"Log {threshold} {noun} on your profile",
+            media_type,
+            threshold,
+            image,
+            rarity,
+        )
+        for (threshold, rarity), title in zip(steps, titles)
+    ]
+
+
+# Drop icons in frontend/public/achievements and set image to the public URL,
+# e.g. "/achievements/getting-started.svg". Rarer tiers are the harder milestones.
+_LOG_ACHIEVEMENTS = [
+    *_log_milestones(
+        "game",
+        MediaType.GAME.value,
+        "games",
+        ("Getting Started", "Novice Game Collector", "Master Game Collector", "Legendary Collector"),
         "/achievements/getting-started.svg",
-        "Bronze",
     ),
-    _GameLogAchievement(
-        "game_log_50",
-        "Novice Game Collector",
-        "Log 50 games on your profile",
-        50,
-        "/achievements/getting-started.svg",
-        "Silver",
+    *_log_milestones(
+        "movie",
+        MediaType.MOVIE.value,
+        "movies",
+        ("Now Showing", "Novice Movie Collector", "Master Movie Collector", "Cinema Legend"),
+        "/achievements/movies.svg",
     ),
-    _GameLogAchievement(
-        "game_log_100",
-        "Master Game Collector",
-        "Log 100 games on your profile",
-        100,
-        "/achievements/getting-started.svg",
-        "Gold",
+    *_log_milestones(
+        "series",
+        MediaType.SERIES.value,
+        "series",
+        ("Pilot Episode", "Novice Series Collector", "Master Series Collector", "Television Legend"),
+        "/achievements/series.svg",
     ),
-    _GameLogAchievement(
-        "game_log_250",
-        "Legendary Collector",
-        "Log 250 games on your profile",
-        250,
-        "/achievements/getting-started.svg",
-        "Platinum",
+    *_log_milestones(
+        "anime",
+        MediaType.ANIME.value,
+        "anime",
+        ("First Episode", "Novice Anime Collector", "Master Anime Collector", "Anime Legend"),
+        "/achievements/anime.svg",
     ),
 ]
 
@@ -121,28 +145,28 @@ def get_profile_stats(
     ]
     active_entries.sort(key=lambda pair: (pair[0], pair[1].id), reverse=True)
 
-    game_count = sum(1 for entry in entries if entry.media_type == MediaType.GAME.value)
+    logged_counts = Counter(entry.media_type for entry in entries)
 
     return schemas.ProfileStatsResponse(
         finished=finished,
         rating_distribution=rating_distribution,
         recent_activity=[entry for _, entry in active_entries[:8]],
-        achievements=_game_log_achievements(game_count),
+        achievements=_log_achievements(logged_counts),
     )
 
 
-def _game_log_achievements(game_count: int) -> list[schemas.Achievement]:
-    """Unlock game-log achievements from how many games are on the profile."""
+def _log_achievements(logged_counts: Counter) -> list[schemas.Achievement]:
+    """Unlock log achievements from how many entries of each type are on the profile."""
     return [
         schemas.Achievement(
             id=achievement.id,
             title=achievement.title,
             description=achievement.description,
-            unlocked=game_count >= achievement.threshold,
+            unlocked=logged_counts.get(achievement.media_type, 0) >= achievement.threshold,
             rarity=achievement.rarity,
             image=achievement.image,
         )
-        for achievement in _GAME_LOG_ACHIEVEMENTS
+        for achievement in _LOG_ACHIEVEMENTS
     ]
 
 

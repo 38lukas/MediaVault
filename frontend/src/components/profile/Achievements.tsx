@@ -1,8 +1,16 @@
 'use client';
 
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 import { keyframes } from '@emotion/react';
-import { Box, Tooltip, Typography, type BoxProps } from '@mui/material';
+import {
+  Box,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Tooltip,
+  Typography,
+  type BoxProps,
+} from '@mui/material';
 import { palette } from '@/lib/palette';
 import type { Achievement, AchievementRarity } from '@/types/profile';
 
@@ -69,8 +77,18 @@ const achievementSheen = keyframes({
   '55%, 100%': { transform: 'translateX(130%)' },
 });
 
+const ICON_SIZE = 60;
+const COLUMNS = 8;
+const MAX_SLOTS = COLUMNS * 2;
+
 // Square achievement icons. image is a custom icon; otherwise a placeholder glyph.
 export function Achievements({ achievements }: AchievementsProps) {
+  const [open, setOpen] = useState(false);
+  const ordered = [...achievements].sort((a, b) => Number(b.unlocked) - Number(a.unlocked));
+  const overflow = ordered.length > MAX_SLOTS;
+  const visible = overflow ? ordered.slice(0, MAX_SLOTS - 1) : ordered;
+  const hiddenCount = ordered.length - visible.length;
+
   return (
     <Box>
       <Typography
@@ -80,69 +98,135 @@ export function Achievements({ achievements }: AchievementsProps) {
       >
         Achievements
       </Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, pt: 0.75 }}>
-        {achievements.map((achievement) => (
-          <Tooltip
-            key={achievement.id}
-            arrow
-            placement="top"
-            enterDelay={80}
-            title={
-              <Box sx={{ py: 0.25, px: 0.5, maxWidth: 220 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ fontWeight: 700, color: palette.textOnDark, lineHeight: 1.3 }}
-                >
-                  {achievement.title}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: 'rgba(255,255,255,0.72)', lineHeight: 1.35 }}
-                >
-                  {achievement.description}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: 'block',
-                    mt: 0.5,
-                    fontWeight: 700,
-                    lineHeight: 1.35,
-                    color: RARITY_COLOR[achievement.rarity],
-                    ...(achievement.rarity === 'Platinum' && {
-                      animation: `${rainbowText} 3.6s linear infinite`,
-                    }),
-                  }}
-                >
-                  Rarity: {achievement.rarity}
-                </Typography>
-              </Box>
-            }
-            slotProps={{
-              tooltip: {
-                sx: {
-                  backgroundColor: palette.surfaceElevated,
-                  border: `1px solid ${palette.border}`,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
-                },
-              },
-              arrow: {
-                sx: {
-                  color: palette.surfaceElevated,
-                  '&::before': {
-                    border: `1px solid ${palette.border}`,
-                    backgroundColor: palette.surfaceElevated,
-                    boxSizing: 'border-box',
-                  },
-                },
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${COLUMNS}, ${ICON_SIZE}px)`,
+          gap: 1.75,
+          pt: 1,
+          pl: 1,
+        }}
+      >
+        {visible.map((achievement) => (
+          <AchievementTooltip key={achievement.id} achievement={achievement} />
+        ))}
+        {overflow && (
+          <Box
+            component="button"
+            type="button"
+            aria-label={`Show ${hiddenCount} more achievements`}
+            onClick={() => setOpen(true)}
+            sx={{
+              width: ICON_SIZE,
+              height: ICON_SIZE,
+              p: 0,
+              borderRadius: 1.5,
+              border: `2px solid ${palette.borderMuted}`,
+              backgroundColor: palette.surface,
+              color: palette.textOnDark,
+              fontWeight: 700,
+              fontSize: '1rem',
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              '&:hover': {
+                borderColor: palette.primary,
+                color: palette.primary,
               },
             }}
           >
-            <AchievementIcon achievement={achievement} />
-          </Tooltip>
-        ))}
+            +{hiddenCount}
+          </Box>
+        )}
       </Box>
+
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        fullWidth
+        maxWidth="md"
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 2,
+              backgroundColor: palette.surface,
+              border: `1px solid ${palette.border}`,
+              backgroundImage: 'none',
+            },
+          },
+        }}
+      >
+        <DialogTitle>Achievements</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, pt: 1, pl: 1, pb: 1 }}>
+            {ordered.map((achievement) => (
+              <AchievementTooltip key={achievement.id} achievement={achievement} />
+            ))}
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
+  );
+}
+
+function AchievementTooltip({ achievement }: { achievement: Achievement }) {
+  return (
+    <Tooltip
+      arrow
+      placement="top"
+      enterDelay={80}
+      title={
+        <Box sx={{ py: 0.25, px: 0.5, maxWidth: 220 }}>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 700, color: palette.textOnDark, lineHeight: 1.3 }}
+          >
+            {achievement.title}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{ color: 'rgba(255,255,255,0.72)', lineHeight: 1.35 }}
+          >
+            {achievement.description}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              display: 'block',
+              mt: 0.5,
+              fontWeight: 700,
+              lineHeight: 1.35,
+              color: RARITY_COLOR[achievement.rarity],
+              ...(achievement.rarity === 'Platinum' && {
+                animation: `${rainbowText} 3.6s linear infinite`,
+              }),
+            }}
+          >
+            Rarity: {achievement.rarity}
+          </Typography>
+        </Box>
+      }
+      slotProps={{
+        tooltip: {
+          sx: {
+            backgroundColor: palette.surfaceElevated,
+            border: `1px solid ${palette.border}`,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
+          },
+        },
+        arrow: {
+          sx: {
+            color: palette.surfaceElevated,
+            '&::before': {
+              border: `1px solid ${palette.border}`,
+              backgroundColor: palette.surfaceElevated,
+              boxSizing: 'border-box',
+            },
+          },
+        },
+      }}
+    >
+      <AchievementIcon achievement={achievement} />
+    </Tooltip>
   );
 }
 
@@ -164,8 +248,8 @@ const AchievementIcon = forwardRef<HTMLDivElement, BoxProps & { achievement: Ach
       }`}
       sx={{
         position: 'relative',
-        width: 72,
-        height: 72,
+        width: ICON_SIZE,
+        height: ICON_SIZE,
         flexShrink: 0,
         cursor: 'default',
         '&:hover .achievement-image': {
@@ -300,7 +384,7 @@ function Sparkles({ rainbow = false }: { rainbow?: boolean }) {
 }
 
 function PlaceholderGlyph({ id }: { id: string }) {
-  const mark = id.endsWith('_500') ? '500' : id.endsWith('_100') ? '100' : '10';
+  const mark = id.match(/_(\d+)$/)?.[1] ?? '';
 
   return (
     <Box
