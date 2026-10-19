@@ -1,3 +1,17 @@
+// Mean star rating (0.5–5) across histogram buckets. Null when nothing is rated.
+export function averageStars(
+  distribution: { rating: number; count: number }[],
+): number | null {
+  let weighted = 0;
+  let total = 0;
+  for (const bucket of distribution) {
+    weighted += bucket.rating * bucket.count;
+    total += bucket.count;
+  }
+  if (total === 0) return null;
+  return weighted / total / 2;
+}
+
 // Convert a DB rating (1–10) to UI stars (0.5–5)
 export function toStars(rating?: number | null): number | null {
   if (rating == null) return null;

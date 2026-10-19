@@ -10,6 +10,7 @@ import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetProfileStatsQuery } from '@/redux/api';
 import { getApiErrorMessage } from '@/utils/apiError';
+import { averageStars } from '@/utils/rating';
 
 // Home/profile page with stats, avatar, and recent activity
 export default function ProfilePage() {
@@ -20,6 +21,7 @@ export default function ProfilePage() {
     skip: !username,
   });
   const errorMessage = getApiErrorMessage(error, 'Failed to load profile stats');
+  const averageRating = data ? averageStars(data.rating_distribution) : null;
 
   return (
     <>
@@ -61,7 +63,29 @@ export default function ProfilePage() {
                 {displayName}
               </Typography>
             )}
-            <RatingDistributionChart distribution={data.rating_distribution} />
+            <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+              <RatingDistributionChart distribution={data.rating_distribution} />
+              {averageRating != null && (
+                <Typography
+                  variant="h6"
+                  component="p"
+                  sx={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    mt: 1,
+                    mb: 0,
+                    fontWeight: 500,
+                    lineHeight: 1.2,
+                    color: palette.primary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Average Rating: {averageRating.toFixed(1)}
+                </Typography>
+              )}
+            </Box>
           </Box>
           <FinishedStats finished={data.finished} />
           <RecentActivity items={data.recent_activity} />
