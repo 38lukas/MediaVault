@@ -1,6 +1,6 @@
 from app.schemas.friends import FriendAddRequest, FriendResponse
 from app.schemas.media import MediaEntryBase, MediaEntryCreate, MediaEntryResponse
-from app.schemas.profile import FinishedCounts, ProfileStatsResponse, RatingBucket
+from app.schemas.profile import Achievement, FinishedCounts, ProfileStatsResponse, RatingBucket
 from app.schemas.user import (
     LoginRequest,
     SortField,
@@ -11,6 +11,7 @@ from app.schemas.user import (
 )
 
 __all__ = [
+    "Achievement",
     "FinishedCounts",
     "FriendAddRequest",
     "FriendResponse",

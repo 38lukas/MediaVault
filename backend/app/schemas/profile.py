@@ -1,8 +1,12 @@
 """Pydantic request/response schemas for profile stats."""
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from app.schemas.media import MediaEntryResponse
+
+AchievementRarity = Literal["Bronze", "Silver", "Gold", "Platinum"]
 
 class FinishedCounts(BaseModel):
     """All-time finished counts: total plus one count per media type."""
@@ -23,9 +27,21 @@ class RatingBucket(BaseModel):
     count: int
 
 
+class Achievement(BaseModel):
+    """A profile achievement. image is an optional custom icon URL."""
+
+    id: str
+    title: str
+    description: str
+    unlocked: bool
+    rarity: AchievementRarity
+    image: str | None = None
+
+
 class ProfileStatsResponse(BaseModel):
     """Aggregated profile stats derived from the user's media_entries."""
 
     finished: FinishedCounts
     rating_distribution: list[RatingBucket]
     recent_activity: list[MediaEntryResponse]
+    achievements: list[Achievement]

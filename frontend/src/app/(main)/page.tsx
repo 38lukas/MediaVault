@@ -2,6 +2,7 @@
 
 import { Alert, Box, CircularProgress, Stack, Typography } from '@mui/material';
 import { SectionDivider } from '@/components/common/SectionDivider';
+import { Achievements } from '@/components/profile/Achievements';
 import { FinishedStats } from '@/components/profile/FinishedStats';
 import { Avatar } from '@/components/profile/Avatar';
 import { RatingDistributionChart } from '@/components/profile/RatingDistributionChart';
@@ -86,6 +87,7 @@ export default function ProfilePage() {
                 </Typography>
               )}
             </Box>
+            <Achievements achievements={data.achievements} />
           </Box>
           <FinishedStats finished={data.finished} />
           <RecentActivity items={data.recent_activity} />
