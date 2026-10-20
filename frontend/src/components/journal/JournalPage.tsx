@@ -1,12 +1,16 @@
 'use client';
 
-import { forwardRef, useMemo, useState } from 'react';
+import { forwardRef, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Box,
   Button,
   CircularProgress,
+  ClickAwayListener,
+  Divider,
   MenuItem,
+  Paper,
+  Popper,
   Select,
   Stack,
   Tooltip,
@@ -342,6 +346,8 @@ const DayCell = forwardRef<
   const titles = logs.map((log) => log.title).join(', ');
   const visibleLogs = logs.slice(0, MAX_VISIBLE_COVERS);
   const hasMore = logs.length > MAX_VISIBLE_COVERS;
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreButtonRef = useRef<HTMLButtonElement | null>(null);
   return (
     <Box
       ref={ref}
@@ -381,16 +387,30 @@ const DayCell = forwardRef<
                 key={log.item.id}
                 component="button"
                 type="button"
-                aria-label={[
-                  `Open ${log.title}`,
-                  log.started ? 'Started' : '',
-                  log.finished ? 'Finished' : '',
-                  log.rewatch ? replayLabel(log.item.media_type) : '',
-                  showMore ? 'more entries logged' : '',
-                ]
-                  .filter(Boolean)
-                  .join(', ')}
-                onClick={() => onOpen(log.item)}
+                aria-label={
+                  showMore
+                    ? `Show all ${logs.length} entries logged this day`
+                    : [
+                        `Open ${log.title}`,
+                        log.started ? 'Started' : '',
+                        log.finished ? 'Finished' : '',
+                        log.rewatch ? replayLabel(log.item.media_type) : '',
+                      ]
+                        .filter(Boolean)
+                        .join(', ')
+                }
+                aria-haspopup={showMore ? 'dialog' : undefined}
+                aria-expanded={showMore ? moreOpen : undefined}
+                ref={showMore ? moreButtonRef : undefined}
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (showMore) {
+                    setMoreOpen((open) => !open);
+                    return;
+                  }
+                  onOpen(log.item);
+                }}
                 sx={{
                   position: 'relative',
                   // Always one third of the day, so one cover matches three.
@@ -485,6 +505,152 @@ const DayCell = forwardRef<
           })}
         </Box>
       )}
+      <DayEntriesPopover
+        date={date}
+        logs={logs}
+        anchorEl={moreOpen ? moreButtonRef.current : null}
+        onClose={() => setMoreOpen(false)}
+        onOpen={onOpen}
+      />
     </Box>
   );
 });
+
+function DayEntriesPopover({
+  date,
+  logs,
+  anchorEl,
+  onClose,
+  onOpen,
+}: {
+  date: Date;
+  logs: DayLog[];
+  anchorEl: HTMLElement | null;
+  onClose: () => void;
+  onOpen: (item: MediaItem) => void;
+}) {
+  if (!anchorEl) return null;
+  const heading = date.toLocaleDateString('en', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+  return (
+    <Popper
+      open
+      anchorEl={anchorEl}
+      placement="bottom-start"
+      style={{ zIndex: 1400 }}
+      modifiers={[{ name: 'offset', options: { offset: [0, 6] } }]}
+    >
+      <ClickAwayListener onClickAway={onClose}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 1.25,
+            width: 280,
+            maxHeight: 360,
+            overflowY: 'auto',
+            borderRadius: 2,
+            backgroundImage: 'none',
+            backgroundColor: palette.surfaceElevated,
+            border: `1px solid ${palette.border}`,
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, px: 0.5, pb: 0.75 }}>
+            {heading}
+          </Typography>
+          <Divider sx={{ borderColor: palette.borderMuted, mb: 0.5 }} />
+          <Stack spacing={0.25}>
+            {logs.map((log) => (
+              <Box
+                key={log.item.id}
+                component="button"
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpen(log.item);
+                }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  width: '100%',
+                  px: 0.5,
+                  py: 0.5,
+                  border: 'none',
+                  borderRadius: 1,
+                  backgroundColor: 'transparent',
+                  color: 'text.primary',
+                  fontFamily: 'inherit',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  '&:hover': { backgroundColor: palette.selectedBg },
+                  '&:focus-visible': { outline: `2px solid ${palette.primary}`, outlineOffset: -2 },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 28,
+                    aspectRatio: '2 / 3',
+                    flexShrink: 0,
+                    borderRadius: 0.5,
+                    overflow: 'hidden',
+                    backgroundColor: palette.paper,
+                  }}
+                >
+                  {log.item.poster_path ? (
+                    <Box
+                      component="img"
+                      src={log.item.poster_path}
+                      alt=""
+                      draggable={false}
+                      sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {log.title.slice(0, 1)}
+                    </Box>
+                  )}
+                </Box>
+                <Typography variant="body2" sx={{ flex: 1, lineHeight: 1.3 }}>
+                  {log.title}
+                </Typography>
+                {(log.started || log.finished || log.rewatch) && (
+                  <Box sx={{ display: 'flex', gap: 0.25, flexShrink: 0 }}>
+                    {log.started && (
+                      <Box component="span" title="Started" sx={markerSx}>
+                        S
+                      </Box>
+                    )}
+                    {log.finished && (
+                      <Box component="span" title="Finished" sx={markerSx}>
+                        F
+                      </Box>
+                    )}
+                    {log.rewatch && (
+                      <Box component="span" title={replayLabel(log.item.media_type)} sx={markerSx}>
+                        <ReplayIcon sx={{ fontSize: '0.7rem' }} />
+                      </Box>
+                    )}
+                  </Box>
+                )}
+              </Box>
+            ))}
+          </Stack>
+        </Paper>
+      </ClickAwayListener>
+    </Popper>
+  );
+}
