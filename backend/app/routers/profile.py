@@ -137,6 +137,8 @@ def get_profile_stats(
         for rating in range(1, 11)
     ]
 
+    unrated_count = sum(1 for entry in entries if entry.rating is None)
+
     # get the 8 entries with the most recent activity
     active_entries = [
         (activity, entry)
@@ -150,6 +152,7 @@ def get_profile_stats(
     return schemas.ProfileStatsResponse(
         finished=finished,
         rating_distribution=rating_distribution,
+        unrated_count=unrated_count,
         recent_activity=[entry for _, entry in active_entries[:8]],
         achievements=_log_achievements(logged_counts),
     )

@@ -1,9 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type {
-  CardSize,
-  SortDirection,
-  SortField,
-  TypeFilter,
+import {
+  RATING_FILTER_UNRATED,
+  type CardSize,
+  type RatingFilter,
+  type SortDirection,
+  type SortField,
+  type TypeFilter,
 } from '@/types/media';
 import { CARD_SIZE_DEFAULT, statusesForTypeFilter } from '@/types/media';
 import { SORT_FIELD_DEFAULT_DIRECTION } from '@/utils/mediaSort';
@@ -14,8 +16,7 @@ interface LibraryUiState {
   cardSize: CardSize;
   typeFilter: TypeFilter;
   statusFilter: string | null;
-  // DB rating (1–10); null = any rating.
-  ratingFilter: number | null;
+  ratingFilter: RatingFilter;
   sortField: SortField;
   sortDirection: SortDirection;
   searchQuery: string;
@@ -57,12 +58,19 @@ const libraryUiSlice = createSlice({
     setStatusFilter(state, action: PayloadAction<string | null>) {
       state.statusFilter = action.payload;
     },
-    setRatingFilter(state, action: PayloadAction<number | null>) {
+    setRatingFilter(state, action: PayloadAction<RatingFilter>) {
       state.ratingFilter = action.payload;
     },
     // Shows every entry with one rating, clearing the other filters (profile chart drill-down).
     showOnlyRating(state, action: PayloadAction<number>) {
       state.ratingFilter = action.payload;
+      state.typeFilter = 'All';
+      state.statusFilter = null;
+      state.searchQuery = '';
+      state.filtersOpen = true;
+    },
+    showOnlyUnrated(state) {
+      state.ratingFilter = RATING_FILTER_UNRATED;
       state.typeFilter = 'All';
       state.statusFilter = null;
       state.searchQuery = '';
@@ -124,6 +132,7 @@ export const {
   setStatusFilter,
   setRatingFilter,
   showOnlyRating,
+  showOnlyUnrated,
   setSortField,
   setSortDirection,
   setSearchQuery,

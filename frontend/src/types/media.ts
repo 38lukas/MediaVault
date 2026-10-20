@@ -85,6 +85,9 @@ export function isCardSize(value: unknown): value is CardSize {
   return value === 0 || value === 1 || value === 2 || value === 3 || value === 4;
 }
 export type TypeFilter = 'All' | 'Game/DLC' | 'Movie' | 'Series' | 'Anime' | 'Book';
+
+export const RATING_FILTER_UNRATED = 'unrated' as const;
+export type RatingFilter = number | typeof RATING_FILTER_UNRATED | null;
 export type SortField =
   | 'title'
   | 'status'

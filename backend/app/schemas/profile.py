@@ -43,5 +43,6 @@ class ProfileStatsResponse(BaseModel):
 
     finished: FinishedCounts
     rating_distribution: list[RatingBucket]
+    unrated_count: int
     recent_activity: list[MediaEntryResponse]
     achievements: list[Achievement]

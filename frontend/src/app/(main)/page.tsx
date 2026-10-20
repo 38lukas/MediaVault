@@ -65,7 +65,10 @@ export default function ProfilePage() {
               </Typography>
             )}
             <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-              <RatingDistributionChart distribution={data.rating_distribution} />
+              <RatingDistributionChart
+                distribution={data.rating_distribution}
+                unratedCount={data.unrated_count}
+              />
               {averageRating != null && (
                 <Typography
                   variant="h6"

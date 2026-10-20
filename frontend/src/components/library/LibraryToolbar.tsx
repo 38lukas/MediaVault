@@ -41,6 +41,7 @@ import {
 } from '@/redux/slices/libraryUiSlice';
 import {
   CARD_SIZE_OPTIONS,
+  RATING_FILTER_UNRATED,
   SORT_FIELD_OPTIONS,
   TYPE_FILTER_LABELS,
   TYPE_FILTERS,
@@ -50,7 +51,7 @@ import {
   type SortField,
   type TypeFilter,
 } from '@/types/media';
-import { RATING_SECTION_LABELS, toStars } from '@/utils/rating';
+import { RATING_SECTION_LABELS, UNRATED_SECTION_LABEL, toStars } from '@/utils/rating';
 
 // DB ratings, best first.
 const RATING_FILTER_OPTIONS = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -267,16 +268,30 @@ export function LibraryToolbar() {
               <Select
                 labelId="rating-filter-label"
                 label="Rating"
-                value={ratingFilter == null ? '' : String(ratingFilter)}
-                onChange={(e) =>
-                  deferDispatch(
-                    setRatingFilter(e.target.value === '' ? null : Number(e.target.value))
-                  )
+                value={
+                  ratingFilter == null
+                    ? ''
+                    : ratingFilter === RATING_FILTER_UNRATED
+                      ? RATING_FILTER_UNRATED
+                      : String(ratingFilter)
                 }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  deferDispatch(
+                    setRatingFilter(
+                      value === ''
+                        ? null
+                        : value === RATING_FILTER_UNRATED
+                          ? RATING_FILTER_UNRATED
+                          : Number(value)
+                    )
+                  );
+                }}
               >
                 <MenuItem value="">
                   <em>All ratings</em>
                 </MenuItem>
+                <MenuItem value={RATING_FILTER_UNRATED}>{UNRATED_SECTION_LABEL}</MenuItem>
                 {RATING_FILTER_OPTIONS.map((rating) => (
                   <MenuItem key={rating} value={String(rating)}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

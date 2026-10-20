@@ -29,6 +29,7 @@ export interface Achievement {
 export interface ProfileStats {
   finished: FinishedCounts;
   rating_distribution: RatingBucket[];
+  unrated_count: number;
   recent_activity: MediaItem[];
   achievements: Achievement[];
 }

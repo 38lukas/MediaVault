@@ -24,6 +24,7 @@ import {
   matchesStatusFilter,
   matchesTypeFilter,
   mediaDisplayTitle,
+  RATING_FILTER_UNRATED,
   type MediaItem,
 } from '@/types/media';
 
@@ -67,7 +68,11 @@ export function LibraryView() {
     const filtered = items.filter((item) => {
       if (!matchesTypeFilter(item.media_type, deferredTypeFilter)) return false;
       if (!matchesStatusFilter(item.status, deferredStatusFilter)) return false;
-      if (deferredRatingFilter != null && item.rating !== deferredRatingFilter) return false;
+      if (deferredRatingFilter === RATING_FILTER_UNRATED) {
+        if (item.rating != null) return false;
+      } else if (deferredRatingFilter != null && item.rating !== deferredRatingFilter) {
+        return false;
+      }
       if (query && !mediaDisplayTitle(item).toLowerCase().includes(query)) return false;
       if (deferredSortField === 'months' && !item.finished_at) return false;
       return true;
