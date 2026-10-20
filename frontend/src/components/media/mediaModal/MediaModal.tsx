@@ -126,6 +126,7 @@ export function MediaModal() {
       first_publish_date: isBook ? form.firstPublishDate || null : null,
       platform_played_on: usesIgdb ? form.platformPlayedOn || null : null,
       played_dates: form.playedDates,
+      rewatch_dates: form.rewatchDates.length > 0 ? form.rewatchDates : null,
     };
 
     try {

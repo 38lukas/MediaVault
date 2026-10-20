@@ -162,10 +162,10 @@ export function RatingDistributionChart({
             border: 'none',
             background: 'none',
             cursor: 'pointer',
-            color: showUnrated ? palette.primary : 'text.secondary',
-            textDecoration: showUnrated ? 'underline' : 'none',
+            color: 'text.secondary',
+            textDecoration: 'none',
             font: 'inherit',
-            '&:hover': { color: palette.primary },
+            '&:hover': { color: 'text.primary' },
           }}
         >
           {showUnrated ? 'hide unrated' : 'show unrated'}

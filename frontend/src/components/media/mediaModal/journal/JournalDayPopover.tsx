@@ -13,7 +13,7 @@ import {
 import { palette } from '@/lib/palette';
 import { isGameType } from '@/types/media';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { patchForm, togglePlayedDate } from '@/redux/slices/mediaModalSlice';
+import { patchForm, togglePlayedDate, toggleRewatchDate } from '@/redux/slices/mediaModalSlice';
 
 interface JournalDayPopoverProps {
   dateKey: string | null;
@@ -25,6 +25,7 @@ function dayLabels(mediaType: string) {
   if (isGameType(mediaType)) {
     return {
       log: 'Played',
+      rewatch: 'Replayed',
       started: 'Started',
       finished: 'Finished',
     };
@@ -32,12 +33,14 @@ function dayLabels(mediaType: string) {
   if (mediaType === 'Book') {
     return {
       log: 'Read',
+      rewatch: 'Reread',
       started: 'Started',
       finished: 'Finished',
     };
   }
   return {
     log: 'Watched',
+    rewatch: 'Rewatched',
     started: 'Started',
     finished: 'Finished',
   };
@@ -57,6 +60,7 @@ export function JournalDayPopover({ dateKey, anchorEl, onClose }: JournalDayPopo
   const dispatch = useAppDispatch();
   const mediaType = useAppSelector((state) => state.mediaModal.form.mediaType);
   const playedDates = useAppSelector((state) => state.mediaModal.form.playedDates);
+  const rewatchDates = useAppSelector((state) => state.mediaModal.form.rewatchDates);
   const startedAt = useAppSelector((state) => state.mediaModal.form.startedAt);
   const finishedAt = useAppSelector((state) => state.mediaModal.form.finishedAt);
 
@@ -65,6 +69,7 @@ export function JournalDayPopover({ dateKey, anchorEl, onClose }: JournalDayPopo
 
   const labels = dayLabels(mediaType);
   const isLogged = playedDates.includes(dateKey);
+  const isRewatch = rewatchDates.includes(dateKey);
   const isStarted = startedAt === dateKey;
   const isFinished = finishedAt === dateKey;
 
@@ -118,6 +123,17 @@ export function JournalDayPopover({ dateKey, anchorEl, onClose }: JournalDayPopo
                 />
               }
               label={labels.log}
+            />
+            <FormControlLabel
+              sx={{ mx: 0, px: 0.5 }}
+              control={
+                <Checkbox
+                  size="small"
+                  checked={isRewatch}
+                  onChange={() => dispatch(toggleRewatchDate(dateKey))}
+                />
+              }
+              label={labels.rewatch}
             />
             <FormControlLabel
               sx={{ mx: 0, px: 0.5 }}

@@ -50,6 +50,7 @@ export const INITIAL_MEDIA_FORM = {
   finishedAt: '',
   rating: null as number | null,
   playedDates: [] as string[],
+  rewatchDates: [] as string[],
 };
 
 export type MediaForm = typeof INITIAL_MEDIA_FORM;
@@ -166,6 +167,7 @@ function formFromItem(item: MediaItem): MediaForm {
     finishedAt,
     rating: item.rating ?? null,
     playedDates: withPlayedDates(item.played_dates ?? [], startedAt, finishedAt),
+    rewatchDates: [...(item.rewatch_dates ?? [])].sort(),
   };
 }
 
@@ -306,12 +308,28 @@ const mediaModalSlice = createSlice({
       });
     },
     togglePlayedDate(state, action: PayloadAction<string>) {
+      const key = action.payload;
       const dates = state.form.playedDates;
-      const index = dates.indexOf(action.payload);
+      const index = dates.indexOf(key);
+      if (index >= 0) {
+        dates.splice(index, 1);
+        state.form.rewatchDates = state.form.rewatchDates.filter((day) => day !== key);
+      } else {
+        dates.push(key);
+        dates.sort();
+      }
+    },
+    toggleRewatchDate(state, action: PayloadAction<string>) {
+      const key = action.payload;
+      const dates = state.form.rewatchDates;
+      const index = dates.indexOf(key);
       if (index >= 0) {
         dates.splice(index, 1);
       } else {
-        dates.push(action.payload);
+        if (!state.form.playedDates.includes(key)) {
+          state.form.playedDates = withPlayedDates(state.form.playedDates, key);
+        }
+        dates.push(key);
         dates.sort();
       }
     },
@@ -336,6 +354,7 @@ export const {
   tmdbSeasonSelected,
   openLibraryBookLoaded,
   togglePlayedDate,
+  toggleRewatchDate,
 } = mediaModalSlice.actions;
 
 export default mediaModalSlice.reducer;

@@ -43,3 +43,4 @@ class MediaEntry(Base):
     finished_at = Column(DateTime(timezone=True), nullable=True)
     rating = Column(Integer, nullable=True)
     played_dates = Column(ARRAY(Date), nullable=True)
+    rewatch_dates = Column(ARRAY(Date), nullable=True)

@@ -40,6 +40,7 @@ class MediaEntryBase(BaseModel):
     finished_at: Optional[datetime] = None
     rating: Optional[int] = Field(default=None, ge=1, le=10)  # Null = unrated; when set, must be an integer 1–10.
     played_dates: Optional[list[date]] = None  # Journal days, stored sorted and unique.
+    rewatch_dates: Optional[list[date]] = None  # Journal days marked as a rewatch; subset of played_dates.
 
     @model_validator(mode="after")
     def validate_status_for_media_type(self):
@@ -62,6 +63,10 @@ class MediaEntryBase(BaseModel):
         if self.finished_at is not None:
             days.add(self.finished_at.date())
         self.played_dates = sorted(days) if days else None
+        if self.rewatch_dates:
+            played = set(self.played_dates or [])
+            rewatch = sorted({day for day in self.rewatch_dates if day in played})
+            self.rewatch_dates = rewatch or None
         return self
 
 

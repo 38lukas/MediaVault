@@ -30,6 +30,11 @@ export interface MediaItem {
   finished_at?: string | null;
   rating?: number | null;
   played_dates?: string[] | null;
+  rewatch_dates?: string[] | null;
+}
+
+export function hasRewatch(item: MediaItem): boolean {
+  return (item.rewatch_dates?.length ?? 0) > 0;
 }
 
 export type MediaEntryPayload = Omit<MediaItem, 'id' | 'username'>;

@@ -3,7 +3,8 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
-import { mediaDisplayTitle, type MediaItem } from '@/types/media';
+import ReplayIcon from '@mui/icons-material/Replay';
+import { hasRewatch, mediaDisplayTitle, type MediaItem } from '@/types/media';
 import { palette } from '@/lib/palette';
 import { getStatusColor } from '@/utils/mediaStatus';
 import { StarRating } from '@/components/common/StarRating';
@@ -20,6 +21,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
   const fallbackImage = 'https://via.placeholder.com/300x450?text=No+Cover';
   const statusStyle = getStatusColor(item.status);
   const title = mediaDisplayTitle(item);
+  const showRewatchBadge = hasRewatch(item);
 
   return (
     <Box
@@ -32,7 +34,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
         transition: 'transform 0.2s ease-in-out',
         '&:hover': {
           transform: 'translateY(-4px)',
-          '& .media-card-overlay': {
+          '& .media-card-overlay, & .media-card-rewatch': {
             opacity: 1,
           },
         },
@@ -65,6 +67,30 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
             sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 20vw"
             style={{ objectFit: 'cover' }}
           />
+
+          {showRewatchBadge && (
+            <Box
+              className="media-card-rewatch"
+              aria-label="Has rewatch days logged"
+              title="Rewatched"
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: palette.primary,
+                opacity: 0,
+                transition: 'opacity 0.2s ease-in-out',
+                pointerEvents: 'none',
+                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.85))',
+              }}
+            >
+              <ReplayIcon sx={{ fontSize: 22 }} />
+            </Box>
+          )}
 
           <Box
             className="media-card-overlay"

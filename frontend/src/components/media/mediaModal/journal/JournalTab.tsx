@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Box, Button, MenuItem, Select, Stack, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ReplayIcon from '@mui/icons-material/Replay';
 import { palette } from '@/lib/palette';
 import { isGameType } from '@/types/media';
 import { buildMonthGrid, toDateKey } from '@/utils/calendar';
@@ -41,6 +42,7 @@ function loggedLabel(mediaType: string): string {
 // Month calendar for logging played / watched / read days.
 export function JournalTab() {
   const playedDates = useAppSelector((state) => state.mediaModal.form.playedDates);
+  const rewatchDates = useAppSelector((state) => state.mediaModal.form.rewatchDates);
   const mediaType = useAppSelector((state) => state.mediaModal.form.mediaType);
   const startedAt = useAppSelector((state) => state.mediaModal.form.startedAt);
   const finishedAt = useAppSelector((state) => state.mediaModal.form.finishedAt);
@@ -54,6 +56,7 @@ export function JournalTab() {
   const [dayMenu, setDayMenu] = useState<{ key: string; anchor: HTMLElement } | null>(null);
 
   const played = new Set(playedDates);
+  const rewatch = new Set(rewatchDates);
   const label = loggedLabel(mediaType);
   const monthPrefix = `${view.year}-${String(view.month + 1).padStart(2, '0')}`;
   const thisMonthCount = playedDates.filter((key) => key.startsWith(monthPrefix)).length;
@@ -156,6 +159,7 @@ export function JournalTab() {
           const inMonth = date.getMonth() === view.month;
           const isFuture = key > todayKey;
           const isPlayed = played.has(key);
+          const isRewatch = rewatch.has(key);
           return (
             <Box
               key={key}
@@ -224,8 +228,14 @@ export function JournalTab() {
                     backgroundColor: palette.primary,
                     color: palette.primaryContrast,
                     opacity: inMonth ? 1 : 0.5,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.35,
                   }}
                 >
+                  {isRewatch && (
+                    <ReplayIcon sx={{ fontSize: '0.85rem', flexShrink: 0 }} aria-hidden />
+                  )}
                   {label}
                 </Box>
               )}
