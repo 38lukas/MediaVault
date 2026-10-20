@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Box, Button, SvgIcon, Typography, type SvgIconProps } from '@mui/material';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -56,6 +57,14 @@ const NAV_ITEMS = [
     href: '/library',
     icon: BookshelfIcon,
     isActive: (pathname: string) => pathname.startsWith('/library'),
+    hideWhileViewing: false,
+  },
+  {
+    id: 'journal',
+    label: 'Journal',
+    href: '/journal',
+    icon: CalendarMonthOutlinedIcon,
+    isActive: (pathname: string) => pathname.startsWith('/journal'),
     hideWhileViewing: false,
   },
   {
