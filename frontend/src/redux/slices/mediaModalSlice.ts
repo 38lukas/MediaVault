@@ -3,6 +3,7 @@ import {
   STATUSES_BY_TYPE,
   isGameType,
   isMediaType,
+  supportsRewatches,
   type MediaItem,
   type MediaType,
 } from '@/types/media';
@@ -51,6 +52,7 @@ export const INITIAL_MEDIA_FORM = {
   rating: null as number | null,
   playedDates: [] as string[],
   rewatchDates: [] as string[],
+  rewatchCount: 0,
 };
 
 export type MediaForm = typeof INITIAL_MEDIA_FORM;
@@ -168,6 +170,7 @@ function formFromItem(item: MediaItem): MediaForm {
     rating: item.rating ?? null,
     playedDates: withPlayedDates(item.played_dates ?? [], startedAt, finishedAt),
     rewatchDates: [...(item.rewatch_dates ?? [])].sort(),
+    rewatchCount: item.number_of_rewatches ?? 0,
   };
 }
 
@@ -218,6 +221,7 @@ const mediaModalSlice = createSlice({
         form.playtimeHours = '';
         form.playtimeMinutes = '';
       }
+      if (!supportsRewatches(type)) form.rewatchCount = 0;
       const statuses = STATUSES_BY_TYPE[type];
       if (!statuses.includes(form.status)) form.status = statuses[0];
       form.mediaType = type;

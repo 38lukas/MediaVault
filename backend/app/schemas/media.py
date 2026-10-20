@@ -41,6 +41,7 @@ class MediaEntryBase(BaseModel):
     rating: Optional[int] = Field(default=None, ge=1, le=10)  # Null = unrated; when set, must be an integer 1–10.
     played_dates: Optional[list[date]] = None  # Journal days, stored sorted and unique.
     rewatch_dates: Optional[list[date]] = None  # Journal days marked as a rewatch; subset of played_dates.
+    number_of_rewatches: Optional[int] = Field(default=None, ge=0)  # Movie, series, and anime only.
 
     @model_validator(mode="after")
     def validate_status_for_media_type(self):
@@ -55,6 +56,14 @@ class MediaEntryBase(BaseModel):
         if self.playtime is not None and self.media_type not in {MediaType.GAME, MediaType.DLC}:
             raise ValueError(
                 f"Playtime is only allowed for games and DLCs, but the current media type is '{self.media_type.value}'."
+            )
+        if self.number_of_rewatches is not None and self.media_type not in {
+            MediaType.MOVIE,
+            MediaType.SERIES,
+            MediaType.ANIME,
+        }:
+            raise ValueError(
+                f"Rewatches are only allowed for movies, series, and anime, but the current media type is '{self.media_type.value}'."
             )
         # Start / finish days always count as journal days.
         days = set(self.played_dates or [])

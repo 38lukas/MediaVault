@@ -31,6 +31,7 @@ export interface MediaItem {
   rating?: number | null;
   played_dates?: string[] | null;
   rewatch_dates?: string[] | null;
+  number_of_rewatches?: number | null;
 }
 
 export function hasRewatch(item: MediaItem): boolean {
@@ -61,6 +62,11 @@ export function isMediaType(value: string): value is MediaType {
 // True when the media type is Game or DLC
 export function isGameType(mediaType: string): boolean {
   return mediaType === 'Game' || mediaType === 'DLC';
+}
+
+// True when the media type tracks a rewatch count (movie, series, anime)
+export function supportsRewatches(mediaType: string): boolean {
+  return mediaType === 'Movie' || mediaType === 'Series' || mediaType === 'Anime';
 }
 
 // "Show: Season name" for season entries, otherwise the plain title

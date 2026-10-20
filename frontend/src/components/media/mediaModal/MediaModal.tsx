@@ -19,7 +19,7 @@ import { DetailsTab } from './details/DetailsTab';
 import { JournalTab } from './journal/JournalTab';
 import { FriendsTab } from './friends/FriendsTab';
 import { palette } from '@/lib/palette';
-import { formatMediaTitle, isGameType } from '@/types/media';
+import { formatMediaTitle, isGameType, supportsRewatches } from '@/types/media';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { toIsoDateOrNull } from '@/utils/date';
 import { getStatusColor } from '@/utils/mediaStatus';
@@ -127,6 +127,7 @@ export function MediaModal() {
       platform_played_on: usesIgdb ? form.platformPlayedOn || null : null,
       played_dates: form.playedDates,
       rewatch_dates: form.rewatchDates.length > 0 ? form.rewatchDates : null,
+      number_of_rewatches: supportsRewatches(form.mediaType) ? form.rewatchCount : null,
     };
 
     try {

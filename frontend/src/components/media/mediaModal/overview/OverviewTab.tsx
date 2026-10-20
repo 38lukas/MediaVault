@@ -1,9 +1,12 @@
 'use client';
 
 import { useCallback, type KeyboardEvent } from 'react';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import {
   Box,
   FormControl,
+  IconButton,
   MenuItem,
   Select,
   Stack,
@@ -12,7 +15,7 @@ import {
 } from '@mui/material';
 import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';
-import { MEDIA_TYPES, STATUSES_BY_TYPE, isGameType } from '@/types/media';
+import { MEDIA_TYPES, STATUSES_BY_TYPE, isGameType, supportsRewatches } from '@/types/media';
 import { getStatusColor } from '@/utils/mediaStatus';
 import { toDbRating } from '@/utils/rating';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -58,6 +61,7 @@ export function OverviewTab() {
   const item = useAppSelector((state) => state.mediaModal.editingItem);
   const form = useAppSelector((state) => state.mediaModal.form);
   const supportsPlaytime = isGameType(form.mediaType);
+  const showRewatches = supportsRewatches(form.mediaType);
   const provider = getCoverProvider(form.mediaType);
   const searchKey = `${open}:${item?.id ?? 'new'}:${form.mediaType}`;
   const isTv = form.mediaType === 'Series' || form.mediaType === 'Anime';
@@ -140,6 +144,41 @@ export function OverviewTab() {
           getSelectedColors={() => MEDIA_TYPE_SELECTED_COLORS}
           sx={{ flex: 1, minWidth: 220 }}
         />
+
+        {showRewatches && (
+          <Box sx={{ minWidth: 0 }}>
+            <Typography
+              variant="caption"
+              sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+            >
+              Rewatches
+            </Typography>
+            <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+              <IconButton
+                size="small"
+                aria-label="Decrease rewatches"
+                disabled={form.rewatchCount <= 0}
+                onClick={() => dispatch(patchForm({ rewatchCount: Math.max(0, form.rewatchCount - 1) }))}
+                sx={{ border: `1px solid ${palette.borderMuted}`, borderRadius: 2 }}
+              >
+                <RemoveIcon fontSize="small" />
+              </IconButton>
+              <Typography
+                sx={{ minWidth: 28, textAlign: 'center', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}
+              >
+                {form.rewatchCount}
+              </Typography>
+              <IconButton
+                size="small"
+                aria-label="Increase rewatches"
+                onClick={() => dispatch(patchForm({ rewatchCount: form.rewatchCount + 1 }))}
+                sx={{ border: `1px solid ${palette.borderMuted}`, borderRadius: 2 }}
+              >
+                <AddIcon fontSize="small" />
+              </IconButton>
+            </Stack>
+          </Box>
+        )}
 
         {supportsPlaytime && (
           <Box sx={{ minWidth: 0 }}>

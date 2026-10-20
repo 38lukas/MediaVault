@@ -44,3 +44,4 @@ class MediaEntry(Base):
     rating = Column(Integer, nullable=True)
     played_dates = Column(ARRAY(Date), nullable=True)
     rewatch_dates = Column(ARRAY(Date), nullable=True)
+    number_of_rewatches = Column(Integer, nullable=True)  # Movie, series, and anime only.
