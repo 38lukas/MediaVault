@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useDeferredValue, useMemo } from 'react';
+import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { Alert, Box, CircularProgress, Stack } from '@mui/material';
 import { MediaGrid } from '@/components/media/MediaGrid';
 import { SectionDivider } from '@/components/common/SectionDivider';
@@ -117,6 +117,16 @@ export function LibraryView() {
   const errorMessage = getApiErrorMessage(error, 'Failed to fetch media entries');
   const hideStatus = deferredSortField === 'status';
   const showBusy = isLoading || isFetching || isFilterPending;
+  const [collapsedSections, setCollapsedSections] = useState<ReadonlySet<string>>(() => new Set());
+
+  const toggleSection = useCallback((id: string) => {
+    setCollapsedSections((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
   const handleItemClick = useCallback(
     (item: MediaItem) => {
@@ -167,18 +177,26 @@ export function LibraryView() {
           >
             {sections && sections.length > 0 ? (
               <Stack spacing={3}>
-                {sections.map((section) => (
-                  <Box key={section.key}>
-                    {section.label ? (
-                      <SectionDivider
-                        label={section.label}
-                        rating={section.rating}
-                        statusStyle={hideStatus}
-                      />
-                    ) : null}
-                    <MediaGrid items={section.items} onItemClick={handleItemClick} />
-                  </Box>
-                ))}
+                {sections.map((section) => {
+                  const sectionId = `${deferredSortField}:${section.key}`;
+                  const collapsed = collapsedSections.has(sectionId);
+                  return (
+                    <Box key={section.key}>
+                      {section.label ? (
+                        <SectionDivider
+                          label={section.label}
+                          rating={section.rating}
+                          statusStyle={hideStatus}
+                          collapsed={collapsed}
+                          onLabelClick={() => toggleSection(sectionId)}
+                        />
+                      ) : null}
+                      {!collapsed && (
+                        <MediaGrid items={section.items} onItemClick={handleItemClick} />
+                      )}
+                    </Box>
+                  );
+                })}
               </Stack>
             ) : (
               <MediaGrid items={visibleItems} onItemClick={handleItemClick} />
