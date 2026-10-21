@@ -17,7 +17,7 @@ def search_tmdb_titles(
     name: str = Query(..., min_length=1),
     media_type: TmdbMediaType = Query(...),
 ):
-    """Return up to five TMDB title matches without fetching their full details."""
+    """Return up to 100 TMDB title matches without fetching their full details."""
     try:
         return tmdb_service.search_titles_by_name(name, media_type)
     except ValueError as e:

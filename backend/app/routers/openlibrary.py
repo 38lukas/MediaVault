@@ -10,7 +10,7 @@ router = APIRouter(prefix="/openlibrary", tags=["openlibrary"])
 
 @router.get("/search")
 def search_openlibrary_books(name: str = Query(..., min_length=1)):
-    """Return up to five Open Library book matches without fetching their full details."""
+    """Return up to 100 Open Library book matches without fetching their full details."""
     try:
         return openlibrary_service.search_books_by_name(name)
     except ValueError as error:

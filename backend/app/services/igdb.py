@@ -11,6 +11,7 @@ import httpx
 TWITCH_TOKEN_URL = "https://id.twitch.tv/oauth2/token"
 IGDB_GAMES_URL = "https://api.igdb.com/v4/games"
 COVER_URL_TEMPLATE = "https://images.igdb.com/igdb/image/upload/t_cover_big/{image_id}.jpg"
+SEARCH_RESULT_LIMIT = 100
 
 # Cached Twitch access token (module-level; fine for a single-process uvicorn).
 _access_token: Optional[str] = None
@@ -70,16 +71,17 @@ def _query_igdb(query: str) -> list[dict[str, Any]]:
     return response.json()
 
 
-def search_games_by_name(name: str) -> list[dict[str, Any]]:
-    """Return up to five lightweight IGDB matches for a game title."""
+def search_games_by_name(name: str, limit: int = SEARCH_RESULT_LIMIT) -> list[dict[str, Any]]:
+    """Return lightweight IGDB matches for a game title."""
     trimmed = name.strip()
     if not trimmed:
         raise ValueError("Game name is required")
 
     # Escape quotes so titles like O'Reilly don't break the IGDB query body.
     safe_name = trimmed.replace("\\", "\\\\").replace('"', '\\"')
+    capped = max(1, min(limit, SEARCH_RESULT_LIMIT))
     games = _query_igdb(
-        f'search "{safe_name}"; fields id,name,first_release_date; limit 5;'
+        f'search "{safe_name}"; fields id,name,first_release_date; limit {capped};'
     )
     return [
         {
@@ -145,7 +147,7 @@ def fetch_game_by_id(game_id: int) -> dict[str, Any]:
 
 def fetch_cover_by_name(name: str) -> dict[str, Any]:
     """Keep the legacy title lookup while returning the full selected game data."""
-    matches = search_games_by_name(name)
+    matches = search_games_by_name(name, limit=1)
     if not matches:
         raise LookupError(f'No IGDB game found for "{name.strip()}"')
     return fetch_game_by_id(matches[0]["id"])

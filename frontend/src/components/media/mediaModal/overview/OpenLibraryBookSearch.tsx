@@ -16,6 +16,9 @@ import {
 
 const SEARCH_DEBOUNCE_MS = 650;
 const MIN_QUERY_LENGTH = 3;
+// Listbox padding is 8px on each end; a single-line option is 36px.
+const VISIBLE_RESULT_ROWS = 5;
+const LISTBOX_MAX_HEIGHT = 16 + 36 * VISIBLE_RESULT_ROWS;
 
 interface OpenLibraryBookSearchProps {
   open: boolean;
@@ -132,6 +135,7 @@ export function OpenLibraryBookSearch({
       getOptionKey={(option) => option.id}
       isOptionEqualToValue={(option, value) => option.id === value.id}
       filterOptions={(options) => options}
+      slotProps={{ listbox: { sx: { maxHeight: LISTBOX_MAX_HEIGHT } } }}
       loading={isSearching}
       noOptionsText={
         title.trim().length < MIN_QUERY_LENGTH

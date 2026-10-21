@@ -22,6 +22,7 @@ MAX_SUBJECTS = 8
 MAX_PUBLISHERS = 5
 MAX_SERIES = 3
 EDITIONS_LIMIT = 50
+SEARCH_RESULT_LIMIT = 100
 
 # Library/catalog tags Open Library mixes into subjects that aren't genres.
 SUBJECT_BLOCKLIST = {
@@ -102,15 +103,19 @@ def _earliest_year(editions: list[dict[str, Any]]) -> str | None:
     return str(min(years)) if years else None
 
 
-def search_books_by_name(name: str) -> list[dict[str, Any]]:
-    """Return up to five lightweight Open Library matches for a book title."""
+def search_books_by_name(name: str, limit: int = SEARCH_RESULT_LIMIT) -> list[dict[str, Any]]:
+    """Return lightweight Open Library matches for a book title."""
     trimmed = name.strip()
     if not trimmed:
         raise ValueError("Book title is required")
 
     data = _get_open_library(
         OPEN_LIBRARY_SEARCH_URL,
-        {"title": trimmed, "fields": "key,title,first_publish_year", "limit": 5},
+        {
+            "title": trimmed,
+            "fields": "key,title,first_publish_year",
+            "limit": max(1, min(limit, SEARCH_RESULT_LIMIT)),
+        },
     )
     return [
         {
@@ -186,7 +191,7 @@ def fetch_book_by_id(work_id: str) -> dict[str, Any]:
 
 def fetch_cover_by_name(name: str) -> dict[str, Any]:
     """Keep the legacy title lookup while returning the full selected book data."""
-    matches = search_books_by_name(name)
+    matches = search_books_by_name(name, limit=1)
     if not matches:
         raise LookupError(f'No Open Library book found for "{name.strip()}"')
     return fetch_book_by_id(matches[0]["id"])

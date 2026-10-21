@@ -10,7 +10,7 @@ router = APIRouter(prefix="/igdb", tags=["igdb"])
 
 @router.get("/search")
 def search_igdb_games(name: str = Query(..., min_length=1)):
-    """Return up to five IGDB title matches without fetching their full details."""
+    """Return up to 100 IGDB title matches without fetching their full details."""
     try:
         return igdb_service.search_games_by_name(name)
     except ValueError as e:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Literal
 
 import httpx
@@ -13,6 +14,9 @@ TMDB_MOVIE_DETAILS_URL = "https://api.themoviedb.org/3/movie/{tmdb_id}"
 TMDB_TV_DETAILS_URL = "https://api.themoviedb.org/3/tv/{tmdb_id}"
 TMDB_TV_SEASON_URL = "https://api.themoviedb.org/3/tv/{tmdb_id}/season/{season_number}"
 POSTER_URL_TEMPLATE = "https://image.tmdb.org/t/p/w500{poster_path}"
+# TMDB search returns 20 hits per page. Five pages cover the autocomplete cap.
+TMDB_PAGE_SIZE = 20
+SEARCH_RESULT_LIMIT = 100
 
 MediaType = Literal["Movie", "Series", "Anime"]
 
@@ -142,8 +146,53 @@ def fetch_season(tmdb_id: int, season_number: int) -> dict[str, Any]:
     }
 
 
-def search_titles_by_name(name: str, media_type: MediaType) -> list[dict[str, Any]]:
-    """Return up to five lightweight TMDB matches for a movie or show title."""
+def _search_item(item: dict[str, Any], trimmed: str, is_movie: bool) -> dict[str, Any]:
+    return {
+        "id": item["id"],
+        "name": item.get("title") or item.get("name") or trimmed,
+        "release_date": (
+            item.get("release_date") if is_movie else item.get("first_air_date")
+        )
+        or None,
+    }
+
+
+def _search_pages(url: str, query: str, limit: int) -> list[dict[str, Any]]:
+    """Load enough TMDB search pages to fill `limit`, keeping page order."""
+    first = _get_tmdb(url, {"query": query, "page": 1})
+    pages = [first.get("results") or []]
+    page_count = min(
+        max(1, (limit + TMDB_PAGE_SIZE - 1) // TMDB_PAGE_SIZE),
+        int(first.get("total_pages") or 1),
+    )
+    if page_count > 1:
+        with ThreadPoolExecutor(max_workers=page_count - 1) as executor:
+            futures = [
+                executor.submit(_get_tmdb, url, {"query": query, "page": page})
+                for page in range(2, page_count + 1)
+            ]
+            for future in futures:
+                pages.append(future.result().get("results") or [])
+
+    seen: set[int] = set()
+    results: list[dict[str, Any]] = []
+    for item in (item for page in pages for item in page):
+        item_id = item.get("id")
+        if item_id in seen:
+            continue
+        seen.add(item_id)
+        results.append(item)
+        if len(results) >= limit:
+            break
+    return results
+
+
+def search_titles_by_name(
+    name: str,
+    media_type: MediaType,
+    limit: int = SEARCH_RESULT_LIMIT,
+) -> list[dict[str, Any]]:
+    """Return lightweight TMDB matches for a movie or show title."""
     trimmed = name.strip()
     if not trimmed:
         raise ValueError("Media name is required")
@@ -152,17 +201,10 @@ def search_titles_by_name(name: str, media_type: MediaType) -> list[dict[str, An
     # Movies use /search/movie; Series and Anime both map to /search/tv.
     is_movie = media_type == "Movie"
     url = TMDB_SEARCH_MOVIE_URL if is_movie else TMDB_SEARCH_TV_URL
-    results = _get_tmdb(url, {"query": trimmed}).get("results") or []
+    capped = max(1, min(limit, SEARCH_RESULT_LIMIT))
     return [
-        {
-            "id": item["id"],
-            "name": item.get("title") or item.get("name") or trimmed,
-            "release_date": (
-                item.get("release_date") if is_movie else item.get("first_air_date")
-            )
-            or None,
-        }
-        for item in results[:5]
+        _search_item(item, trimmed, is_movie)
+        for item in _search_pages(url, trimmed, capped)
     ]
 
 
@@ -184,7 +226,7 @@ def fetch_title_by_id(tmdb_id: int, media_type: MediaType) -> dict[str, Any]:
 
 def fetch_cover_by_name(name: str, media_type: MediaType) -> dict[str, Any]:
     """Keep the legacy title lookup while returning the full selected title data."""
-    matches = search_titles_by_name(name, media_type)
+    matches = search_titles_by_name(name, media_type, limit=1)
     if not matches:
         raise LookupError(f'No TMDB title found for "{name.strip()}"')
     return fetch_title_by_id(matches[0]["id"], media_type)
