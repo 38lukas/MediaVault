@@ -83,6 +83,13 @@ _LOG_ACHIEVEMENTS = [
         ("First Episode", "Novice Anime Collector", "Master Anime Collector", "Anime Legend"),
         "/achievements/anime.svg",
     ),
+    *_log_milestones(
+        "book",
+        MediaType.BOOK.value,
+        "books",
+        ("First Chapter", "Novice Book Collector", "Master Book Collector", "Library Legend"),
+        "/achievements/books.svg",
+    ),
 ]
 
 # Statuses that count as "finished" for all-time totals.
