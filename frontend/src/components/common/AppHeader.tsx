@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Box, Button, SvgIcon, Typography, type SvgIconProps } from '@mui/material';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import FormatListBulletedOutlinedIcon from '@mui/icons-material/FormatListBulletedOutlined';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -57,6 +58,14 @@ const NAV_ITEMS = [
     href: '/library',
     icon: BookshelfIcon,
     isActive: (pathname: string) => pathname.startsWith('/library'),
+    hideWhileViewing: false,
+  },
+  {
+    id: 'lists',
+    label: 'Lists',
+    href: '/lists',
+    icon: FormatListBulletedOutlinedIcon,
+    isActive: (pathname: string) => pathname.startsWith('/lists'),
     hideWhileViewing: false,
   },
   {

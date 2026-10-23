@@ -72,6 +72,6 @@ const baseQueryWithViewGuard: BaseQueryFn<
 export const mediaApi = createApi({
   reducerPath: 'mediaApi',
   baseQuery: baseQueryWithViewGuard,
-  tagTypes: ['MediaEntries', 'UserSettings', 'ProfileStats', 'Friends'],
+  tagTypes: ['MediaEntries', 'MediaLists', 'UserSettings', 'ProfileStats', 'Friends'],
   endpoints: () => ({}),
 });

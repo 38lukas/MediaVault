@@ -5,7 +5,7 @@ from sqlalchemy import text
 
 from app.database import get_db, engine, Base
 from app import models  # noqa: F401
-from app.routers import auth, entries, friends, igdb, openlibrary, profile, tmdb, users
+from app.routers import auth, entries, friends, igdb, lists, openlibrary, profile, tmdb, users
 
 Base.metadata.create_all(bind=engine)
 
@@ -84,6 +84,33 @@ with engine.begin() as connection:
     connection.execute(text(
         "CREATE INDEX IF NOT EXISTS ix_friendships_friend_username ON friendships (friend_username)"
     ))
+    connection.execute(text("""
+        CREATE TABLE IF NOT EXISTS media_lists (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR NOT NULL REFERENCES "user"(username)
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            name VARCHAR NOT NULL,
+            description VARCHAR
+        )
+    """))
+    connection.execute(text(
+        "CREATE INDEX IF NOT EXISTS ix_media_lists_username ON media_lists (username)"
+    ))
+    connection.execute(text("""
+        CREATE TABLE IF NOT EXISTS media_list_items (
+            id SERIAL PRIMARY KEY,
+            list_id INTEGER NOT NULL REFERENCES media_lists(id) ON DELETE CASCADE,
+            entry_id INTEGER NOT NULL REFERENCES media_entries(id) ON DELETE CASCADE,
+            position INTEGER NOT NULL,
+            CONSTRAINT uq_media_list_items_list_entry UNIQUE (list_id, entry_id)
+        )
+    """))
+    connection.execute(text(
+        "CREATE INDEX IF NOT EXISTS ix_media_list_items_list_id ON media_list_items (list_id)"
+    ))
+    connection.execute(text(
+        "CREATE INDEX IF NOT EXISTS ix_media_list_items_entry_id ON media_list_items (entry_id)"
+    ))
 
 app = FastAPI(title="Media Tracker API", redirect_slashes=True)
 
@@ -99,6 +126,7 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(entries.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(friends.router, prefix="/api")
+app.include_router(lists.router, prefix="/api")
 app.include_router(profile.router, prefix="/api")
 app.include_router(igdb.router, prefix="/api")
 app.include_router(openlibrary.router, prefix="/api")

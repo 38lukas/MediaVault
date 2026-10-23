@@ -3,6 +3,7 @@ import './userEndpoints';
 import './entriesEndpoints';
 import './profileEndpoints';
 import './friendsEndpoints';
+import './listsEndpoints';
 import './coversEndpoints';
 
 export { mediaApi, resolveApiBaseUrl } from './baseApi';
@@ -50,6 +51,16 @@ export {
   useAddFriendMutation,
   useRemoveFriendMutation,
 } from './friendsEndpoints';
+
+export {
+  useGetMediaListsQuery,
+  useCreateMediaListMutation,
+  useUpdateMediaListMutation,
+  useDeleteMediaListMutation,
+  useAddMediaListItemMutation,
+  useRemoveMediaListItemMutation,
+  useReorderMediaListMutation,
+} from './listsEndpoints';
 
 export {
   useLazyFetchIgdbCoverQuery,

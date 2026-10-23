@@ -13,17 +13,17 @@ export const entriesEndpoints = mediaApi.injectEndpoints({
 
     createMediaEntry: builder.mutation<MediaItem, MediaEntryPayload>({
       query: (body) => ({ url: '/entries', method: 'POST', body }),
-      invalidatesTags: ['MediaEntries', 'ProfileStats'],
+      invalidatesTags: ['MediaEntries', 'MediaLists', 'ProfileStats'],
     }),
 
     updateMediaEntry: builder.mutation<MediaItem, { id: number; body: MediaEntryPayload }>({
       query: ({ id, body }) => ({ url: `/entries/${id}`, method: 'PUT', body }),
-      invalidatesTags: ['MediaEntries', 'ProfileStats'],
+      invalidatesTags: ['MediaEntries', 'MediaLists', 'ProfileStats'],
     }),
 
     deleteMediaEntry: builder.mutation<void, number>({
       query: (id) => ({ url: `/entries/${id}`, method: 'DELETE' }),
-      invalidatesTags: ['MediaEntries', 'ProfileStats'],
+      invalidatesTags: ['MediaEntries', 'MediaLists', 'ProfileStats'],
     }),
   }),
 });
