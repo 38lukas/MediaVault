@@ -4,12 +4,14 @@ from collections import Counter
 from datetime import date
 from typing import NamedTuple
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Path, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_username
 from app.enums import MediaStatus, MediaType
+from app.models.profile_favorite import FAVORITE_CATEGORIES, FAVORITE_SLOT_COUNT
 from app import models, schemas
 
 router = APIRouter(prefix="/profile", tags=["profile"])
@@ -162,7 +164,121 @@ def get_profile_stats(
         unrated_count=unrated_count,
         recent_activity=[entry for _, entry in active_entries[:8]],
         achievements=_log_achievements(logged_counts),
+        favorites=_favorite_groups(db, username),
     )
+
+
+@router.put("/favorites/{slot}", response_model=list[schemas.FavoriteGroup])
+def update_favorite_slot(
+    body: schemas.FavoriteSlotUpdate,
+    slot: int = Path(ge=0, le=FAVORITE_SLOT_COUNT - 1),
+    db: Session = Depends(get_db),
+    username: str = Depends(get_current_username),
+):
+    """Set, replace, or clear one favorite slot, and optionally mark it as #1."""
+    existing = (
+        db.query(models.ProfileFavorite)
+        .filter(
+            models.ProfileFavorite.username == username,
+            models.ProfileFavorite.category == body.category,
+            models.ProfileFavorite.slot == slot,
+        )
+        .first()
+    )
+
+    if body.title is None:
+        if existing is not None:
+            db.delete(existing)
+            db.commit()
+        return _favorite_groups(db, username)
+
+    duplicate = (
+        db.query(models.ProfileFavorite)
+        .filter(
+            models.ProfileFavorite.username == username,
+            models.ProfileFavorite.category == body.category,
+            models.ProfileFavorite.external_id == body.external_id,
+            models.ProfileFavorite.slot != slot,
+        )
+        .first()
+    )
+    if duplicate is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="That title is already in this favorites list",
+        )
+
+    if body.is_number_one:
+        (
+            db.query(models.ProfileFavorite)
+            .filter(
+                models.ProfileFavorite.username == username,
+                models.ProfileFavorite.category == body.category,
+                models.ProfileFavorite.slot != slot,
+            )
+            .update({"is_number_one": False}, synchronize_session="fetch")
+        )
+        db.flush()
+
+    if existing is None:
+        existing = models.ProfileFavorite(
+            username=username,
+            category=body.category,
+            slot=slot,
+            title=body.title,
+            media_type=body.media_type.value,
+            external_id=body.external_id,
+            poster_path=body.poster_path,
+            is_number_one=body.is_number_one,
+        )
+        db.add(existing)
+    else:
+        existing.title = body.title
+        existing.media_type = body.media_type.value
+        existing.external_id = body.external_id
+        existing.poster_path = body.poster_path
+        existing.is_number_one = body.is_number_one
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="That title is already in this favorites list",
+        )
+
+    return _favorite_groups(db, username)
+
+
+def _favorite_groups(db: Session, username: str) -> list[schemas.FavoriteGroup]:
+    """Every favorites list, each with five slots. Missing rows are empty slots."""
+    rows = (
+        db.query(models.ProfileFavorite)
+        .filter(models.ProfileFavorite.username == username)
+        .all()
+    )
+    by_key = {(row.category, row.slot): row for row in rows}
+    groups: list[schemas.FavoriteGroup] = []
+    for category in FAVORITE_CATEGORIES:
+        slots: list[schemas.FavoriteSlot] = []
+        for slot in range(FAVORITE_SLOT_COUNT):
+            row = by_key.get((category, slot))
+            if row is None:
+                slots.append(schemas.FavoriteSlot(slot=slot))
+                continue
+            slots.append(
+                schemas.FavoriteSlot(
+                    slot=slot,
+                    title=row.title,
+                    media_type=row.media_type,
+                    external_id=row.external_id,
+                    poster_path=row.poster_path,
+                    is_number_one=bool(row.is_number_one),
+                )
+            )
+        groups.append(schemas.FavoriteGroup(category=category, slots=slots))
+    return groups
 
 
 def _log_achievements(logged_counts: Counter) -> list[schemas.Achievement]:

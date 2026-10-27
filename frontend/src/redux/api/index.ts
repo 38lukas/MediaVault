@@ -43,7 +43,7 @@ export {
   useDeleteMediaEntryMutation,
 } from './entriesEndpoints';
 
-export { useGetProfileStatsQuery } from './profileEndpoints';
+export { useGetProfileStatsQuery, useUpdateFavoriteSlotMutation } from './profileEndpoints';
 
 export {
   useGetFriendsQuery,

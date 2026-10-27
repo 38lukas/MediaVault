@@ -111,6 +111,206 @@ with engine.begin() as connection:
     connection.execute(text(
         "CREATE INDEX IF NOT EXISTS ix_media_list_items_entry_id ON media_list_items (entry_id)"
     ))
+    connection.execute(text("""
+        CREATE TABLE IF NOT EXISTS profile_favorites (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR NOT NULL REFERENCES "user"(username)
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            category VARCHAR NOT NULL DEFAULT 'All',
+            slot INTEGER NOT NULL,
+            title VARCHAR NOT NULL,
+            media_type VARCHAR NOT NULL,
+            external_id VARCHAR NOT NULL,
+            poster_path VARCHAR,
+            is_number_one BOOLEAN NOT NULL DEFAULT FALSE,
+            CONSTRAINT uq_profile_favorites_user_category_slot UNIQUE (username, category, slot),
+            CONSTRAINT uq_profile_favorites_user_category_external UNIQUE (username, category, external_id),
+            CONSTRAINT ck_profile_favorites_slot CHECK (slot >= 0 AND slot < 5),
+            CONSTRAINT ck_profile_favorites_category CHECK (
+                category IN ('All', 'Game', 'Movie', 'Series', 'Anime', 'Book')
+            )
+        )
+    """))
+    connection.execute(text("""
+        DO $$
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name = 'profile_favorites'
+                  AND column_name = 'entry_id'
+            ) THEN
+                ALTER TABLE profile_favorites ADD COLUMN IF NOT EXISTS category VARCHAR;
+                ALTER TABLE profile_favorites ADD COLUMN IF NOT EXISTS title VARCHAR;
+                ALTER TABLE profile_favorites ADD COLUMN IF NOT EXISTS media_type VARCHAR;
+                ALTER TABLE profile_favorites ADD COLUMN IF NOT EXISTS external_id VARCHAR;
+                ALTER TABLE profile_favorites ADD COLUMN IF NOT EXISTS poster_path VARCHAR;
+
+                UPDATE profile_favorites pf
+                SET category = COALESCE(pf.category, 'All'),
+                    title = e.title,
+                    media_type = e.media_type,
+                    external_id = e.external_id,
+                    poster_path = e.poster_path
+                FROM media_entries e
+                WHERE pf.entry_id = e.id;
+
+                DELETE FROM profile_favorites WHERE title IS NULL OR external_id IS NULL;
+
+                ALTER TABLE profile_favorites DROP CONSTRAINT IF EXISTS uq_profile_favorites_user_slot;
+                ALTER TABLE profile_favorites DROP CONSTRAINT IF EXISTS uq_profile_favorites_user_entry;
+                ALTER TABLE profile_favorites DROP CONSTRAINT IF EXISTS profile_favorites_entry_id_fkey;
+                ALTER TABLE profile_favorites DROP COLUMN entry_id;
+            END IF;
+        END $$;
+    """))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites ADD COLUMN IF NOT EXISTS category VARCHAR"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites ADD COLUMN IF NOT EXISTS title VARCHAR"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites ADD COLUMN IF NOT EXISTS media_type VARCHAR"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites ADD COLUMN IF NOT EXISTS external_id VARCHAR"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites ADD COLUMN IF NOT EXISTS poster_path VARCHAR"
+    ))
+    connection.execute(text(
+        "UPDATE profile_favorites SET category = 'All' WHERE category IS NULL"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites ALTER COLUMN category SET DEFAULT 'All'"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites ALTER COLUMN category SET NOT NULL"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites ALTER COLUMN title SET NOT NULL"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites ALTER COLUMN media_type SET NOT NULL"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites ALTER COLUMN external_id SET NOT NULL"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites DROP CONSTRAINT IF EXISTS uq_profile_favorites_user_slot"
+    ))
+    connection.execute(text(
+        "ALTER TABLE profile_favorites DROP CONSTRAINT IF EXISTS uq_profile_favorites_user_entry"
+    ))
+    connection.execute(text("""
+        DO $$
+        DECLARE
+            rec RECORD;
+            free_slot INT;
+            game_has_top BOOLEAN;
+        BEGIN
+            DELETE FROM profile_favorites d
+            USING profile_favorites g
+            WHERE d.category = 'DLC'
+              AND g.category = 'Game'
+              AND d.username = g.username
+              AND d.external_id = g.external_id;
+
+            FOR rec IN
+                SELECT id, username, slot, is_number_one
+                FROM profile_favorites
+                WHERE category = 'DLC'
+                ORDER BY username, slot
+            LOOP
+                SELECT EXISTS (
+                    SELECT 1 FROM profile_favorites
+                    WHERE username = rec.username
+                      AND category = 'Game'
+                      AND is_number_one
+                ) INTO game_has_top;
+
+                IF EXISTS (
+                    SELECT 1 FROM profile_favorites
+                    WHERE username = rec.username
+                      AND category = 'Game'
+                      AND slot = rec.slot
+                ) THEN
+                    SELECT s INTO free_slot
+                    FROM generate_series(0, 4) AS s
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM profile_favorites
+                        WHERE username = rec.username
+                          AND category = 'Game'
+                          AND slot = s
+                    )
+                    AND NOT EXISTS (
+                        SELECT 1 FROM profile_favorites
+                        WHERE username = rec.username
+                          AND category = 'DLC'
+                          AND slot = s
+                          AND id <> rec.id
+                    )
+                    ORDER BY s
+                    LIMIT 1;
+
+                    IF free_slot IS NULL THEN
+                        DELETE FROM profile_favorites WHERE id = rec.id;
+                    ELSE
+                        UPDATE profile_favorites
+                        SET slot = free_slot,
+                            category = 'Game',
+                            is_number_one = rec.is_number_one AND NOT game_has_top
+                        WHERE id = rec.id;
+                    END IF;
+                ELSE
+                    UPDATE profile_favorites
+                    SET category = 'Game',
+                        is_number_one = rec.is_number_one AND NOT game_has_top
+                    WHERE id = rec.id;
+                END IF;
+            END LOOP;
+        END $$;
+    """))
+    connection.execute(text("""
+        DELETE FROM profile_favorites a
+        USING profile_favorites b
+        WHERE a.id > b.id
+          AND a.username = b.username
+          AND a.category = b.category
+          AND a.external_id = b.external_id
+    """))
+    connection.execute(text("""
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint WHERE conname = 'uq_profile_favorites_user_category_slot'
+            ) THEN
+                ALTER TABLE profile_favorites
+                    ADD CONSTRAINT uq_profile_favorites_user_category_slot
+                    UNIQUE (username, category, slot);
+            END IF;
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint WHERE conname = 'uq_profile_favorites_user_category_external'
+            ) THEN
+                ALTER TABLE profile_favorites
+                    ADD CONSTRAINT uq_profile_favorites_user_category_external
+                    UNIQUE (username, category, external_id);
+            END IF;
+            ALTER TABLE profile_favorites DROP CONSTRAINT IF EXISTS ck_profile_favorites_category;
+            ALTER TABLE profile_favorites
+                ADD CONSTRAINT ck_profile_favorites_category
+                CHECK (category IN ('All', 'Game', 'Movie', 'Series', 'Anime', 'Book'));
+        END $$;
+    """))
+    connection.execute(text(
+        "CREATE INDEX IF NOT EXISTS ix_profile_favorites_username ON profile_favorites (username)"
+    ))
+    connection.execute(text("DROP INDEX IF EXISTS uq_profile_favorites_one_top"))
+    connection.execute(text(
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_profile_favorites_one_top "
+        "ON profile_favorites (username, category) WHERE is_number_one"
+    ))
 
 app = FastAPI(title="Media Tracker API", redirect_slashes=True)
 

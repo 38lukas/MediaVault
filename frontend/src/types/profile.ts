@@ -26,10 +26,28 @@ export interface Achievement {
   image: string | null;
 }
 
+export const FAVORITE_CATEGORIES = ['All', 'Game', 'Movie', 'Series', 'Anime', 'Book'] as const;
+export type FavoriteCategory = (typeof FAVORITE_CATEGORIES)[number];
+
+export interface FavoriteSlot {
+  slot: number;
+  title: string | null;
+  media_type: string | null;
+  external_id: string | null;
+  poster_path: string | null;
+  is_number_one: boolean;
+}
+
+export interface FavoriteGroup {
+  category: FavoriteCategory;
+  slots: FavoriteSlot[];
+}
+
 export interface ProfileStats {
   finished: FinishedCounts;
   rating_distribution: RatingBucket[];
   unrated_count: number;
   recent_activity: MediaItem[];
   achievements: Achievement[];
+  favorites: FavoriteGroup[];
 }

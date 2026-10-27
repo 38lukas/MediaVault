@@ -7,7 +7,15 @@ from app.schemas.lists import (
     MediaListWrite,
 )
 from app.schemas.media import MediaEntryBase, MediaEntryCreate, MediaEntryResponse
-from app.schemas.profile import Achievement, FinishedCounts, ProfileStatsResponse, RatingBucket
+from app.schemas.profile import (
+    Achievement,
+    FavoriteGroup,
+    FavoriteSlot,
+    FavoriteSlotUpdate,
+    FinishedCounts,
+    ProfileStatsResponse,
+    RatingBucket,
+)
 from app.schemas.user import (
     LoginRequest,
     SortField,
@@ -19,6 +27,9 @@ from app.schemas.user import (
 
 __all__ = [
     "Achievement",
+    "FavoriteGroup",
+    "FavoriteSlot",
+    "FavoriteSlotUpdate",
     "FinishedCounts",
     "FriendAddRequest",
     "FriendResponse",
