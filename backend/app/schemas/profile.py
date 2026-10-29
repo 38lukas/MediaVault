@@ -96,6 +96,8 @@ class ProfileStatsResponse(BaseModel):
     """Aggregated profile stats derived from the user's media_entries."""
 
     finished: FinishedCounts
+    finished_this_year: FinishedCounts
+    finished_year: int
     rating_distribution: list[RatingBucket]
     unrated_count: int
     recent_activity: list[MediaEntryResponse]

@@ -93,7 +93,20 @@ export default function ProfilePage() {
             </Box>
             <Achievements achievements={data.achievements} />
           </Box>
-          <FinishedStats finished={data.finished} />
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'flex-start',
+              gap: 4,
+            }}
+          >
+            <FinishedStats label="All-time finished" finished={data.finished} />
+            <FinishedStats
+              label={`Finished in ${data.finished_year}`}
+              finished={data.finished_this_year}
+            />
+          </Box>
           <FavoriteMedia favorites={data.favorites} readOnly={Boolean(viewingAs)} />
           <RecentActivity items={data.recent_activity} />
         </Stack>

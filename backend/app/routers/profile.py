@@ -1,7 +1,7 @@
 """Profile stats routes under /api/profile."""
 
 from collections import Counter
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import NamedTuple
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
@@ -117,23 +117,9 @@ def get_profile_stats(
         .all()
     )
 
-    # count the number of finished entries for each media type
-    type_counts = Counter(
-        entry.media_type
-        for entry in entries
-        if entry.status in _FINISHED_STATUSES
-    )
-
-    # create a new FinishedCounts object with the counts for each media type
-    finished = schemas.FinishedCounts(
-        total=sum(type_counts.values()),
-        game=type_counts.get(MediaType.GAME.value, 0),
-        dlc=type_counts.get(MediaType.DLC.value, 0),
-        movie=type_counts.get(MediaType.MOVIE.value, 0),
-        series=type_counts.get(MediaType.SERIES.value, 0),
-        anime=type_counts.get(MediaType.ANIME.value, 0),
-        book=type_counts.get(MediaType.BOOK.value, 0),
-    )
+    finished_year = datetime.now(timezone.utc).year
+    finished = _finished_counts(entries)
+    finished_this_year = _finished_counts(entries, year=finished_year)
 
     # count the number of ratings for each rating value
     rating_counts = Counter(
@@ -160,6 +146,8 @@ def get_profile_stats(
 
     return schemas.ProfileStatsResponse(
         finished=finished,
+        finished_this_year=finished_this_year,
+        finished_year=finished_year,
         rating_distribution=rating_distribution,
         unrated_count=unrated_count,
         recent_activity=[entry for _, entry in active_entries[:8]],
@@ -279,6 +267,38 @@ def _favorite_groups(db: Session, username: str) -> list[schemas.FavoriteGroup]:
             )
         groups.append(schemas.FavoriteGroup(category=category, slots=slots))
     return groups
+
+
+def _completion_year(finished_at: datetime) -> int:
+    """Calendar year of a finish date. Finish dates are stored as UTC midnight."""
+    if finished_at.tzinfo is None:
+        return finished_at.year
+    return finished_at.astimezone(timezone.utc).year
+
+
+def _finished_counts(entries: list[models.MediaEntry], year: int | None = None) -> schemas.FinishedCounts:
+    """Finished entries. A year limits the count to completions dated in that year."""
+    type_counts = Counter(
+        entry.media_type
+        for entry in entries
+        if entry.status in _FINISHED_STATUSES
+        and (
+            year is None
+            or (
+                entry.finished_at is not None
+                and _completion_year(entry.finished_at) == year
+            )
+        )
+    )
+    return schemas.FinishedCounts(
+        total=sum(type_counts.values()),
+        game=type_counts.get(MediaType.GAME.value, 0),
+        dlc=type_counts.get(MediaType.DLC.value, 0),
+        movie=type_counts.get(MediaType.MOVIE.value, 0),
+        series=type_counts.get(MediaType.SERIES.value, 0),
+        anime=type_counts.get(MediaType.ANIME.value, 0),
+        book=type_counts.get(MediaType.BOOK.value, 0),
+    )
 
 
 def _log_achievements(logged_counts: Counter) -> list[schemas.Achievement]:

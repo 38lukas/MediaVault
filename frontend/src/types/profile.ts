@@ -45,6 +45,8 @@ export interface FavoriteGroup {
 
 export interface ProfileStats {
   finished: FinishedCounts;
+  finished_this_year: FinishedCounts;
+  finished_year: number;
   rating_distribution: RatingBucket[];
   unrated_count: number;
   recent_activity: MediaItem[];

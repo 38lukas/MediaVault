@@ -16,14 +16,15 @@ const TYPE_ROWS: { key: keyof Omit<FinishedCounts, 'total'>; label: string }[] =
 ];
 
 interface FinishedStatsProps {
+  label: string;
   finished: FinishedCounts;
 }
 
-// All-time finished counts: total plus per media type.
-export function FinishedStats({ finished }: FinishedStatsProps) {
+// Finished counts: total plus per media type.
+export function FinishedStats({ label, finished }: FinishedStatsProps) {
   return (
-    <Box>
-      <SectionDivider label="All-time finished" />
+    <Box sx={{ flex: '1 1 28rem', minWidth: 0 }}>
+      <SectionDivider label={label} />
 
       <Box
         sx={{
