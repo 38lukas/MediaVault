@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Box, Typography } from '@mui/material';
 import { StarRating } from '@/components/common/StarRating';
@@ -12,6 +13,7 @@ interface SectionDividerProps {
   statusStyle?: boolean;
   collapsed?: boolean;
   onLabelClick?: () => void;
+  endAction?: ReactNode;
 }
 
 // Section title row with optional rating stars and a horizontal rule.
@@ -21,6 +23,7 @@ export function SectionDivider({
   statusStyle = false,
   collapsed = false,
   onLabelClick,
+  endAction,
 }: SectionDividerProps) {
   const colors = statusStyle ? getStatusColor(label) : null;
   const clickable = onLabelClick != null;
@@ -97,6 +100,7 @@ export function SectionDivider({
         </Typography>
       )}
       <Box sx={{ flex: 1, height: '1px', backgroundColor: palette.borderStrong }} />
+      {endAction}
     </Box>
   );
 }
