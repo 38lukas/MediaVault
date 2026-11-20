@@ -13,18 +13,26 @@ interface PreloadState {
   progress: number;
 }
 
+// The preload result belongs to one viewed library; a different key means it is stale.
+interface KeyedPreloadState extends PreloadState {
+  key: string;
+}
+
 // Fetches and caches everything the main pages need right after login (every media entry included),
 // so navigating afterwards is instant.
 // The subscriptions stay open for as long as the app is mounted, which keeps the data cached.
-export function useAppPreload(username: string | null): PreloadState {
+// Runs again whenever the viewed library changes (a friend's library, or back to your own), because the
+// API cache is reset on those switches.
+export function useAppPreload(username: string | null, viewingAs: string | null): PreloadState {
   const dispatch = useAppDispatch();
-  const [state, setState] = useState<PreloadState>({ ready: false, progress: 0 });
+  const key = `${username ?? ''}|${viewingAs ?? ''}`;
+  const [state, setState] = useState<KeyedPreloadState>({ key, ready: false, progress: 0 });
 
   useEffect(() => {
     if (!username) return;
     let cancelled = false;
     const subscriptions: { unsubscribe: () => void }[] = [];
-    setState({ ready: false, progress: 0 });
+    setState({ key, ready: false, progress: 0 });
 
     const run = async () => {
       const tasks = [
@@ -47,12 +55,12 @@ export function useAppPreload(username: string | null): PreloadState {
             )
             .then(() => {
               done += 1;
-              if (!cancelled) setState({ ready: false, progress: (done / total) * 100 });
+              if (!cancelled) setState({ key, ready: false, progress: (done / total) * 100 });
             }),
         ),
       );
       if (cancelled) return;
-      setState({ ready: true, progress: 100 });
+      setState({ key, ready: true, progress: 100 });
     };
     void run();
 
@@ -60,7 +68,8 @@ export function useAppPreload(username: string | null): PreloadState {
       cancelled = true;
       subscriptions.forEach((subscription) => subscription.unsubscribe());
     };
-  }, [dispatch, username]);
+  }, [dispatch, username, viewingAs, key]);
 
-  return state;
+  // Right after the viewed library changes, the old result must not count as ready.
+  return state.key === key ? state : { ready: false, progress: 0 };
 }

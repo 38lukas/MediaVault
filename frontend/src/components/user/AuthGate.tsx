@@ -13,6 +13,7 @@ import { AUTH_STORAGE_KEY, hydrateAuth } from '@/redux/slices/authSlice';
 export function AuthGate({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
   const username = useAppSelector((state) => state.auth.username);
+  const viewingAs = useAppSelector((state) => state.auth.viewingAs);
   const hydrated = useAppSelector((state) => state.auth.hydrated);
 
   useEffect(() => {
@@ -24,7 +25,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
   return (
     <BackendGate>
       {username ? (
-        <AppPreloader username={username}>{children}</AppPreloader>
+        <AppPreloader username={username} viewingAs={viewingAs}>
+          {children}
+        </AppPreloader>
       ) : (
         <Container maxWidth="xl" sx={{ py: 4 }}>
           <LoginForm />
