@@ -3,6 +3,8 @@
 import { useCallback, type KeyboardEvent, type ReactNode } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import {
   Box,
   FormControl,
@@ -232,10 +234,25 @@ export function OverviewTab() {
 
       <Box sx={rowSx}>
         <FieldLabel label="Rating">
-          <StarRating
-            value={form.rating}
-            onChange={(stars) => dispatch(patchForm({ rating: toDbRating(stars) }))}
-          />
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+            <StarRating
+              value={form.rating}
+              onChange={(stars) => dispatch(patchForm({ rating: toDbRating(stars) }))}
+            />
+            <IconButton
+              aria-label={form.isFavorite ? 'Remove from favorites' : 'Mark as favorite'}
+              aria-pressed={form.isFavorite}
+              title={form.isFavorite ? 'Favorite' : 'Mark as favorite'}
+              onClick={() => dispatch(patchForm({ isFavorite: !form.isFavorite }))}
+              sx={{ p: 0.5, color: form.isFavorite ? palette.primary : 'grey.600' }}
+            >
+              {form.isFavorite ? (
+                <FavoriteIcon sx={{ fontSize: '1.6rem' }} />
+              ) : (
+                <FavoriteBorderIcon sx={{ fontSize: '1.6rem' }} />
+              )}
+            </IconButton>
+          </Stack>
         </FieldLabel>
         {showRewatches && (
           <FieldLabel label="Rewatches">

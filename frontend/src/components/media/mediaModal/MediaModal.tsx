@@ -128,6 +128,7 @@ export function MediaModal() {
       played_dates: form.playedDates,
       rewatch_dates: form.rewatchDates.length > 0 ? form.rewatchDates : null,
       number_of_rewatches: supportsRewatches(form.mediaType) ? form.rewatchCount : null,
+      is_favorite: form.isFavorite,
     };
 
     try {

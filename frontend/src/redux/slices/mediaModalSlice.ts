@@ -53,6 +53,7 @@ export const INITIAL_MEDIA_FORM = {
   playedDates: [] as string[],
   rewatchDates: [] as string[],
   rewatchCount: 0,
+  isFavorite: false,
 };
 
 export type MediaForm = typeof INITIAL_MEDIA_FORM;
@@ -171,6 +172,7 @@ function formFromItem(item: MediaItem): MediaForm {
     playedDates: withPlayedDates(item.played_dates ?? [], startedAt, finishedAt),
     rewatchDates: [...(item.rewatch_dates ?? [])].sort(),
     rewatchCount: item.number_of_rewatches ?? 0,
+    isFavorite: item.is_favorite ?? false,
   };
 }
 

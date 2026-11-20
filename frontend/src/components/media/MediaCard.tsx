@@ -4,6 +4,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 import ReplayIcon from '@mui/icons-material/Replay';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { hasRewatch, mediaDisplayTitle, type MediaItem } from '@/types/media';
 import { palette } from '@/lib/palette';
 import { getStatusColor } from '@/utils/mediaStatus';
@@ -34,7 +35,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
         transition: 'transform 0.2s ease-in-out',
         '&:hover': {
           transform: 'translateY(-4px)',
-          '& .media-card-overlay, & .media-card-rewatch': {
+          '& .media-card-overlay, & .media-card-badges': {
             opacity: 1,
           },
         },
@@ -68,19 +69,17 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
             style={{ objectFit: 'cover' }}
           />
 
-          {showRewatchBadge && (
+          {(item.is_favorite || showRewatchBadge) && (
             <Box
-              className="media-card-rewatch"
-              aria-label="Has rewatch days logged"
-              title="Rewatched"
+              className="media-card-badges"
               sx={{
                 position: 'absolute',
                 top: 8,
-                right: 8,
+                left: 8,
                 zIndex: 1,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
+                gap: 0.75,
                 color: palette.primary,
                 opacity: 0,
                 transition: 'opacity 0.2s ease-in-out',
@@ -88,7 +87,14 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
                 filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.85))',
               }}
             >
-              <ReplayIcon sx={{ fontSize: 22 }} />
+              {item.is_favorite && <FavoriteIcon aria-label="Favorite" titleAccess="Favorite" sx={{ fontSize: 22 }} />}
+              {showRewatchBadge && (
+                <ReplayIcon
+                  aria-label="Has rewatch days logged"
+                  titleAccess="Rewatched"
+                  sx={{ fontSize: 22 }}
+                />
+              )}
             </Box>
           )}
 

@@ -76,6 +76,7 @@ def create_entry(
         played_dates=entry_in.played_dates,
         rewatch_dates=entry_in.rewatch_dates,
         number_of_rewatches=entry_in.number_of_rewatches,
+        is_favorite=entry_in.is_favorite,
     )
 
     db.add(db_entry)
@@ -134,6 +135,7 @@ def update_entry(
     entry.played_dates = entry_in.played_dates
     entry.rewatch_dates = entry_in.rewatch_dates
     entry.number_of_rewatches = entry_in.number_of_rewatches
+    entry.is_favorite = entry_in.is_favorite
 
     db.commit()
     db.refresh(entry)

@@ -32,6 +32,7 @@ export interface MediaItem {
   played_dates?: string[] | null;
   rewatch_dates?: string[] | null;
   number_of_rewatches?: number | null;
+  is_favorite?: boolean;
 }
 
 export function hasRewatch(item: MediaItem): boolean {

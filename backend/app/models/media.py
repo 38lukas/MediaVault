@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from app.database import Base
@@ -45,3 +45,4 @@ class MediaEntry(Base):
     played_dates = Column(ARRAY(Date), nullable=True)
     rewatch_dates = Column(ARRAY(Date), nullable=True)
     number_of_rewatches = Column(Integer, nullable=True)  # Movie, series, and anime only.
+    is_favorite = Column(Boolean, nullable=False, default=False, server_default="false")

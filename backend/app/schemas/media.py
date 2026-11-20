@@ -42,6 +42,7 @@ class MediaEntryBase(BaseModel):
     played_dates: Optional[list[date]] = None  # Journal days, stored sorted and unique.
     rewatch_dates: Optional[list[date]] = None  # Journal days marked as a rewatch; subset of played_dates.
     number_of_rewatches: Optional[int] = Field(default=None, ge=0)  # Movie, series, and anime only.
+    is_favorite: bool = False  # Heart toggle in the media modal.
 
     @model_validator(mode="after")
     def validate_status_for_media_type(self):
