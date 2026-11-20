@@ -37,7 +37,7 @@ export interface MediaItem {
 }
 
 export function hasRewatch(item: MediaItem): boolean {
-  return (item.rewatch_dates?.length ?? 0) > 0;
+  return (item.rewatch_dates?.length ?? 0) > 0 || (item.number_of_rewatches ?? 0) > 0;
 }
 
 export type MediaEntryPayload = Omit<MediaItem, 'id' | 'username'>;

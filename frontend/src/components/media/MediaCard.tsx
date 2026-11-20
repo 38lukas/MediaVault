@@ -90,7 +90,7 @@ export const MediaCard = memo(function MediaCard({ item, onClick, onSelect }: Me
               {item.is_favorite && <FavoriteIcon aria-label="Favorite" titleAccess="Favorite" sx={{ fontSize: 22 }} />}
               {showRewatchBadge && (
                 <ReplayIcon
-                  aria-label="Has rewatch days logged"
+                  aria-label="Rewatched or replayed"
                   titleAccess="Rewatched"
                   sx={{ fontSize: 22 }}
                 />
