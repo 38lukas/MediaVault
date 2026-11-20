@@ -6,7 +6,7 @@ import { resolveApiBaseUrl } from '@/redux/api';
 
 const RETRY_MS = 3000;
 const REQUEST_TIMEOUT_MS = 8000;
-// Quick checks finish before this, so a healthy backend never flashes the notice.
+// A healthy backend answers before this, so "Preparing backend" only shows when the server is really slow.
 const NOTICE_DELAY_MS = 600;
 
 // The health route lives next to /api, not under it.
@@ -49,11 +49,14 @@ export function BackendGate({ children }: { children: ReactNode }) {
   }, []);
 
   if (ready) return <>{children}</>;
-  if (!showNotice) return null;
-  return (
+  // The loading screen shows right away (no blank page); the "starting up" text only appears if the first
+  // check takes a while or fails.
+  return showNotice ? (
     <LoadingScreen
       message="Preparing backend…"
       detail="The server is starting up. This can take a moment."
     />
+  ) : (
+    <LoadingScreen message="Connecting…" />
   );
 }

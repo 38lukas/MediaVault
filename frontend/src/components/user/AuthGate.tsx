@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
-import { Box, CircularProgress, Container } from '@mui/material';
+import { Container } from '@mui/material';
+import { LoadingScreen } from '@/components/common/LoadingScreen';
 import { AppPreloader } from './AppPreloader';
 import { BackendGate } from './BackendGate';
 import { LoginForm } from './LoginForm';
@@ -18,13 +19,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     dispatch(hydrateAuth(localStorage.getItem(AUTH_STORAGE_KEY)));
   }, [dispatch]);
 
-  if (!hydrated) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  if (!hydrated) return <LoadingScreen message="Connecting…" />;
 
   return (
     <BackendGate>
