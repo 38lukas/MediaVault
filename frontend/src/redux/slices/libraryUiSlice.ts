@@ -15,8 +15,11 @@ import { userEndpoints } from '../api/userEndpoints';
 interface LibraryUiState {
   cardSize: CardSize;
   typeFilter: TypeFilter;
-  statusFilter: string | null;
-  ratingFilter: RatingFilter;
+  // Selected status filters; empty = all statuses.
+  statusFilter: string[];
+  // Selected ratings; empty = no rating filter.
+  ratingFilter: RatingFilter[];
+  favoritesOnly: boolean;
   sortField: SortField;
   sortDirection: SortDirection;
   searchQuery: string;
@@ -29,8 +32,9 @@ const initialSortField: SortField = 'status';
 const initialState: LibraryUiState = {
   cardSize: CARD_SIZE_DEFAULT,
   typeFilter: 'All',
-  statusFilter: null,
-  ratingFilter: null,
+  statusFilter: [],
+  ratingFilter: [],
+  favoritesOnly: false,
   sortField: initialSortField,
   sortDirection: SORT_FIELD_DEFAULT_DIRECTION[initialSortField],
   searchQuery: '',
@@ -48,31 +52,32 @@ const libraryUiSlice = createSlice({
     },
     setTypeFilter(state, action: PayloadAction<TypeFilter>) {
       state.typeFilter = action.payload;
-      if (
-        state.statusFilter &&
-        !statusesForTypeFilter(action.payload).includes(state.statusFilter)
-      ) {
-        state.statusFilter = null;
-      }
+      const allowed = statusesForTypeFilter(action.payload);
+      state.statusFilter = state.statusFilter.filter((status) => allowed.includes(status));
     },
-    setStatusFilter(state, action: PayloadAction<string | null>) {
+    setStatusFilter(state, action: PayloadAction<string[]>) {
       state.statusFilter = action.payload;
     },
-    setRatingFilter(state, action: PayloadAction<RatingFilter>) {
+    setRatingFilter(state, action: PayloadAction<RatingFilter[]>) {
       state.ratingFilter = action.payload;
+    },
+    setFavoritesOnly(state, action: PayloadAction<boolean>) {
+      state.favoritesOnly = action.payload;
     },
     // Shows every entry with one rating, clearing the other filters (profile chart drill-down).
     showOnlyRating(state, action: PayloadAction<number>) {
-      state.ratingFilter = action.payload;
+      state.ratingFilter = [action.payload];
+      state.favoritesOnly = false;
       state.typeFilter = 'All';
-      state.statusFilter = null;
+      state.statusFilter = [];
       state.searchQuery = '';
       state.filtersOpen = true;
     },
     showOnlyUnrated(state) {
-      state.ratingFilter = RATING_FILTER_UNRATED;
+      state.ratingFilter = [RATING_FILTER_UNRATED];
+      state.favoritesOnly = false;
       state.typeFilter = 'All';
-      state.statusFilter = null;
+      state.statusFilter = [];
       state.searchQuery = '';
       state.filtersOpen = true;
     },
@@ -96,8 +101,9 @@ const libraryUiSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(clearUsername, (state) => {
       state.defaultsApplied = false;
-      state.statusFilter = null;
-      state.ratingFilter = null;
+      state.statusFilter = [];
+      state.ratingFilter = [];
+      state.favoritesOnly = false;
       state.filtersOpen = false;
     });
 
@@ -131,6 +137,7 @@ export const {
   setTypeFilter,
   setStatusFilter,
   setRatingFilter,
+  setFavoritesOnly,
   showOnlyRating,
   showOnlyUnrated,
   setSortField,

@@ -24,7 +24,7 @@ import { openEditMediaModal } from '@/redux/slices/mediaModalSlice';
 import { useGetEntryStatusCountsQuery, useGetUserSettingsQuery } from '@/redux/api';
 import {
   UNIFIED_STATUS_FILTERS,
-  matchesStatusFilter,
+  matchesStatusFilters,
   matchesTypeFilter,
   mediaDisplayTitle,
   RATING_FILTER_UNRATED,
@@ -56,6 +56,7 @@ export function LibraryView() {
   const typeFilter = useAppSelector((state) => state.libraryUi.typeFilter);
   const statusFilter = useAppSelector((state) => state.libraryUi.statusFilter);
   const ratingFilter = useAppSelector((state) => state.libraryUi.ratingFilter);
+  const favoritesOnly = useAppSelector((state) => state.libraryUi.favoritesOnly);
   const sortField = useAppSelector((state) => state.libraryUi.sortField);
   const sortDirection = useAppSelector((state) => state.libraryUi.sortDirection);
   const searchQuery = useAppSelector((state) => state.libraryUi.searchQuery);
@@ -64,6 +65,7 @@ export function LibraryView() {
   const deferredTypeFilter = useDeferredValue(typeFilter);
   const deferredStatusFilter = useDeferredValue(statusFilter);
   const deferredRatingFilter = useDeferredValue(ratingFilter);
+  const deferredFavoritesOnly = useDeferredValue(favoritesOnly);
   const deferredSortField = useDeferredValue(sortField);
   const deferredSortDirection = useDeferredValue(sortDirection);
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -72,6 +74,7 @@ export function LibraryView() {
     deferredTypeFilter !== typeFilter ||
     deferredStatusFilter !== statusFilter ||
     deferredRatingFilter !== ratingFilter ||
+    deferredFavoritesOnly !== favoritesOnly ||
     deferredSortField !== sortField ||
     deferredSortDirection !== sortDirection ||
     deferredSearchQuery !== searchQuery;
@@ -87,9 +90,11 @@ export function LibraryView() {
   // Labels that must be loaded regardless of the setting: searching and rating filters need every entry,
   // and an explicit status filter needs that status.
   const forcedLabels = useMemo(() => {
-    if (deferredSearchQuery.trim() || deferredRatingFilter != null) return new Set(ALL_LABELS);
-    return new Set(deferredStatusFilter ? [unifiedStatusLabel(deferredStatusFilter)] : []);
-  }, [deferredSearchQuery, deferredRatingFilter, deferredStatusFilter]);
+    if (deferredSearchQuery.trim() || deferredRatingFilter.length > 0 || deferredFavoritesOnly) {
+      return new Set(ALL_LABELS);
+    }
+    return new Set(deferredStatusFilter.map(unifiedStatusLabel));
+  }, [deferredSearchQuery, deferredRatingFilter, deferredFavoritesOnly, deferredStatusFilter]);
 
   const neededLabels = useMemo(
     () =>
@@ -113,12 +118,16 @@ export function LibraryView() {
     const query = deferredSearchQuery.trim().toLowerCase();
     const filtered = items.filter((item) => {
       if (!matchesTypeFilter(item.media_type, deferredTypeFilter)) return false;
-      if (!matchesStatusFilter(item.status, deferredStatusFilter)) return false;
-      if (deferredRatingFilter === RATING_FILTER_UNRATED) {
-        if (item.rating != null) return false;
-      } else if (deferredRatingFilter != null && item.rating !== deferredRatingFilter) {
+      if (!matchesStatusFilters(item.status, deferredStatusFilter)) return false;
+      if (
+        deferredRatingFilter.length > 0 &&
+        !deferredRatingFilter.some((rating) =>
+          rating === RATING_FILTER_UNRATED ? item.rating == null : item.rating === rating
+        )
+      ) {
         return false;
       }
+      if (deferredFavoritesOnly && !item.is_favorite) return false;
       if (query && !mediaDisplayTitle(item).toLowerCase().includes(query)) return false;
       if (deferredSortField === 'months' && !item.finished_at) return false;
       return true;
@@ -132,6 +141,7 @@ export function LibraryView() {
     deferredTypeFilter,
     deferredStatusFilter,
     deferredRatingFilter,
+    deferredFavoritesOnly,
     deferredSearchQuery,
     deferredSortField,
     deferredSortDirection,
@@ -147,7 +157,7 @@ export function LibraryView() {
     const counts = new Map<string, number>();
     for (const row of statusCounts) {
       if (!matchesTypeFilter(row.media_type, deferredTypeFilter)) continue;
-      if (!matchesStatusFilter(row.status, deferredStatusFilter)) continue;
+      if (!matchesStatusFilters(row.status, deferredStatusFilter)) continue;
       const key = sectionKeyOfStatus(row.status);
       counts.set(key, (counts.get(key) ?? 0) + row.count);
     }

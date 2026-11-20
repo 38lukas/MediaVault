@@ -101,7 +101,8 @@ export function isCardSize(value: unknown): value is CardSize {
 export type TypeFilter = 'All' | 'Game/DLC' | 'Movie' | 'Series' | 'Anime' | 'Book';
 
 export const RATING_FILTER_UNRATED = 'unrated' as const;
-export type RatingFilter = number | typeof RATING_FILTER_UNRATED | null;
+// One selectable rating in the library filter: a DB rating (1-10) or unrated
+export type RatingFilter = number | typeof RATING_FILTER_UNRATED;
 export type SortField =
   | 'title'
   | 'status'
@@ -202,6 +203,11 @@ export interface StatusCount {
   media_type: string;
   status: string;
   count: number;
+}
+
+// True when an entry status matches any of the selected status filters; no filters selected = all
+export function matchesStatusFilters(itemStatus: string, statusFilters: readonly string[]): boolean {
+  return statusFilters.length === 0 || statusFilters.some((filter) => matchesStatusFilter(itemStatus, filter));
 }
 
 // Map stored type-specific statuses to a unified section/filter label
