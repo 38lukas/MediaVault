@@ -129,6 +129,7 @@ export function MediaModal() {
       rewatch_dates: form.rewatchDates.length > 0 ? form.rewatchDates : null,
       number_of_rewatches: supportsRewatches(form.mediaType) ? form.rewatchCount : null,
       is_favorite: form.isFavorite,
+      hide_season_name: form.hideSeasonName,
     };
 
     try {
@@ -199,7 +200,7 @@ export function MediaModal() {
             {readOnly ? 'View entry' : isEdit ? 'Edit entry' : 'New entry'}
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
-            {formatMediaTitle(form.title.trim(), form.seasonName) ||
+            {formatMediaTitle(form.title.trim(), form.hideSeasonName ? null : form.seasonName) ||
               (readOnly ? 'Media' : isEdit ? 'Edit media' : 'Add media')}
           </Typography>
         </Box>

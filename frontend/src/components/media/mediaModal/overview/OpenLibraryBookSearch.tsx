@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Autocomplete,
   CircularProgress,
@@ -29,6 +29,8 @@ interface OpenLibraryBookSearchProps {
   onSelectionChange: (book: OpenLibraryBookSearchResult | null, loading: boolean) => void;
   onBookLoaded: (book: OpenLibraryBookLookup) => void;
   onError: (error: unknown) => void;
+  // Extra control shown inside the input on the right (e.g. the rename toggle).
+  titleAction?: ReactNode;
 }
 
 function isAbortError(error: unknown): boolean {
@@ -50,6 +52,7 @@ export function OpenLibraryBookSearch({
   onSelectionChange,
   onBookLoaded,
   onError,
+  titleAction,
 }: OpenLibraryBookSearchProps) {
   const [searchBooks] = useLazySearchOpenLibraryBooksQuery();
   const [fetchBook, bookState] = useLazyFetchOpenLibraryBookQuery();
@@ -175,6 +178,7 @@ export function OpenLibraryBookSearch({
                       <CircularProgress size={16} thickness={5} color="inherit" />
                     </InputAdornment>
                   )}
+                  {titleAction}
                   {params.slotProps.input.endAdornment}
                 </>
               ),

@@ -54,6 +54,7 @@ export const INITIAL_MEDIA_FORM = {
   rewatchDates: [] as string[],
   rewatchCount: 0,
   isFavorite: false,
+  hideSeasonName: false,
 };
 
 export type MediaForm = typeof INITIAL_MEDIA_FORM;
@@ -173,6 +174,7 @@ function formFromItem(item: MediaItem): MediaForm {
     rewatchDates: [...(item.rewatch_dates ?? [])].sort(),
     rewatchCount: item.number_of_rewatches ?? 0,
     isFavorite: item.is_favorite ?? false,
+    hideSeasonName: item.hide_season_name ?? false,
   };
 }
 

@@ -21,6 +21,8 @@ export const fieldSx = {
       borderWidth: 1,
     },
   '& .MuiInputLabel-root.Mui-focused': { color: palette.primary },
+  // Line the dropdown arrow up with the Autocomplete (title) arrow.
+  '& .MuiSelect-icon': { right: 10 },
   '& .MuiInputBase-input[type="number"]': {
     MozAppearance: 'textfield',
     '&::-webkit-outer-spin-button': {

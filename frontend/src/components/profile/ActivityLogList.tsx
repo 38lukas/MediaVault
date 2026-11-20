@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { Box, Typography } from '@mui/material';
 import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';
@@ -209,9 +210,20 @@ export function ActivityLogList({ items, onItemClick }: ActivityLogListProps) {
                   <Typography noWrap sx={{ fontWeight: 600, lineHeight: 1.3 }}>
                     {title}
                   </Typography>
-                  {row.item.rating != null && (
-                    <Box sx={{ mt: 0.25, minHeight: 20 }}>
-                      <StarRating value={row.item.rating} readOnly size="small" />
+                  {(row.item.rating != null || row.item.is_favorite) && (
+                    <Box
+                      sx={{ mt: 0.25, minHeight: 20, display: 'flex', alignItems: 'center', gap: 0.75 }}
+                    >
+                      {row.item.rating != null && (
+                        <StarRating value={row.item.rating} readOnly size="small" />
+                      )}
+                      {row.item.is_favorite && (
+                        <FavoriteIcon
+                          aria-label="Favorite"
+                          titleAccess="Favorite"
+                          sx={{ fontSize: '1.15rem', color: palette.primary }}
+                        />
+                      )}
                     </Box>
                   )}
                 </Box>

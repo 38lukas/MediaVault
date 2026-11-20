@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CircularProgress, InputAdornment, MenuItem, TextField } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { CircularProgress, IconButton, InputAdornment, MenuItem, TextField } from '@mui/material';
+import { palette } from '@/lib/palette';
+import { FieldAction, fieldActionPaddingSx } from './FieldAction';
 import { skipToken } from '@reduxjs/toolkit/query';
 import {
   useFetchTmdbTitleQuery,
@@ -10,7 +14,11 @@ import {
   type TmdbSeasonSummary,
 } from '@/redux/api';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { lookupSelectionChanged, tmdbSeasonSelected } from '@/redux/slices/mediaModalSlice';
+import {
+  lookupSelectionChanged,
+  patchForm,
+  tmdbSeasonSelected,
+} from '@/redux/slices/mediaModalSlice';
 
 const WHOLE_SHOW = 0;
 
@@ -40,6 +48,7 @@ export function TmdbSeasonSelect({ showId, mediaType, fieldSx, onError }: TmdbSe
   const dispatch = useAppDispatch();
   const seasonNumber = useAppSelector((state) => state.mediaModal.form.seasonNumber);
   const seasonName = useAppSelector((state) => state.mediaModal.form.seasonName);
+  const hideSeasonName = useAppSelector((state) => state.mediaModal.form.hideSeasonName);
   const showQuery = useFetchTmdbTitleQuery(
     showId == null ? skipToken : { id: showId, mediaType },
   );
@@ -115,14 +124,41 @@ export function TmdbSeasonSelect({ showId, mediaType, fieldSx, onError }: TmdbSe
       onChange={(event) => void handleChange(Number(event.target.value))}
       disabled={!show}
       helperText={showId == null ? 'Pick a show from the title search to choose a season.' : undefined}
-      sx={fieldSx}
+      sx={{ ...fieldSx, ...fieldActionPaddingSx }}
       slotProps={{
         input: {
-          endAdornment: isLoading ? (
-            <InputAdornment position="end" sx={{ mr: 3 }}>
-              <CircularProgress size={16} thickness={5} color="inherit" />
-            </InputAdornment>
-          ) : undefined,
+          endAdornment: (
+            <>
+              {isLoading && (
+                <InputAdornment position="end">
+                  <CircularProgress size={16} thickness={5} color="inherit" />
+                </InputAdornment>
+              )}
+              {seasonNumber != null && (
+                <FieldAction>
+                  <IconButton
+                    size="small"
+                    edge="end"
+                    aria-label={hideSeasonName ? 'Show season name in title' : 'Hide season name in title'}
+                    aria-pressed={hideSeasonName}
+                    title={
+                      hideSeasonName
+                        ? 'Season name hidden in titles (click to show)'
+                        : 'Hide season name in titles'
+                    }
+                    onClick={() => dispatch(patchForm({ hideSeasonName: !hideSeasonName }))}
+                    sx={{ color: hideSeasonName ? palette.primary : 'text.secondary' }}
+                  >
+                    {hideSeasonName ? (
+                      <VisibilityOffIcon fontSize="small" />
+                    ) : (
+                      <VisibilityIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                </FieldAction>
+              )}
+            </>
+          ),
         },
       }}
     >

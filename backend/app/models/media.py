@@ -44,5 +44,6 @@ class MediaEntry(Base):
     rating = Column(Integer, nullable=True)
     played_dates = Column(ARRAY(Date), nullable=True)
     rewatch_dates = Column(ARRAY(Date), nullable=True)
-    number_of_rewatches = Column(Integer, nullable=True)  # Movie, series, and anime only.
+    number_of_rewatches = Column(Integer, nullable=True)  # Rewatches (movie/series/anime) or replays (game/DLC).
     is_favorite = Column(Boolean, nullable=False, default=False, server_default="false")
+    hide_season_name = Column(Boolean, nullable=False, default=False, server_default="false")

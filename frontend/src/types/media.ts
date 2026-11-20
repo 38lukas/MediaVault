@@ -33,6 +33,7 @@ export interface MediaItem {
   rewatch_dates?: string[] | null;
   number_of_rewatches?: number | null;
   is_favorite?: boolean;
+  hide_season_name?: boolean;
 }
 
 export function hasRewatch(item: MediaItem): boolean {
@@ -65,19 +66,20 @@ export function isGameType(mediaType: string): boolean {
   return mediaType === 'Game' || mediaType === 'DLC';
 }
 
-// True when the media type tracks a rewatch count (movie, series, anime)
+// True when the media type tracks a rewatch/replay count (everything except books)
 export function supportsRewatches(mediaType: string): boolean {
-  return mediaType === 'Movie' || mediaType === 'Series' || mediaType === 'Anime';
+  return mediaType !== 'Book';
 }
 
-// "Show: Season name" for season entries, otherwise the plain title
+// "Show: Season name" for season entries (just the season name if the title is empty), otherwise the plain title
 export function formatMediaTitle(title: string, seasonName?: string | null): string {
-  return seasonName ? `${title}: ${seasonName}` : title;
+  if (!seasonName) return title;
+  return title.trim() ? `${title}: ${seasonName}` : seasonName;
 }
 
 // Display title for a library entry
 export function mediaDisplayTitle(item: MediaItem): string {
-  return formatMediaTitle(item.title, item.season_name);
+  return formatMediaTitle(item.title, item.hide_season_name ? null : item.season_name);
 }
 
 export type CardSize = 0 | 1 | 2 | 3 | 4;

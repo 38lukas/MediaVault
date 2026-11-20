@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Autocomplete,
   CircularProgress,
@@ -29,6 +29,8 @@ interface IgdbGameSearchProps {
   onSelectionChange: (game: IgdbGameSearchResult | null, loading: boolean) => void;
   onGameLoaded: (game: IgdbGameLookup) => void;
   onError: (error: unknown) => void;
+  // Extra control shown inside the input on the right (e.g. the rename toggle).
+  titleAction?: ReactNode;
 }
 
 function formatReleaseYear(timestamp: number): string {
@@ -45,6 +47,7 @@ export function IgdbGameSearch({
   onSelectionChange,
   onGameLoaded,
   onError,
+  titleAction,
 }: IgdbGameSearchProps) {
   const [searchGames] = useLazySearchIgdbGamesQuery();
   const [fetchGame, gameState] = useLazyFetchIgdbGameQuery();
@@ -181,6 +184,7 @@ export function IgdbGameSearch({
                       <CircularProgress size={16} thickness={5} color="inherit" />
                     </InputAdornment>
                   )}
+                  {titleAction}
                   {params.slotProps.input.endAdornment}
                 </>
               ),

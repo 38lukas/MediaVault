@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, type KeyboardEvent, type ReactNode } from 'react';
+import { useCallback, useState, type KeyboardEvent, type ReactNode } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import {
@@ -43,6 +44,7 @@ import {
 } from '../constants';
 import { coverFetchErrorMessage } from '../coverFetchError';
 import { DateField } from './DateField';
+import { FieldAction, fieldActionPaddingSx } from './FieldAction';
 import { OptionSelect } from './OptionSelect';
 import { IgdbGameSearch } from './IgdbGameSearch';
 import { OpenLibraryBookSearch } from './OpenLibraryBookSearch';
@@ -101,6 +103,38 @@ export function OverviewTab() {
     (err: unknown) => dispatch(setFetchError(coverFetchErrorMessage(err, 'Open Library'))),
     [dispatch],
   );
+  // Rename mode: the title becomes a plain text field, so editing it neither searches nor clears
+  // cover, details or ids. Keyed by searchKey so it resets whenever the modal or media type changes.
+  const [renameKey, setRenameKey] = useState<string | null>(null);
+  const [resumeSkip, setResumeSkip] = useState<{ key: string; title: string } | null>(null);
+  const renaming = renameKey === searchKey;
+  const toggleRename = () => {
+    if (renaming) {
+      // Back to search: don't auto-search for the name we just typed; only searching on further edits.
+      setResumeSkip({ key: searchKey, title: form.title });
+      setRenameKey(null);
+    } else {
+      setRenameKey(searchKey);
+    }
+  };
+  const skipTitle = (fallback: string | undefined) =>
+    resumeSkip?.key === searchKey ? resumeSkip.title : fallback;
+  const renameButton = (
+    <FieldAction>
+    <IconButton
+      size="small"
+      edge="end"
+      aria-label={renaming ? 'Rename only: click to search again' : 'Rename without searching'}
+      aria-pressed={renaming}
+      title={renaming ? 'Rename only (click to search again)' : 'Rename without searching'}
+      onClick={toggleRename}
+      sx={{ color: renaming ? palette.primary : 'text.secondary' }}
+    >
+      <EditOutlinedIcon fontSize="small" />
+    </IconButton>
+    </FieldAction>
+  );
+  const titleFieldSx = { ...fieldSx, ...fieldActionPaddingSx };
   const handleTitleChange = (title: string, hadSelection: boolean) =>
     dispatch(lookupTitleChanged({ title, hadSelection }));
   const handleSelectionChange = (result: { name: string } | null, loading: boolean) =>
@@ -108,17 +142,30 @@ export function OverviewTab() {
 
   return (
     <Stack spacing={2.25}>
-      {provider === 'IGDB' ? (
+      {renaming ? (
+        <TextField
+          label="Title"
+          required
+          size="small"
+          fullWidth
+          autoFocus
+          value={form.title}
+          onChange={(e) => dispatch(patchForm({ title: e.target.value }))}
+          sx={{ ...fieldSx, ...fieldActionPaddingSx }}
+          slotProps={{ input: { endAdornment: renameButton } }}
+        />
+      ) : provider === 'IGDB' ? (
         <IgdbGameSearch
           key={searchKey}
           open={open}
           title={form.title}
-          skipSearchForTitle={item && isGameType(item.media_type) ? item.title : undefined}
-          fieldSx={fieldSx}
+          skipSearchForTitle={skipTitle(item && isGameType(item.media_type) ? item.title : undefined)}
+          fieldSx={titleFieldSx}
           onTitleChange={handleTitleChange}
           onSelectionChange={handleSelectionChange}
           onGameLoaded={(game) => dispatch(igdbGameLoaded(game))}
           onError={handleIgdbSearchError}
+          titleAction={renameButton}
         />
       ) : provider === 'TMDB' ? (
         <TmdbTitleSearch
@@ -126,24 +173,26 @@ export function OverviewTab() {
           open={open}
           title={form.title}
           mediaType={form.mediaType as TmdbMediaType}
-          skipSearchForTitle={item?.media_type === form.mediaType ? item.title : undefined}
-          fieldSx={fieldSx}
+          skipSearchForTitle={skipTitle(item?.media_type === form.mediaType ? item.title : undefined)}
+          fieldSx={titleFieldSx}
           onTitleChange={handleTitleChange}
           onSelectionChange={handleSelectionChange}
           onTitleLoaded={(result) => dispatch(tmdbTitleLoaded(result))}
           onError={handleTmdbSearchError}
+          titleAction={renameButton}
         />
       ) : (
         <OpenLibraryBookSearch
           key={searchKey}
           open={open}
           title={form.title}
-          skipSearchForTitle={item?.media_type === form.mediaType ? item.title : undefined}
-          fieldSx={fieldSx}
+          skipSearchForTitle={skipTitle(item?.media_type === form.mediaType ? item.title : undefined)}
+          fieldSx={titleFieldSx}
           onTitleChange={handleTitleChange}
           onSelectionChange={handleSelectionChange}
           onBookLoaded={(book) => dispatch(openLibraryBookLoaded(book))}
           onError={handleOpenLibrarySearchError}
+          titleAction={renameButton}
         />
       )}
 
@@ -255,11 +304,11 @@ export function OverviewTab() {
           </Stack>
         </FieldLabel>
         {showRewatches && (
-          <FieldLabel label="Rewatches">
+          <FieldLabel label={supportsPlaytime ? 'Replays' : 'Rewatches'}>
             <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
               <IconButton
                 size="small"
-                aria-label="Decrease rewatches"
+                aria-label={supportsPlaytime ? 'Decrease replays' : 'Decrease rewatches'}
                 disabled={form.rewatchCount <= 0}
                 onClick={() => dispatch(patchForm({ rewatchCount: Math.max(0, form.rewatchCount - 1) }))}
                 sx={{ border: `1px solid ${palette.borderMuted}`, borderRadius: 2 }}
@@ -273,7 +322,7 @@ export function OverviewTab() {
               </Typography>
               <IconButton
                 size="small"
-                aria-label="Increase rewatches"
+                aria-label={supportsPlaytime ? 'Increase replays' : 'Increase rewatches'}
                 onClick={() => dispatch(patchForm({ rewatchCount: form.rewatchCount + 1 }))}
                 sx={{ border: `1px solid ${palette.borderMuted}`, borderRadius: 2 }}
               >
