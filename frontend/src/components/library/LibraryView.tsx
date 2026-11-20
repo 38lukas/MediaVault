@@ -1,11 +1,10 @@
 'use client';
 
 import { useCallback, useDeferredValue, useMemo, useState } from 'react';
-import { Alert, Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
+import { Alert, Box, CircularProgress, Stack, Typography } from '@mui/material';
 import { MediaGrid } from '@/components/media/MediaGrid';
 import { SectionDivider } from '@/components/common/SectionDivider';
 import { LibraryToolbar } from '@/components/library/LibraryToolbar';
-import { useLibraryEntries } from '@/components/library/useLibraryEntries';
 import {
   finishedMonthKey,
   formatFinishedMonthLabel,
@@ -15,13 +14,12 @@ import {
   lastPlayedSectionKey,
   ratingSectionKey,
   statusSectionKey,
-  type LibrarySection,
 } from '@/utils/mediaGrouping';
 import { getApiErrorMessage } from '@/utils/apiError';
-import { getStatusRank, sortMediaItems } from '@/utils/mediaSort';
+import { sortMediaItems } from '@/utils/mediaSort';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openEditMediaModal } from '@/redux/slices/mediaModalSlice';
-import { useGetEntryStatusCountsQuery, useGetUserSettingsQuery } from '@/redux/api';
+import { useGetMediaEntriesQuery, useGetUserSettingsQuery } from '@/redux/api';
 import {
   UNIFIED_STATUS_FILTERS,
   matchesStatusFilters,
@@ -32,26 +30,21 @@ import {
   type MediaItem,
 } from '@/types/media';
 
-const ALL_LABELS: readonly string[] = UNIFIED_STATUS_FILTERS;
-
-// A status section as rendered: real entries, or a collapsed placeholder that is loaded on expand.
-interface DisplaySection extends LibrarySection {
-  // Entries are not loaded (yet); `count` is known from the counts endpoint.
-  pending: boolean;
-  count: number | null;
-}
-
-// Loads only the configured statuses up front; other statuses load when their section is expanded.
+// Renders filtered/sorted library sections. All entries are preloaded at startup; status sections the user
+// did not mark as "expanded" in the settings start collapsed, and their covers are only drawn once expanded.
 export function LibraryView() {
   const dispatch = useAppDispatch();
   const username = useAppSelector((state) => state.auth.username);
-
-  const { data: settings, isLoading: settingsLoading } = useGetUserSettingsQuery(undefined, {
-    skip: !username,
-  });
-  const { data: statusCounts = [], isLoading: countsLoading } = useGetEntryStatusCountsQuery(undefined, {
-    skip: !username,
-  });
+  const {
+    data: items = [],
+    isLoading,
+    isFetching,
+    isError,
+    error,
+  } = useGetMediaEntriesQuery(undefined, { skip: !username });
+  const { data: settings } = useGetUserSettingsQuery(undefined, { skip: !username });
+  // Status sections that start expanded; everything if never configured.
+  const expandedLabels: readonly string[] = settings?.library_loaded_statuses ?? UNIFIED_STATUS_FILTERS;
 
   const typeFilter = useAppSelector((state) => state.libraryUi.typeFilter);
   const statusFilter = useAppSelector((state) => state.libraryUi.statusFilter);
@@ -78,41 +71,6 @@ export function LibraryView() {
     deferredSortField !== sortField ||
     deferredSortDirection !== sortDirection ||
     deferredSearchQuery !== searchQuery;
-
-  // Statuses (unified labels) the user wants loaded when the library opens; everything if never configured.
-  const loadedLabels = useMemo(
-    () => ALL_LABELS.filter((label) => (settings?.library_loaded_statuses ?? ALL_LABELS).includes(label)),
-    [settings?.library_loaded_statuses],
-  );
-  // Statuses the user expanded in this visit.
-  const [expandedLabels, setExpandedLabels] = useState<ReadonlySet<string>>(() => new Set());
-
-  // Labels that must be loaded regardless of the setting: searching and rating filters need every entry,
-  // and an explicit status filter needs that status.
-  const forcedLabels = useMemo(() => {
-    if (deferredSearchQuery.trim() || deferredRatingFilter.length > 0 || deferredFavoritesOnly) {
-      return new Set(ALL_LABELS);
-    }
-    return new Set(deferredStatusFilter.map(unifiedStatusLabel));
-  }, [deferredSearchQuery, deferredRatingFilter, deferredFavoritesOnly, deferredStatusFilter]);
-
-  const neededLabels = useMemo(
-    () =>
-      ALL_LABELS.filter(
-        (label) => loadedLabels.includes(label) || expandedLabels.has(label) || forcedLabels.has(label),
-      ),
-    [loadedLabels, expandedLabels, forcedLabels],
-  );
-
-  const entries = useLibraryEntries(neededLabels, !username || settingsLoading);
-  const items = entries.items;
-  const isError = entries.isError;
-  const isLoading =
-    settingsLoading || countsLoading || loadedLabels.some((label) => entries.byLabel[label]?.isLoading);
-  // Sections the user expanded show their own spinner, so only the other labels dim the whole library.
-  const isFetching = neededLabels.some(
-    (label) => entries.byLabel[label]?.isFetching && !expandedLabels.has(label),
-  );
 
   const visibleItems = useMemo(() => {
     const query = deferredSearchQuery.trim().toLowerCase();
@@ -147,120 +105,58 @@ export function LibraryView() {
     deferredSortDirection,
   ]);
 
-  const sectionKeyOfStatus = useCallback(
-    (status: string) => (deferredTypeFilter === 'All' ? unifiedStatusLabel(status) : status),
-    [deferredTypeFilter],
-  );
-
-  // Entry counts per status section for the current type/status filter, known without loading entries.
-  const countsByKey = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const row of statusCounts) {
-      if (!matchesTypeFilter(row.media_type, deferredTypeFilter)) continue;
-      if (!matchesStatusFilters(row.status, deferredStatusFilter)) continue;
-      const key = sectionKeyOfStatus(row.status);
-      counts.set(key, (counts.get(key) ?? 0) + row.count);
-    }
-    return counts;
-  }, [statusCounts, deferredTypeFilter, deferredStatusFilter, sectionKeyOfStatus]);
-
-  const neededSet = useMemo(() => new Set(neededLabels), [neededLabels]);
-
-  const sections = useMemo((): DisplaySection[] | null => {
-    const plain = (list: LibrarySection[]): DisplaySection[] =>
-      list.map((section) => ({ ...section, pending: false, count: null }));
-
+  const sections = useMemo(() => {
     if (deferredSortField === 'status') {
-      const loaded = new Map(
-        groupConsecutive(visibleItems, (item) => statusSectionKey(item, deferredTypeFilter)).map(
-          (section) => [section.key, section] as const,
-        ),
+      return groupConsecutive(visibleItems, (item) =>
+        statusSectionKey(item, deferredTypeFilter)
       );
-      const keys = new Set<string>([...loaded.keys(), ...countsByKey.keys()]);
-      const result: DisplaySection[] = [];
-      for (const key of keys) {
-        const label = unifiedStatusLabel(key);
-        const section = loaded.get(key);
-        if (section) {
-          result.push({ ...section, pending: false, count: countsByKey.get(key) ?? section.items.length });
-        } else if (!neededSet.has(label) || entries.byLabel[label]?.isLoading) {
-          // Not loaded (collapsed placeholder) or still loading after being expanded.
-          result.push({ key, label: key, items: [], pending: true, count: countsByKey.get(key) ?? null });
-        }
-      }
-      return result.sort((a, b) => {
-        const diff = getStatusRank(a.key) - getStatusRank(b.key);
-        if (diff !== 0) return deferredSortDirection === 'asc' ? diff : -diff;
-        return a.key.localeCompare(b.key);
-      });
     }
     if (deferredSortField === 'months') {
-      return plain(groupConsecutive(visibleItems, finishedMonthKey, formatFinishedMonthLabel));
+      return groupConsecutive(visibleItems, finishedMonthKey, formatFinishedMonthLabel);
     }
     if (deferredSortField === 'rating') {
-      return plain(
-        groupConsecutive(visibleItems, ratingSectionKey, formatRatingLabel, (item) => item.rating),
+      return groupConsecutive(
+        visibleItems,
+        ratingSectionKey,
+        formatRatingLabel,
+        (item) => item.rating
       );
     }
     if (deferredSortField === 'last_played') {
-      return plain(groupConsecutive(visibleItems, lastPlayedSectionKey, formatLastPlayedLabel));
+      return groupConsecutive(visibleItems, lastPlayedSectionKey, formatLastPlayedLabel);
     }
     return null;
-  }, [
-    visibleItems,
-    deferredSortField,
-    deferredSortDirection,
-    deferredTypeFilter,
-    countsByKey,
-    neededSet,
-    entries.byLabel,
-  ]);
+  }, [visibleItems, deferredSortField, deferredTypeFilter]);
 
-  // Entries of statuses that are not loaded, shown as a hint when the library is not grouped by status.
-  const unloadedCount = useMemo(() => {
-    let total = 0;
-    for (const row of statusCounts) {
-      if (!matchesTypeFilter(row.media_type, deferredTypeFilter)) continue;
-      if (!neededSet.has(unifiedStatusLabel(row.status))) total += row.count;
-    }
-    return total;
-  }, [statusCounts, deferredTypeFilter, neededSet]);
-
-  const errorMessage = getApiErrorMessage(entries.error, 'Failed to fetch media entries');
+  const errorMessage = getApiErrorMessage(error, 'Failed to fetch media entries');
   const hideStatus = deferredSortField === 'status';
   const showBusy = isLoading || isFetching || isFilterPending;
-  const [collapsedSections, setCollapsedSections] = useState<ReadonlySet<string>>(() => new Set());
 
-  const toggleSection = useCallback(
-    (id: string, statusKey: string | null) => {
-      const label = statusKey == null ? null : unifiedStatusLabel(statusKey);
-      const toggleCollapsed = () =>
-        setCollapsedSections((current) => {
-          const next = new Set(current);
-          if (next.has(id)) next.delete(id);
-          else next.add(id);
-          return next;
-        });
+  // Searching or filtering by status/rating/favorites should show its results, so nothing stays collapsed then.
+  const showEverything =
+    deferredSearchQuery.trim() !== '' ||
+    deferredStatusFilter.length > 0 ||
+    deferredRatingFilter.length > 0 ||
+    deferredFavoritesOnly;
 
-      if (label == null) return toggleCollapsed();
-      if (!neededSet.has(label)) {
-        // Not loaded yet: expanding loads just this status.
-        return setExpandedLabels((current) => new Set(current).add(label));
-      }
-      if (expandedLabels.has(label) && !loadedLabels.includes(label) && !forcedLabels.has(label)) {
-        // Expanded by hand: collapsing hides it again.
-        return setExpandedLabels((current) => {
-          const next = new Set(current);
-          next.delete(label);
-          return next;
-        });
-      }
-      toggleCollapsed();
-    },
-    [neededSet, expandedLabels, loadedLabels, forcedLabels],
+  // The user's own expand/collapse clicks per section; sections without a click follow the default.
+  const [collapseOverrides, setCollapseOverrides] = useState<ReadonlyMap<string, boolean>>(
+    () => new Map()
   );
 
-  const loadAll = useCallback(() => setExpandedLabels(new Set(ALL_LABELS)), []);
+  const isCollapsed = useCallback(
+    (sectionId: string, statusKey: string | null) => {
+      const override = collapseOverrides.get(sectionId);
+      if (override !== undefined) return override;
+      if (statusKey == null || showEverything) return false;
+      return !expandedLabels.includes(unifiedStatusLabel(statusKey));
+    },
+    [collapseOverrides, showEverything, expandedLabels]
+  );
+
+  const toggleSection = useCallback((sectionId: string, collapsedNow: boolean) => {
+    setCollapseOverrides((current) => new Map(current).set(sectionId, !collapsedNow));
+  }, []);
 
   const handleItemClick = useCallback(
     (item: MediaItem) => {
@@ -276,21 +172,6 @@ export function LibraryView() {
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {errorMessage}
-        </Alert>
-      )}
-
-      {!isLoading && !isError && !hideStatus && unloadedCount > 0 && (
-        <Alert
-          severity="info"
-          sx={{ mb: 2 }}
-          action={
-            <Button color="inherit" size="small" onClick={loadAll}>
-              Load all
-            </Button>
-          }
-        >
-          {unloadedCount} {unloadedCount === 1 ? 'entry is' : 'entries are'} not loaded because{' '}
-          {unloadedCount === 1 ? 'its' : 'their'} status is not set to load automatically.
         </Alert>
       )}
 
@@ -328,11 +209,7 @@ export function LibraryView() {
               <Stack spacing={3}>
                 {sections.map((section) => {
                   const sectionId = `${deferredSortField}:${section.key}`;
-                  const collapsed = section.pending
-                    ? !neededSet.has(unifiedStatusLabel(section.key))
-                    : collapsedSections.has(sectionId);
-                  const loadingEntries =
-                    section.pending && entries.byLabel[unifiedStatusLabel(section.key)]?.isLoading;
+                  const collapsed = isCollapsed(sectionId, hideStatus ? section.key : null);
                   return (
                     <Box key={section.key}>
                       {section.label ? (
@@ -341,24 +218,17 @@ export function LibraryView() {
                           rating={section.rating}
                           statusStyle={hideStatus}
                           collapsed={collapsed}
-                          onLabelClick={() =>
-                            toggleSection(sectionId, hideStatus ? section.key : null)
-                          }
+                          onLabelClick={() => toggleSection(sectionId, collapsed)}
                           endAction={
-                            hideStatus && section.count != null ? (
+                            hideStatus ? (
                               <Typography variant="caption" color="text.secondary">
-                                {section.count}
+                                {section.items.length}
                               </Typography>
                             ) : undefined
                           }
                         />
                       ) : null}
-                      {loadingEntries && (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-                          <CircularProgress size={28} />
-                        </Box>
-                      )}
-                      {!collapsed && !section.pending && (
+                      {!collapsed && (
                         <MediaGrid items={section.items} onItemClick={handleItemClick} />
                       )}
                     </Box>

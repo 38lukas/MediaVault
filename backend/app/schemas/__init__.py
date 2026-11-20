@@ -6,7 +6,7 @@ from app.schemas.lists import (
     MediaListResponse,
     MediaListWrite,
 )
-from app.schemas.media import MediaEntryBase, MediaEntryCreate, MediaEntryResponse, StatusCount
+from app.schemas.media import MediaEntryBase, MediaEntryCreate, MediaEntryResponse
 from app.schemas.profile import (
     Achievement,
     FavoriteGroup,
@@ -45,7 +45,6 @@ __all__ = [
     "ProfileStatsResponse",
     "RatingBucket",
     "SortField",
-    "StatusCount",
     "UserAccountUpdate",
     "UserResponse",
     "UserSettingsResponse",

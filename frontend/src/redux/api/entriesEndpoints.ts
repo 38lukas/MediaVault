@@ -1,9 +1,4 @@
-import {
-  statusesForUnifiedLabel,
-  type MediaEntryPayload,
-  type MediaItem,
-  type StatusCount,
-} from '@/types/media';
+import type { MediaEntryPayload, MediaItem } from '@/types/media';
 import { mediaApi } from './baseApi';
 
 // Media library CRUD endpoints.
@@ -13,22 +8,6 @@ export const entriesEndpoints = mediaApi.injectEndpoints({
       query: () => '/entries',
       transformResponse: (response: MediaItem[]) =>
         [...response].sort((a, b) => b.id - a.id),
-      providesTags: ['MediaEntries'],
-    }),
-
-    // Entries of one unified status label (e.g. 'Active' = Playing + Watching + Reading), cached per label.
-    getMediaEntriesByStatus: builder.query<MediaItem[], string>({
-      query: (label) => ({
-        url: '/entries',
-        params: { statuses: statusesForUnifiedLabel(label).join(',') },
-      }),
-      transformResponse: (response: MediaItem[]) =>
-        [...response].sort((a, b) => b.id - a.id),
-      providesTags: ['MediaEntries'],
-    }),
-
-    getEntryStatusCounts: builder.query<StatusCount[], void>({
-      query: () => '/entries/status-counts',
       providesTags: ['MediaEntries'],
     }),
 
@@ -51,7 +30,6 @@ export const entriesEndpoints = mediaApi.injectEndpoints({
 
 export const {
   useGetMediaEntriesQuery,
-  useGetEntryStatusCountsQuery,
   useCreateMediaEntryMutation,
   useUpdateMediaEntryMutation,
   useDeleteMediaEntryMutation,

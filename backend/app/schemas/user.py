@@ -40,7 +40,7 @@ class UserSettingsResponse(BaseModel):
     default_card_size: CardSize
     default_type_filter: TypeFilter
     avatar_path: Optional[str] = None
-    library_loaded_statuses: Optional[list[UnifiedStatus]] = None  # None = load everything.
+    library_loaded_statuses: Optional[list[UnifiedStatus]] = None  # None = all expanded.
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -51,7 +51,7 @@ class UserSettingsUpdate(BaseModel):
     default_sort_field: Optional[SortField] = None
     default_card_size: Optional[CardSize] = None
     default_type_filter: Optional[TypeFilter] = None
-    library_loaded_statuses: Optional[list[UnifiedStatus]] = None  # [] = load nothing up front.
+    library_loaded_statuses: Optional[list[UnifiedStatus]] = None  # [] = all collapsed.
 
 
 class UserAccountUpdate(BaseModel):

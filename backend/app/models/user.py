@@ -21,5 +21,5 @@ class User(Base):
     default_card_size = Column(Integer, nullable=False, default=2)
     default_type_filter = Column(String, nullable=False, default="All")
     avatar_path = Column(String, nullable=True)
-    # Unified status labels loaded when the library opens; NULL = all of them.
+    # Unified status labels whose library sections start expanded; NULL = all of them.
     library_loaded_statuses = Column(ARRAY(String), nullable=True)

@@ -36,11 +36,8 @@ export {
   useUploadAvatarMutation,
 } from './userEndpoints';
 
-export { entriesEndpoints } from './entriesEndpoints';
-
 export {
   useGetMediaEntriesQuery,
-  useGetEntryStatusCountsQuery,
   useCreateMediaEntryMutation,
   useUpdateMediaEntryMutation,
   useDeleteMediaEntryMutation,
