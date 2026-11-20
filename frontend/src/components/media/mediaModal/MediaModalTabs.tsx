@@ -2,11 +2,7 @@
 
 import { useState } from 'react';
 import { Box, Button, Collapse, Stack } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import ListAltIcon from '@mui/icons-material/ListAlt';
-import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
-import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
+import { CalendarMonthOutlinedIcon, ExpandMoreIcon, InfoOutlinedIcon, ListAltIcon, PeopleOutlinedIcon } from '@/lib/icons';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setMediaModalTab, type MediaModalTab } from '@/redux/slices/mediaModalSlice';

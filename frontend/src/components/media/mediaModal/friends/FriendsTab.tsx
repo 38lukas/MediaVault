@@ -1,7 +1,7 @@
 'use client';
 
 import { Alert, Box, CircularProgress, Stack, Typography } from '@mui/material';
-import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
+import { PersonOutlinedIcon } from '@/lib/icons';
 import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';
 import { useGetFriendEntriesQuery, type FriendEntry } from '@/redux/api';

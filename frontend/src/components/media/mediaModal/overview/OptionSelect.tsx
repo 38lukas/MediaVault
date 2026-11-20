@@ -64,9 +64,9 @@ export function OptionSelect<T extends string>({
           else onChange(next);
         }}
         MenuProps={selectMenuProps}
-        // The pill is shorter than the select's minimum content height, so center it vertically.
+        // Pills and icon+text options are not plain text, so center them vertically in the field.
         sx={
-          getOptionColors
+          getOptionColors || renderOption
             ? { '& .MuiSelect-select': { display: 'flex', alignItems: 'center' } }
             : undefined
         }

@@ -3,12 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Box, Button, Typography } from '@mui/material';
-import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
-import FormatListBulletedOutlinedIcon from '@mui/icons-material/FormatListBulletedOutlined';
-import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
-import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { BookshelfIcon } from '@/components/common/BookshelfIcon';
+import { BookshelfIcon, CalendarMonthOutlinedIcon, FormatListBulletedOutlinedIcon, PeopleOutlinedIcon, PersonOutlinedIcon, SettingsIcon } from '@/lib/icons';
 import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetUserSettingsQuery } from '@/redux/api';

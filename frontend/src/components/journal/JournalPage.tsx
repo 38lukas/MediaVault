@@ -16,10 +16,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import ReplayIcon from '@mui/icons-material/Replay';
+import { AddIcon, ArrowBackIcon, ArrowForwardIcon, ReplayIcon } from '@/lib/icons';
 import { palette } from '@/lib/palette';
 import { isGameType, mediaDisplayTitle, type MediaItem } from '@/types/media';
 import { buildMonthGrid, toDateKey } from '@/utils/calendar';

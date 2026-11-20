@@ -109,6 +109,7 @@ export type SortField =
   | 'started_at'
   | 'finished_at'
   | 'months'
+  | 'year'
   | 'rating'
   | 'last_played';
 export type SortDirection = 'asc' | 'desc';
@@ -122,6 +123,7 @@ export const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'finished_at', label: 'Finished at' },
   { value: 'last_played', label: 'Last Played' },
   { value: 'months', label: 'Months' },
+  { value: 'year', label: 'Year' },
 ];
 
 export type SettingsSection = 'account' | 'general' | 'appearance';

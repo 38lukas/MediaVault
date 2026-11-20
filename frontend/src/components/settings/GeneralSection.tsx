@@ -14,6 +14,7 @@ import {
   Select,
   Stack,
 } from '@mui/material';
+import { SORT_FIELD_ICONS } from '@/lib/icons';
 import { useAppSelector } from '@/redux/hooks';
 import {
   useGetUserSettingsQuery,
@@ -30,6 +31,12 @@ import {
   type SortField,
   type TypeFilter,
 } from '@/types/media';
+
+// Sort option icon with the spacing used in the settings dropdown.
+function SortOptionIcon({ field }: { field: SortField }) {
+  const Icon = SORT_FIELD_ICONS[field];
+  return <Icon sx={{ fontSize: 20, mr: 1.25, color: 'text.secondary' }} />;
+}
 
 // Library settings: default sort, media type, grid size and which status sections start expanded.
 // Changing a field only edits a local draft (cheap); the Apply button saves all changes in one request.
@@ -108,6 +115,7 @@ export function GeneralSection() {
         >
           {SORT_FIELD_OPTIONS.map((opt) => (
             <MenuItem key={opt.value} value={opt.value}>
+              <SortOptionIcon field={opt.value} />
               {opt.label}
             </MenuItem>
           ))}

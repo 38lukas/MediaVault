@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
+import { ArrowRightAltIcon } from '@/lib/icons';
 import { Box, IconButton } from '@mui/material';
 import { SectionDivider } from '@/components/common/SectionDivider';
 import { MediaGrid } from '@/components/media/MediaGrid';

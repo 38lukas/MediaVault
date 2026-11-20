@@ -7,7 +7,9 @@ import { SectionDivider } from '@/components/common/SectionDivider';
 import { LibraryToolbar } from '@/components/library/LibraryToolbar';
 import {
   finishedMonthKey,
+  finishedYearKey,
   formatFinishedMonthLabel,
+  formatFinishedYearLabel,
   formatLastPlayedLabel,
   formatRatingLabel,
   groupConsecutive,
@@ -87,7 +89,7 @@ export function LibraryView() {
       }
       if (deferredFavoritesOnly && !item.is_favorite) return false;
       if (query && !mediaDisplayTitle(item).toLowerCase().includes(query)) return false;
-      if (deferredSortField === 'months' && !item.finished_at) return false;
+      if ((deferredSortField === 'months' || deferredSortField === 'year') && !item.finished_at) return false;
       return true;
     });
 
@@ -113,6 +115,9 @@ export function LibraryView() {
     }
     if (deferredSortField === 'months') {
       return groupConsecutive(visibleItems, finishedMonthKey, formatFinishedMonthLabel);
+    }
+    if (deferredSortField === 'year') {
+      return groupConsecutive(visibleItems, finishedYearKey, formatFinishedYearLabel);
     }
     if (deferredSortField === 'rating') {
       return groupConsecutive(

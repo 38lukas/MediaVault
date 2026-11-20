@@ -16,9 +16,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
-import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
-import CloseIcon from '@mui/icons-material/Close';
+import { CloseIcon, PersonAddOutlinedIcon, PersonOutlinedIcon } from '@/lib/icons';
 import { SectionDivider } from '@/components/common/SectionDivider';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';

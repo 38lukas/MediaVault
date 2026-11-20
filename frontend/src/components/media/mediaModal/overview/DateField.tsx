@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
+import { CalendarTodayOutlinedIcon } from '@/lib/icons';
 import { Box, IconButton, InputAdornment, TextField } from '@mui/material';
 import { fieldSx } from '../constants';
 

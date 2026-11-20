@@ -2,9 +2,7 @@
 
 import type { ElementType } from 'react';
 import { List, ListItemButton, ListItemIcon, ListItemText, Paper } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import PaletteIcon from '@mui/icons-material/Palette';
-import { BookshelfIcon } from '@/components/common/BookshelfIcon';
+import { BookshelfIcon, PaletteIcon, PersonIcon } from '@/lib/icons';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setActiveSection } from '@/redux/slices/settingsSlice';

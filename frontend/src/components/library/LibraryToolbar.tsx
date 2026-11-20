@@ -10,18 +10,16 @@ import {
   SvgIcon,
   TextField,
 } from '@mui/material';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import CloseIcon from '@mui/icons-material/Close';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FilterListOffIcon from '@mui/icons-material/FilterListOff';
-import SearchIcon from '@mui/icons-material/Search';
-import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
-import MovieOutlinedIcon from '@mui/icons-material/MovieOutlined';
-import SportsEsportsOutlinedIcon from '@mui/icons-material/SportsEsportsOutlined';
-import TvOutlinedIcon from '@mui/icons-material/TvOutlined';
-import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
-import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
+import {
+  ArrowDownwardIcon,
+  ArrowUpwardIcon,
+  CloseIcon,
+  FavoriteIcon,
+  FilterListOffIcon,
+  SearchIcon,
+  SORT_FIELD_ICONS,
+  TYPE_FILTER_ICONS,
+} from '@/lib/icons';
 import { StarRating } from '@/components/common/StarRating';
 import { fieldSx } from '@/components/media/mediaModal/constants';
 import { OptionSelect } from '@/components/media/mediaModal/overview/OptionSelect';
@@ -46,7 +44,6 @@ import {
   TYPE_FILTERS,
   statusesForTypeFilter,
   type SortField,
-  type TypeFilter,
 } from '@/types/media';
 import { UNRATED_SECTION_LABEL } from '@/utils/rating';
 
@@ -57,15 +54,6 @@ const RATING_OPTIONS: string[] = [RATING_FILTER_UNRATED, FAVORITES_OPTION, ...[1
 const SORT_FIELD_LABELS = Object.fromEntries(
   SORT_FIELD_OPTIONS.map((opt) => [opt.value, opt.label])
 ) as Record<SortField, string>;
-
-const TYPE_FILTER_ICONS: Record<TypeFilter, typeof AppsOutlinedIcon> = {
-  All: AppsOutlinedIcon,
-  'Game/DLC': SportsEsportsOutlinedIcon,
-  Movie: MovieOutlinedIcon,
-  Series: TvOutlinedIcon,
-  Anime: AutoAwesomeOutlinedIcon,
-  Book: MenuBookOutlinedIcon,
-};
 
 // Library toolbar: search and add on top, then media type chips with status / rating / sort filters.
 export function LibraryToolbar() {
@@ -246,7 +234,15 @@ export function LibraryToolbar() {
               value={sortField}
               dense
               onChange={(field) => deferDispatch(setSortField(field))}
-              renderOption={(field) => SORT_FIELD_LABELS[field]}
+              renderOption={(field) => {
+                const Icon = SORT_FIELD_ICONS[field];
+                return (
+                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                    <Icon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                    {SORT_FIELD_LABELS[field]}
+                  </Box>
+                );
+              }}
             />
           </Box>
           <IconButton

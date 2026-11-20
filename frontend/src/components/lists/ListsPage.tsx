@@ -19,15 +19,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import SearchIcon from '@mui/icons-material/Search';
+import { AddIcon, CheckIcon, CloseIcon, DeleteOutlinedIcon, DragIndicatorIcon, EditOutlinedIcon, KeyboardArrowDownIcon, KeyboardArrowUpIcon, SearchIcon } from '@/lib/icons';
 import { StarRating } from '@/components/common/StarRating';
 import { MediaCard } from '@/components/media/MediaCard';
 import { palette } from '@/lib/palette';

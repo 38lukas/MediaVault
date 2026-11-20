@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { VisibilityIcon, VisibilityOffIcon } from '@/lib/icons';
 import { CircularProgress, IconButton, MenuItem, TextField } from '@mui/material';
 import { palette } from '@/lib/palette';
 import { FieldAction, FIELD_SPINNER_RIGHT_PX, fieldActionPaddingSx } from './FieldAction';

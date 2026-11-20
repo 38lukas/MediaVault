@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # Must match the frontend SortField / CardSize / TypeFilter unions.
 SortField = Literal[
-    "title", "status", "rating", "started_at", "finished_at", "months", "last_played"
+    "title", "status", "rating", "started_at", "finished_at", "months", "year", "last_played"
 ]
 CardSize = Literal[0, 1, 2, 3, 4]
 TypeFilter = Literal["All", "Game/DLC", "Movie", "Series", "Anime", "Book"]

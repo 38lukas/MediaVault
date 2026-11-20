@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { ExpandMoreIcon } from '@/lib/icons';
 import { Box, Typography } from '@mui/material';
 import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';

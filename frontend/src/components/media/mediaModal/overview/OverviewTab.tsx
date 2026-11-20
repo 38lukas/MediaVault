@@ -1,11 +1,7 @@
 'use client';
 
 import { useCallback, useState, type KeyboardEvent, type ReactNode } from 'react';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { AddIcon, EditOutlinedIcon, FavoriteBorderIcon, FavoriteIcon, RemoveIcon } from '@/lib/icons';
 import {
   Box,
   FormControl,

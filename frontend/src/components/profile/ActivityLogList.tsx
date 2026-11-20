@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import FavoriteIcon from '@mui/icons-material/Favorite';
+import { FavoriteIcon } from '@/lib/icons';
 import { Box, Typography } from '@mui/material';
 import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';

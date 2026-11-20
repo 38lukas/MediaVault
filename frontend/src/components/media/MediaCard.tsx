@@ -3,8 +3,7 @@
 import React, { memo } from 'react';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
-import ReplayIcon from '@mui/icons-material/Replay';
-import FavoriteIcon from '@mui/icons-material/Favorite';
+import { FavoriteIcon, ReplayIcon } from '@/lib/icons';
 import { hasRewatch, mediaDisplayTitle, type MediaItem } from '@/types/media';
 import { palette } from '@/lib/palette';
 import { getStatusColor } from '@/utils/mediaStatus';

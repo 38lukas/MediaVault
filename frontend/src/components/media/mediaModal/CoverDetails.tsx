@@ -12,7 +12,7 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import { EditOutlinedIcon } from '@/lib/icons';
 import Image from 'next/image';
 import { palette } from '@/lib/palette';
 import { useAppDispatch } from '@/redux/hooks';

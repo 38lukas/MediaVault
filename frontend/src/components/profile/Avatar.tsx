@@ -2,7 +2,7 @@
 
 import { ChangeEvent, useRef } from 'react';
 import { Box, CircularProgress } from '@mui/material';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import { EditOutlinedIcon } from '@/lib/icons';
 import { palette } from '@/lib/palette';
 import { useGetUserSettingsQuery, useUploadAvatarMutation } from '@/redux/api';
 

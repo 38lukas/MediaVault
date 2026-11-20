@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { Box, Button, MenuItem, Select, Stack, Typography } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import ReplayIcon from '@mui/icons-material/Replay';
+import { ArrowBackIcon, ArrowForwardIcon, ReplayIcon } from '@/lib/icons';
 import { palette } from '@/lib/palette';
 import { isGameType } from '@/types/media';
 import { buildMonthGrid, toDateKey } from '@/utils/calendar';

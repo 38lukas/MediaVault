@@ -55,6 +55,17 @@ export function finishedMonthKey(item: MediaItem): string {
   return `${year}-${month}`;
 }
 
+// Build a YYYY group key from finished_at
+export function finishedYearKey(item: MediaItem): string {
+  const time = dateValue(item.finished_at);
+  return time === null ? NO_FINISH_KEY : String(new Date(time).getUTCFullYear());
+}
+
+// Format a finished-year group key for UI display
+export function formatFinishedYearLabel(key: string): string {
+  return key === NO_FINISH_KEY ? 'No date' : key;
+}
+
 // Format a finished-month group key for UI display
 export function formatFinishedMonthLabel(key: string): string {
   if (key === NO_FINISH_KEY) return 'No date';

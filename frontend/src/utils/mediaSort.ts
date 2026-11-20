@@ -9,6 +9,7 @@ export const SORT_FIELD_DEFAULT_DIRECTION: Record<SortField, SortDirection> = {
   started_at: 'desc',
   finished_at: 'desc',
   months: 'desc',
+  year: 'desc',
   last_played: 'desc',
 };
 
@@ -90,7 +91,7 @@ export function sortMediaItems(
     }
   }
 
-  else if (field === 'months') {
+  else if (field === 'months' || field === 'year') {
     const aDate = dateValue(a.finished_at);
     const bDate = dateValue(b.finished_at);
     if (aDate === null && bDate === null) return 0;
