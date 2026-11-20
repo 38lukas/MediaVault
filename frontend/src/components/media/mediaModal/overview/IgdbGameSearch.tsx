@@ -130,6 +130,7 @@ export function IgdbGameSearch({
 
   return (
     <Autocomplete
+      size="small"
       options={selectedGame ? [selectedGame] : results}
       value={selectedGame}
       inputValue={title}

@@ -2,11 +2,25 @@ import { palette } from '@/lib/palette';
 import { isGameType, type MediaType } from '@/types/media';
 
 // Shared TextField styles for media modal inputs.
+// The root selector matches both TextFields (input is a child) and Selects (sx lands on the input root itself),
+// so every field gets the same radius and the same background (the plain modal surface).
 export const fieldSx = {
-  '& .MuiOutlinedInput-root': {
+  '&.MuiOutlinedInput-root, & .MuiOutlinedInput-root': {
     borderRadius: 2,
-    backgroundColor: palette.fieldBg,
+    backgroundColor: 'transparent',
+    minHeight: 44,
   },
+  // Hover and focus outlines use the primary color (the default focus outline is white).
+  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline, &.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline':
+    {
+      borderColor: palette.primary,
+    },
+  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline, &.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline':
+    {
+      borderColor: palette.primary,
+      borderWidth: 1,
+    },
+  '& .MuiInputLabel-root.Mui-focused': { color: palette.primary },
   '& .MuiInputBase-input[type="number"]': {
     MozAppearance: 'textfield',
     '&::-webkit-outer-spin-button': {
@@ -16,6 +30,15 @@ export const fieldSx = {
     '&::-webkit-inner-spin-button': {
       WebkitAppearance: 'none',
       margin: 0,
+    },
+  },
+};
+
+// Dropdown popup in the same color as the closed field (the modal surface).
+export const selectMenuProps = {
+  slotProps: {
+    paper: {
+      sx: { backgroundColor: palette.surface, backgroundImage: 'none' },
     },
   },
 };

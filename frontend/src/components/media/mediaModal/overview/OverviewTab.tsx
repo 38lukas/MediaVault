@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, type KeyboardEvent } from 'react';
+import { useCallback, type KeyboardEvent, type ReactNode } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {
@@ -8,7 +8,9 @@ import {
   FormControl,
   IconButton,
   MenuItem,
+  OutlinedInput,
   Select,
+  InputLabel,
   Stack,
   TextField,
   Typography,
@@ -33,11 +35,13 @@ import {
 import {
   fieldSx,
   getCoverProvider,
+  selectMenuProps,
   parseTmdbShowId,
   sanitizeIntegerInput,
 } from '../constants';
 import { coverFetchErrorMessage } from '../coverFetchError';
-import { ChipPicker } from './ChipPicker';
+import { DateField } from './DateField';
+import { OptionSelect } from './OptionSelect';
 import { IgdbGameSearch } from './IgdbGameSearch';
 import { OpenLibraryBookSearch } from './OpenLibraryBookSearch';
 import { TmdbSeasonSelect } from './TmdbSeasonSelect';
@@ -47,12 +51,28 @@ const blockNonIntegerKeys = (event: KeyboardEvent) => {
   if (['e', 'E', '+', '-', '.', ','].includes(event.key)) event.preventDefault();
 };
 
-// Selected-chip colors for the media type picker.
-const MEDIA_TYPE_SELECTED_COLORS = {
-  bg: palette.primary,
-  border: palette.primary,
-  color: palette.primaryContrast,
+// Two equal columns that collapse to one on narrow screens; every row shares this grid.
+const rowSx = {
+  display: 'grid',
+  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+  gap: 2,
+  alignItems: 'start',
 };
+
+// Small caption above a control, same spacing everywhere in the tab.
+function FieldLabel({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <Box sx={{ minWidth: 0 }}>
+      <Typography
+        variant="caption"
+        sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+      >
+        {label}
+      </Typography>
+      {children}
+    </Box>
+  );
+}
 
 // Editable core fields of a media entry in the modal overview tab.
 export function OverviewTab() {
@@ -135,24 +155,90 @@ export function OverviewTab() {
         />
       )}
 
-      <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2, flexWrap: 'wrap' }}>
-        <ChipPicker
+      <Box sx={rowSx}>
+        <OptionSelect
           label="Media type"
           options={MEDIA_TYPES}
           value={form.mediaType}
           onChange={(type) => dispatch(setMediaType(type))}
-          getSelectedColors={() => MEDIA_TYPE_SELECTED_COLORS}
-          sx={{ flex: 1, minWidth: 220 }}
         />
+        <OptionSelect
+          label="Status"
+          options={STATUSES_BY_TYPE[form.mediaType]}
+          value={form.status}
+          onChange={(status) => dispatch(patchForm({ status }))}
+          getOptionColors={getStatusColor}
+        />
+      </Box>
 
-        {showRewatches && (
-          <Box sx={{ minWidth: 0 }}>
-            <Typography
-              variant="caption"
-              sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
+      {supportsPlaytime && (
+        <Box sx={rowSx}>
+          <Stack direction="row" spacing={1} useFlexGap>
+            <TextField
+              label="Playtime (hrs)"
+              size="small"
+              fullWidth
+              value={form.playtimeHours}
+              onKeyDown={blockNonIntegerKeys}
+              onChange={(e) =>
+                dispatch(patchForm({ playtimeHours: sanitizeIntegerInput(e.target.value) }))
+              }
+              slotProps={{
+                inputLabel: { shrink: true },
+                htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
+              }}
+              sx={fieldSx}
+            />
+            <TextField
+              label="Playtime (mins)"
+              size="small"
+              fullWidth
+              value={form.playtimeMinutes}
+              onKeyDown={blockNonIntegerKeys}
+              onChange={(e) =>
+                dispatch(patchForm({ playtimeMinutes: sanitizeIntegerInput(e.target.value) }))
+              }
+              slotProps={{
+                inputLabel: { shrink: true },
+                htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
+              }}
+              sx={fieldSx}
+            />
+          </Stack>
+          <FormControl size="small" fullWidth sx={fieldSx} disabled={form.platforms.length === 0}>
+            <InputLabel id="played-on-label" shrink>
+              Played on
+            </InputLabel>
+            <Select
+              labelId="played-on-label"
+              input={<OutlinedInput label="Played on" notched />}
+              value={form.platformPlayedOn}
+              displayEmpty
+              onChange={(e) => dispatch(patchForm({ platformPlayedOn: e.target.value }))}
+              MenuProps={selectMenuProps}
             >
-              Rewatches
-            </Typography>
+              <MenuItem value="">
+                <em>{form.platforms.length ? 'Not selected' : 'No platforms available'}</em>
+              </MenuItem>
+              {form.platforms.map((platform) => (
+                <MenuItem key={platform} value={platform}>
+                  {platform}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      )}
+
+      <Box sx={rowSx}>
+        <FieldLabel label="Rating">
+          <StarRating
+            value={form.rating}
+            onChange={(stars) => dispatch(patchForm({ rating: toDbRating(stars) }))}
+          />
+        </FieldLabel>
+        {showRewatches && (
+          <FieldLabel label="Rewatches">
             <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
               <IconButton
                 size="small"
@@ -177,121 +263,22 @@ export function OverviewTab() {
                 <AddIcon fontSize="small" />
               </IconButton>
             </Stack>
-          </Box>
-        )}
-
-        {supportsPlaytime && (
-          <Box sx={{ minWidth: 0 }}>
-            <Typography
-              variant="caption"
-              sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
-            >
-              Playtime
-            </Typography>
-            <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center' }}>
-              <TextField
-                label="hrs"
-                size="small"
-                value={form.playtimeHours}
-                onKeyDown={blockNonIntegerKeys}
-                onChange={(e) =>
-                  dispatch(patchForm({ playtimeHours: sanitizeIntegerInput(e.target.value) }))
-                }
-                slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' } }}
-                sx={{ ...fieldSx, width: 96 }}
-              />
-              <TextField
-                label="mins"
-                size="small"
-                value={form.playtimeMinutes}
-                onKeyDown={blockNonIntegerKeys}
-                onChange={(e) =>
-                  dispatch(patchForm({ playtimeMinutes: sanitizeIntegerInput(e.target.value) }))
-                }
-                slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' } }}
-                sx={{ ...fieldSx, width: 96 }}
-              />
-            </Stack>
-          </Box>
+          </FieldLabel>
         )}
       </Box>
 
-      <ChipPicker
-        label="Status"
-        options={STATUSES_BY_TYPE[form.mediaType]}
-        value={form.status}
-        onChange={(status) => dispatch(patchForm({ status }))}
-        getSelectedColors={getStatusColor}
-      />
-
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}
-      >
-        <Box>
-          <Typography
-            variant="caption"
-            sx={{ color: 'text.secondary', mb: 1.5, display: 'block', fontWeight: 600 }}
-          >
-            Rating
-          </Typography>
-          <StarRating
-            value={form.rating}
-            onChange={(stars) => dispatch(patchForm({ rating: toDbRating(stars) }))}
-          />
-        </Box>
-        {supportsPlaytime && (
-          <Box sx={{ minWidth: 180 }}>
-            <Typography
-              variant="caption"
-              sx={{ color: 'text.secondary', mb: 1, display: 'block', fontWeight: 600 }}
-            >
-              Played on:
-            </Typography>
-            <FormControl size="small" fullWidth>
-              <Select
-                value={form.platformPlayedOn}
-                displayEmpty
-                inputProps={{ 'aria-label': 'Played on platform' }}
-                disabled={form.platforms.length === 0}
-                onChange={(e) => dispatch(patchForm({ platformPlayedOn: e.target.value }))}
-                sx={{ ...fieldSx, fontSize: '0.8rem' }}
-              >
-                <MenuItem value="" sx={{ fontSize: '0.8rem' }}>
-                  <em>{form.platforms.length ? 'Not selected' : 'No platforms available'}</em>
-                </MenuItem>
-                {form.platforms.map((platform) => (
-                  <MenuItem key={platform} value={platform} sx={{ fontSize: '0.8rem' }}>
-                    {platform}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        )}
-      </Stack>
-
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <TextField
+      <Box sx={rowSx}>
+        <DateField
           label="Started at"
-          type="date"
           value={form.startedAt}
-          onChange={(e) => dispatch(patchForm({ startedAt: e.target.value }))}
-          fullWidth
-          slotProps={{ inputLabel: { shrink: true } }}
-          sx={fieldSx}
+          onChange={(startedAt) => dispatch(patchForm({ startedAt }))}
         />
-        <TextField
+        <DateField
           label="Finished at"
-          type="date"
           value={form.finishedAt}
-          onChange={(e) => dispatch(patchForm({ finishedAt: e.target.value }))}
-          fullWidth
-          slotProps={{ inputLabel: { shrink: true } }}
-          sx={fieldSx}
+          onChange={(finishedAt) => dispatch(patchForm({ finishedAt }))}
         />
-      </Stack>
+      </Box>
     </Stack>
   );
 }

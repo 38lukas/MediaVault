@@ -127,6 +127,7 @@ export function TmdbTitleSearch({
 
   return (
     <Autocomplete
+      size="small"
       options={selected ? [selected] : results}
       value={selected}
       inputValue={title}

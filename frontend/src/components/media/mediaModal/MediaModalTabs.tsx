@@ -1,6 +1,8 @@
 'use client';
 
-import { Button, Stack } from '@mui/material';
+import { useState } from 'react';
+import { Box, Button, Collapse, Stack } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
@@ -18,7 +20,7 @@ const TABS: { id: MediaModalTab; label: string; icon: typeof InfoOutlinedIcon }[
   { id: 'friends', label: 'Friends', icon: PeopleOutlinedIcon },
 ];
 
-// Overview / Details / Journal / Friends switcher under the media cover.
+// Overview / Details / Journal / Friends switcher under the media cover; shows the current tab and expands to the others.
 export function MediaModalTabs() {
   const dispatch = useAppDispatch();
   const activeTab = useAppSelector((state) => state.mediaModal.activeTab);
@@ -33,44 +35,67 @@ export function MediaModalTabs() {
   const isDisabled = (id: MediaModalTab) =>
     (id === 'details' && !detailsAvailable) || (id === 'friends' && !friendsAvailable);
 
+  const [expanded, setExpanded] = useState(false);
+  const current = TABS.find((tab) => tab.id === activeTab) ?? TABS[0];
+  const CurrentIcon = current.icon;
+
   return (
-    <Stack
-      direction={{ xs: 'row', md: 'column' }}
-      spacing={1}
-      sx={{ mt: 2, width: { xs: '100%', md: 148 }, justifyContent: 'center' }}
-    >
-      {TABS.map(({ id, label, icon: Icon }) => {
-        const active = activeTab === id;
-        return (
-          <Button
-            key={id}
-            type="button"
-            variant="outlined"
-            startIcon={<Icon />}
-            disabled={isDisabled(id)}
-            aria-pressed={active}
-            onClick={() => dispatch(setMediaModalTab(id))}
+    <Box sx={{ mt: 2, width: { xs: '100%', md: 148 } }}>
+      <Button
+        type="button"
+        variant="outlined"
+        startIcon={<CurrentIcon />}
+        endIcon={
+          <ExpandMoreIcon
             sx={{
-              justifyContent: { md: 'flex-start' },
-              borderRadius: 2,
-              fontWeight: 600,
-              textTransform: 'none',
-              ...(active
-                ? {
-                    border: `1px solid ${palette.primary}`,
-                    backgroundColor: palette.selectedBg,
-                    color: palette.primary,
-                  }
-                : {
-                    borderColor: palette.borderMuted,
-                    color: 'text.secondary',
-                  }),
+              transform: expanded ? 'rotate(180deg)' : 'none',
+              transition: 'transform 0.2s ease',
             }}
-          >
-            {label}
-          </Button>
-        );
-      })}
-    </Stack>
+          />
+        }
+        aria-expanded={expanded}
+        onClick={() => setExpanded((value) => !value)}
+        sx={{
+          width: '100%',
+          justifyContent: 'flex-start',
+          borderRadius: 2,
+          fontWeight: 600,
+          textTransform: 'none',
+          border: `1px solid ${palette.primary}`,
+          backgroundColor: palette.selectedBg,
+          color: palette.primary,
+          '& .MuiButton-endIcon': { ml: 'auto' },
+        }}
+      >
+        {current.label}
+      </Button>
+      <Collapse in={expanded} unmountOnExit>
+        <Stack direction={{ xs: 'row', md: 'column' }} spacing={1} sx={{ pt: 1 }}>
+          {TABS.filter(({ id }) => id !== activeTab).map(({ id, label, icon: Icon }) => (
+            <Button
+              key={id}
+              type="button"
+              variant="outlined"
+              startIcon={<Icon />}
+              disabled={isDisabled(id)}
+              onClick={() => {
+                dispatch(setMediaModalTab(id));
+                setExpanded(false);
+              }}
+              sx={{
+                justifyContent: 'flex-start',
+                borderRadius: 2,
+                fontWeight: 600,
+                textTransform: 'none',
+                borderColor: palette.borderMuted,
+                color: 'text.secondary',
+              }}
+            >
+              {label}
+            </Button>
+          ))}
+        </Stack>
+      </Collapse>
+    </Box>
   );
 }

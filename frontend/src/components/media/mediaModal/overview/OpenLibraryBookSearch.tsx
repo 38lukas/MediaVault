@@ -124,6 +124,7 @@ export function OpenLibraryBookSearch({
 
   return (
     <Autocomplete
+      size="small"
       options={selectedBook ? [selectedBook] : results}
       value={selectedBook}
       inputValue={title}

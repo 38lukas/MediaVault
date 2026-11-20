@@ -108,6 +108,7 @@ export function TmdbSeasonSelect({ showId, mediaType, fieldSx, onError }: TmdbSe
   return (
     <TextField
       select
+      size="small"
       label="Season"
       fullWidth
       value={pendingSeason ?? seasonNumber ?? WHOLE_SHOW}

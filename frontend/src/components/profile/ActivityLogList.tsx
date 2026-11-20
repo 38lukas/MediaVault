@@ -196,19 +196,24 @@ export function ActivityLogList({ items, onItemClick }: ActivityLogListProps) {
                     </Box>
                   )}
                 </Box>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    alignSelf: 'stretch',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}
+                >
                   <Typography noWrap sx={{ fontWeight: 600, lineHeight: 1.3 }}>
                     {title}
                   </Typography>
-                  <Box sx={{ mt: 0.25, minHeight: 20 }}>
-                    {row.item.rating != null ? (
+                  {row.item.rating != null && (
+                    <Box sx={{ mt: 0.25, minHeight: 20 }}>
                       <StarRating value={row.item.rating} readOnly size="small" />
-                    ) : (
-                      <Typography variant="caption" color="text.secondary">
-                        Unrated
-                      </Typography>
-                    )}
-                  </Box>
+                    </Box>
+                  )}
                 </Box>
                 <Typography variant="body2" sx={{ pl: 1 }}>
                   {platform}
