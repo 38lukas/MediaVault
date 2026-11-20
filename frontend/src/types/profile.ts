@@ -52,4 +52,19 @@ export interface ProfileStats {
   recent_activity: MediaItem[];
   achievements: Achievement[];
   favorites: FavoriteGroup[];
+  // Elements the profile's owner hid in their settings (ids from PROFILE_SECTIONS).
+  hidden_sections: string[];
 }
+
+// Profile page elements the user can hide in the settings (ids must match the backend ProfileSection).
+export const PROFILE_SECTIONS = [
+  { id: 'avatar', label: 'Avatar & name' },
+  { id: 'rating', label: 'Rating chart' },
+  { id: 'achievements', label: 'Achievements' },
+  { id: 'finished_all_time', label: 'All-time finished' },
+  { id: 'finished_year', label: 'Finished this year' },
+  { id: 'favorites', label: 'Favorite media' },
+  { id: 'recent_activity', label: 'Recent activity' },
+] as const;
+
+export type ProfileSectionId = (typeof PROFILE_SECTIONS)[number]['id'];

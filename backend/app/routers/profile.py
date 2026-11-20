@@ -144,6 +144,9 @@ def get_profile_stats(
 
     logged_counts = Counter(entry.media_type for entry in entries)
 
+    owner = db.query(models.User).filter(models.User.username == username).first()
+    hidden_sections = list(owner.profile_hidden_sections or []) if owner else []
+
     return schemas.ProfileStatsResponse(
         finished=finished,
         finished_this_year=finished_this_year,
@@ -153,6 +156,7 @@ def get_profile_stats(
         recent_activity=[entry for _, entry in active_entries[:8]],
         achievements=_log_achievements(logged_counts),
         favorites=_favorite_groups(db, username),
+        hidden_sections=hidden_sections,
     )
 
 

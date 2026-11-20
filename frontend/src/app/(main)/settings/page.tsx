@@ -6,11 +6,12 @@ import { Box, Paper, Typography } from '@mui/material';
 import { AccountSection } from '@/components/settings/AccountSection';
 import { AppearanceSection } from '@/components/settings/AppearanceSection';
 import { GeneralSection } from '@/components/settings/GeneralSection';
+import { ProfileSection } from '@/components/settings/ProfileSection';
 import { SettingsSidebar } from '@/components/settings/SettingsSidebar';
 import { palette } from '@/lib/palette';
 import { useAppSelector } from '@/redux/hooks';
 
-// Settings page with account, general, and appearance sections
+// Settings page with account, profile, appearance and library sections
 export default function SettingsPage() {
   const router = useRouter();
   const viewingAs = useAppSelector((state) => state.auth.viewingAs);
@@ -55,6 +56,8 @@ export default function SettingsPage() {
         >
           {activeSection === 'account' ? (
             <AccountSection />
+          ) : activeSection === 'profile' ? (
+            <ProfileSection />
           ) : activeSection === 'general' ? (
             <GeneralSection />
           ) : (

@@ -47,6 +47,8 @@ with engine.begin() as connection:
     connection.execute(text("""ALTER TABLE "user" ADD COLUMN IF NOT EXISTS default_type_filter VARCHAR NOT NULL DEFAULT 'All'"""))
     connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS avatar_path VARCHAR'))
     connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS library_loaded_statuses VARCHAR[]'))
+    connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS profile_hidden_sections VARCHAR[]'))
+    connection.execute(text('ALTER TABLE "user" DROP COLUMN IF EXISTS profile_alignments'))
     connection.execute(text("""
         DO $$
         BEGIN

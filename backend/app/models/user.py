@@ -23,3 +23,5 @@ class User(Base):
     avatar_path = Column(String, nullable=True)
     # Unified status labels whose library sections start expanded; NULL = all of them.
     library_loaded_statuses = Column(ARRAY(String), nullable=True)
+    # Profile page elements the user hid (ids like 'achievements'); NULL = nothing hidden.
+    profile_hidden_sections = Column(ARRAY(String), nullable=True)

@@ -13,6 +13,7 @@ import { useAppSelector } from '@/redux/hooks';
 import { useGetProfileStatsQuery } from '@/redux/api';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { averageStars } from '@/utils/rating';
+import type { ProfileSectionId } from '@/types/profile';
 
 // Home/profile page with stats, avatar, and recent activity
 export default function ProfilePage() {
@@ -22,6 +23,10 @@ export default function ProfilePage() {
   const { data, isLoading, isError, error } = useGetProfileStatsQuery(undefined, {
     skip: !username,
   });
+  // The profile owner's choice of hidden elements comes with the stats, so anyone who opens this profile
+  // (a friend too) sees it as the owner configured it.
+  const hiddenSections = data?.hidden_sections ?? [];
+  const show = (id: ProfileSectionId) => !hiddenSections.includes(id);
   const errorMessage = getApiErrorMessage(error, 'Failed to load profile stats');
   const averageRating = data ? averageStars(data.rating_distribution) : null;
 
@@ -43,72 +48,84 @@ export default function ProfilePage() {
 
       {data && (
         <Stack spacing={5}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-              flexWrap: 'wrap',
-            }}
-          >
-            <Avatar username={displayName} readOnly={Boolean(viewingAs)} />
-            {displayName && (
-              <Typography
-                variant="h3"
-                component="h1"
-                sx={{
-                  fontWeight: 700,
-                  color: palette.primary,
-                  lineHeight: 1.15,
-                }}
-              >
-                {displayName}
-              </Typography>
-            )}
-            <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-              <RatingDistributionChart
-                distribution={data.rating_distribution}
-                unratedCount={data.unrated_count}
-              />
-              {averageRating != null && (
+          {(show('avatar') || show('rating') || show('achievements')) && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                flexWrap: 'wrap',
+              }}
+            >
+              {show('avatar') && <Avatar username={displayName} readOnly={Boolean(viewingAs)} />}
+              {show('avatar') && displayName && (
                 <Typography
-                  variant="h6"
-                  component="p"
+                  variant="h3"
+                  component="h1"
                   sx={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    mt: 1,
-                    mb: 0,
-                    fontWeight: 500,
-                    lineHeight: 1.2,
+                    fontWeight: 700,
                     color: palette.primary,
-                    whiteSpace: 'nowrap',
+                    lineHeight: 1.15,
                   }}
                 >
-                  Average Rating: {averageRating.toFixed(1)}
+                  {displayName}
                 </Typography>
               )}
+              {show('rating') && (
+                <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                  <RatingDistributionChart
+                    distribution={data.rating_distribution}
+                    unratedCount={data.unrated_count}
+                  />
+                  {averageRating != null && (
+                    <Typography
+                      variant="h6"
+                      component="p"
+                      sx={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        mt: 1,
+                        mb: 0,
+                        fontWeight: 500,
+                        lineHeight: 1.2,
+                        color: palette.primary,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Average Rating: {averageRating.toFixed(1)}
+                    </Typography>
+                  )}
+                </Box>
+              )}
+              {show('achievements') && <Achievements achievements={data.achievements} />}
             </Box>
-            <Achievements achievements={data.achievements} />
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'flex-start',
-              gap: 4,
-            }}
-          >
-            <FinishedStats label="All-time finished" finished={data.finished} />
-            <FinishedStats
-              label={`Finished in ${data.finished_year}`}
-              finished={data.finished_this_year}
-            />
-          </Box>
-          <FavoriteMedia favorites={data.favorites} readOnly={Boolean(viewingAs)} />
-          <RecentActivity items={data.recent_activity} />
+          )}
+          {(show('finished_all_time') || show('finished_year')) && (
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'flex-start',
+                gap: 4,
+              }}
+            >
+              {show('finished_all_time') && (
+                <FinishedStats label="All-time finished" finished={data.finished} />
+              )}
+              {show('finished_year') && (
+                <FinishedStats
+                  label={`Finished in ${data.finished_year}`}
+                  finished={data.finished_this_year}
+                />
+              )}
+            </Box>
+          )}
+          {show('favorites') && (
+            <FavoriteMedia favorites={data.favorites} readOnly={Boolean(viewingAs)} />
+          )}
+          {show('recent_activity') && <RecentActivity items={data.recent_activity} />}
         </Stack>
       )}
     </>

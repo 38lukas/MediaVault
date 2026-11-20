@@ -12,7 +12,9 @@ export const userEndpoints = mediaApi.injectEndpoints({
 
     updateUserSettings: builder.mutation<UserSettings, UserSettingsUpdate>({
       query: (body) => ({ url: '/users/me/settings', method: 'PATCH', body }),
-      invalidatesTags: ['UserSettings'],
+      // The profile's hidden elements travel with the profile stats, so those must refresh too.
+      invalidatesTags: (_result, _error, body) =>
+        body.profile_hidden_sections ? ['UserSettings', 'ProfileStats'] : ['UserSettings'],
     }),
 
     uploadAvatar: builder.mutation<UserSettings, File>({

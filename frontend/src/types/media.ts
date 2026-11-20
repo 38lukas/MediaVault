@@ -126,7 +126,7 @@ export const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'year', label: 'Year' },
 ];
 
-export type SettingsSection = 'account' | 'general' | 'appearance';
+export type SettingsSection = 'account' | 'profile' | 'general' | 'appearance';
 
 export interface UserSettings {
   username: string;
@@ -137,6 +137,8 @@ export interface UserSettings {
   avatar_path: string | null;
   // Unified status labels whose library sections start expanded; null = all of them.
   library_loaded_statuses: string[] | null;
+  // Profile page elements the user hid (ids from PROFILE_SECTIONS); null = nothing hidden.
+  profile_hidden_sections: string[] | null;
 }
 
 // Library type filter options

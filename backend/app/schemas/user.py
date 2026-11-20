@@ -11,6 +11,10 @@ SortField = Literal[
 ]
 CardSize = Literal[0, 1, 2, 3, 4]
 TypeFilter = Literal["All", "Game/DLC", "Movie", "Series", "Anime", "Book"]
+# Profile page elements that can be hidden (must match frontend PROFILE_SECTIONS).
+ProfileSection = Literal[
+    "avatar", "rating", "achievements", "finished_all_time", "finished_year", "favorites", "recent_activity"
+]
 # Unified status labels the library groups by (must match frontend UNIFIED_STATUS_FILTERS).
 UnifiedStatus = Literal["Active", "Finished", "Played", "Shelved", "Dropped", "Queue", "Wishlist"]
 
@@ -41,6 +45,7 @@ class UserSettingsResponse(BaseModel):
     default_type_filter: TypeFilter
     avatar_path: Optional[str] = None
     library_loaded_statuses: Optional[list[UnifiedStatus]] = None  # None = all expanded.
+    profile_hidden_sections: Optional[list[ProfileSection]] = None  # None = nothing hidden.
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -52,6 +57,7 @@ class UserSettingsUpdate(BaseModel):
     default_card_size: Optional[CardSize] = None
     default_type_filter: Optional[TypeFilter] = None
     library_loaded_statuses: Optional[list[UnifiedStatus]] = None  # [] = all collapsed.
+    profile_hidden_sections: Optional[list[ProfileSection]] = None  # [] = nothing hidden.
 
 
 class UserAccountUpdate(BaseModel):

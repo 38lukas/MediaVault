@@ -2,16 +2,17 @@
 
 import type { ElementType } from 'react';
 import { List, ListItemButton, ListItemIcon, ListItemText, Paper } from '@mui/material';
-import { BookshelfIcon, PaletteIcon, PersonIcon } from '@/lib/icons';
+import { BookshelfIcon, PaletteIcon, PersonIcon, PersonOutlinedIcon } from '@/lib/icons';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setActiveSection } from '@/redux/slices/settingsSlice';
 import type { SettingsSection } from '@/types/media';
 
-// Settings sidebar section list (account, appearance, library). The library section's id stays 'general'.
+// Settings sidebar section list (account, appearance, profile, library). The library section's id stays 'general'.
 const SECTIONS: { id: SettingsSection; label: string; icon: ElementType }[] = [
   { id: 'account', label: 'Account', icon: PersonIcon },
   { id: 'appearance', label: 'Appearance', icon: PaletteIcon },
+  { id: 'profile', label: 'Profile', icon: PersonOutlinedIcon },
   { id: 'general', label: 'Library', icon: BookshelfIcon },
 ];
 

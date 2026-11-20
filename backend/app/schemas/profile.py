@@ -103,3 +103,5 @@ class ProfileStatsResponse(BaseModel):
     recent_activity: list[MediaEntryResponse]
     achievements: list[Achievement]
     favorites: list[FavoriteGroup]
+    # Profile elements this user hid; whoever opens the profile (a friend too) sees it as configured.
+    hidden_sections: list[str] = []

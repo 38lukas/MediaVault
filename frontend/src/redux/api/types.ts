@@ -5,6 +5,7 @@ export interface UserSettingsUpdate {
   default_card_size?: CardSize;
   default_type_filter?: TypeFilter;
   library_loaded_statuses?: string[];
+  profile_hidden_sections?: string[];
 }
 
 export interface AccountUpdate {
