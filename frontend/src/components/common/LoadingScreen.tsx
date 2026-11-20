@@ -10,7 +10,7 @@ interface LoadingScreenProps {
   progress?: number;
 }
 
-// Full-screen loading state shown while the backend wakes up or the app preloads its data.
+// Full-screen loading state shown while the app preloads its data.
 export function LoadingScreen({ message, detail, progress }: LoadingScreenProps) {
   return (
     <Box
