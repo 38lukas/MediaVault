@@ -1,19 +1,20 @@
 'use client';
 
+import type { ElementType } from 'react';
 import { List, ListItemButton, ListItemIcon, ListItemText, Paper } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
-import TuneIcon from '@mui/icons-material/Tune';
 import PaletteIcon from '@mui/icons-material/Palette';
+import { BookshelfIcon } from '@/components/common/BookshelfIcon';
 import { palette } from '@/lib/palette';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setActiveSection } from '@/redux/slices/settingsSlice';
 import type { SettingsSection } from '@/types/media';
 
-// Settings sidebar section list (account, general, appearance).
-const SECTIONS: { id: SettingsSection; label: string; icon: typeof PersonIcon }[] = [
+// Settings sidebar section list (account, appearance, library). The library section's id stays 'general'.
+const SECTIONS: { id: SettingsSection; label: string; icon: ElementType }[] = [
   { id: 'account', label: 'Account', icon: PersonIcon },
-  { id: 'general', label: 'General', icon: TuneIcon },
-  { id: 'appearance', label: 'Appearance', icon: PaletteIcon }
+  { id: 'appearance', label: 'Appearance', icon: PaletteIcon },
+  { id: 'general', label: 'Library', icon: BookshelfIcon },
 ];
 
 // Settings sidebar navigation bound to the active section.

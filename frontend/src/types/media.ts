@@ -132,6 +132,8 @@ export interface UserSettings {
   default_card_size: CardSize;
   default_type_filter: TypeFilter;
   avatar_path: string | null;
+  // Unified status labels loaded when the library opens; null = all.
+  library_loaded_statuses: string[] | null;
 }
 
 // Library type filter options
@@ -185,6 +187,21 @@ export function matchesStatusFilter(
   if (statusFilter === 'Finished') return FINISHED_STATUSES.has(itemStatus);
   if (statusFilter === 'Queue') return QUEUE_STATUSES.has(itemStatus);
   return itemStatus === statusFilter;
+}
+
+// Stored (type-specific) statuses that make up one unified label
+export function statusesForUnifiedLabel(label: string): string[] {
+  if (label === 'Active') return [...ACTIVE_STATUSES];
+  if (label === 'Finished') return [...FINISHED_STATUSES];
+  if (label === 'Queue') return [...QUEUE_STATUSES];
+  return [label];
+}
+
+// Entry count per media type and status (library section headers before their entries are loaded)
+export interface StatusCount {
+  media_type: string;
+  status: string;
+  count: number;
 }
 
 // Map stored type-specific statuses to a unified section/filter label

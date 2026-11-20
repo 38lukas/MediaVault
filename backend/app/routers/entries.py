@@ -1,8 +1,9 @@
 """Media entry CRUD routes under /api."""
 
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -15,15 +16,34 @@ router = APIRouter(prefix="/entries", tags=["entries"])
 @router.get("", response_model=List[schemas.MediaEntryResponse])
 @router.get("/", response_model=List[schemas.MediaEntryResponse], include_in_schema=False)
 def get_entries(
+    statuses: Optional[str] = Query(
+        default=None,
+        description="Comma-separated statuses to return, e.g. 'Playing,Watching'. Omit for every entry.",
+    ),
     db: Session = Depends(get_db),
     username: str = Depends(get_current_username),
 ):
-    """Return media entries belonging to the logged-in user."""
-    return (
-        db.query(models.MediaEntry)
+    """Return media entries belonging to the logged-in user, optionally limited to some statuses."""
+    query = db.query(models.MediaEntry).filter(models.MediaEntry.username == username)
+    if statuses is not None:
+        wanted = [value.strip() for value in statuses.split(",") if value.strip()]
+        query = query.filter(models.MediaEntry.status.in_(wanted))
+    return query.all()
+
+
+@router.get("/status-counts", response_model=List[schemas.StatusCount])
+def get_status_counts(
+    db: Session = Depends(get_db),
+    username: str = Depends(get_current_username),
+):
+    """Entry counts per media type and status, so the library can show collapsed sections without loading them."""
+    rows = (
+        db.query(models.MediaEntry.media_type, models.MediaEntry.status, func.count(models.MediaEntry.id))
         .filter(models.MediaEntry.username == username)
+        .group_by(models.MediaEntry.media_type, models.MediaEntry.status)
         .all()
     )
+    return [schemas.StatusCount(media_type=media_type, status=status_, count=count) for media_type, status_, count in rows]
 
 
 @router.post(

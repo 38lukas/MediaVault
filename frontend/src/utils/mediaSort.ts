@@ -43,7 +43,7 @@ const STATUS_RANK: Record<string, number> = {
 };
 
 // Map a status label to a sort rank
-function getStatusRank(status: string): number {
+export function getStatusRank(status: string): number {
   return STATUS_RANK[status] ?? 99;
 }
 

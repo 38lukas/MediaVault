@@ -2,9 +2,12 @@
 
 import {
   Box,
+  Checkbox,
   CircularProgress,
   FormControl,
+  FormHelperText,
   InputLabel,
+  ListItemText,
   MenuItem,
   Select,
   Stack,
@@ -19,6 +22,7 @@ import {
   SORT_FIELD_OPTIONS,
   TYPE_FILTERS,
   TYPE_FILTER_LABELS,
+  UNIFIED_STATUS_FILTERS,
   isCardSize,
   type SortField,
   type TypeFilter,
@@ -35,6 +39,8 @@ export function GeneralSection() {
   const defaultSort = settings?.default_sort_field ?? 'status';
   const defaultCardSize = settings?.default_card_size ?? 2;
   const defaultTypeFilter = settings?.default_type_filter ?? 'All';
+  // Statuses loaded when the library opens; never configured = all.
+  const loadedStatuses: readonly string[] = settings?.library_loaded_statuses ?? UNIFIED_STATUS_FILTERS;
 
   const handleSortChange = (field: SortField) => {
     void updateUserSettings({ default_sort_field: field });
@@ -42,6 +48,13 @@ export function GeneralSection() {
 
   const handleTypeFilterChange = (filter: TypeFilter) => {
     void updateUserSettings({ default_type_filter: filter });
+  };
+
+  const handleLoadedStatusesChange = (value: string | string[]) => {
+    const selected = typeof value === 'string' ? value.split(',') : value;
+    void updateUserSettings({
+      library_loaded_statuses: UNIFIED_STATUS_FILTERS.filter((label) => selected.includes(label)),
+    });
   };
 
   const handleCardSizeChange = (value: string | number) => {
@@ -108,6 +121,35 @@ export function GeneralSection() {
             </MenuItem>
           ))}
         </Select>
+      </FormControl>
+
+      <FormControl fullWidth disabled={updateState.isLoading}>
+        <InputLabel id="loaded-statuses-label">Load when opening the library</InputLabel>
+        <Select
+          multiple
+          labelId="loaded-statuses-label"
+          label="Load when opening the library"
+          value={[...loadedStatuses]}
+          onChange={(e) => handleLoadedStatusesChange(e.target.value)}
+          renderValue={(selected) =>
+            selected.length === UNIFIED_STATUS_FILTERS.length
+              ? 'All statuses'
+              : selected.length === 0
+                ? 'Nothing (everything loads on expand)'
+                : UNIFIED_STATUS_FILTERS.filter((label) => selected.includes(label)).join(', ')
+          }
+        >
+          {UNIFIED_STATUS_FILTERS.map((label) => (
+            <MenuItem key={label} value={label}>
+              <Checkbox checked={loadedStatuses.includes(label)} size="small" />
+              <ListItemText primary={label} />
+            </MenuItem>
+          ))}
+        </Select>
+        <FormHelperText>
+          Unchecked statuses are not loaded, which makes the library open faster. They stay collapsed
+          and load when you expand them.
+        </FormHelperText>
       </FormControl>
     </Stack>
   );

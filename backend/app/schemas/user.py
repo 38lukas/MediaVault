@@ -11,6 +11,8 @@ SortField = Literal[
 ]
 CardSize = Literal[0, 1, 2, 3, 4]
 TypeFilter = Literal["All", "Game/DLC", "Movie", "Series", "Anime", "Book"]
+# Unified status labels the library groups by (must match frontend UNIFIED_STATUS_FILTERS).
+UnifiedStatus = Literal["Active", "Finished", "Played", "Shelved", "Dropped", "Queue", "Wishlist"]
 
 
 class LoginRequest(BaseModel):
@@ -38,6 +40,7 @@ class UserSettingsResponse(BaseModel):
     default_card_size: CardSize
     default_type_filter: TypeFilter
     avatar_path: Optional[str] = None
+    library_loaded_statuses: Optional[list[UnifiedStatus]] = None  # None = load everything.
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -48,6 +51,7 @@ class UserSettingsUpdate(BaseModel):
     default_sort_field: Optional[SortField] = None
     default_card_size: Optional[CardSize] = None
     default_type_filter: Optional[TypeFilter] = None
+    library_loaded_statuses: Optional[list[UnifiedStatus]] = None  # [] = load nothing up front.
 
 
 class UserAccountUpdate(BaseModel):

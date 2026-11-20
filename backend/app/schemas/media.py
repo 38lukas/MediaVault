@@ -83,6 +83,14 @@ class MediaEntryBase(BaseModel):
         return self
 
 
+class StatusCount(BaseModel):
+    """Number of a user's entries for one media type and status."""
+
+    media_type: str
+    status: str
+    count: int
+
+
 class MediaEntryCreate(MediaEntryBase):
     """Schema for creating a new media entry (used in POST requests)."""
 
