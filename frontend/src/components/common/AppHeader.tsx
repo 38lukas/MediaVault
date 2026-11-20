@@ -89,14 +89,14 @@ const NAV_ITEMS = [
 // Shared sizing for inactive header nav buttons.
 const NAV_BUTTON_SX = {
   whiteSpace: 'nowrap',
-  px: 2.25,
-  py: 1,
-  minHeight: 42,
-  height: 42,
-  fontSize: '1rem',
+  px: 1.75,
+  py: 0.5,
+  minHeight: 36,
+  height: 36,
+  fontSize: '0.875rem',
   overflow: 'visible',
-  '& .MuiButton-startIcon': { mr: 1, overflow: 'visible' },
-  '& .MuiButton-startIcon > *:nth-of-type(1)': { fontSize: 24 },
+  '& .MuiButton-startIcon': { mr: 0.75, ml: 0, overflow: 'visible' },
+  '& .MuiButton-startIcon > *:nth-of-type(1)': { fontSize: 20 },
 } as const;
 
 // Active/disabled nav button styles (selected route look).
@@ -140,6 +140,7 @@ export function AppHeader() {
         href="/"
         sx={{
           fontWeight: 'bold',
+          lineHeight: 1,
           color: palette.primary,
           textDecoration: 'none',
           '&:hover': { color: palette.primary },
@@ -151,7 +152,7 @@ export function AppHeader() {
       <Box
         sx={{
           display: 'flex',
-          gap: 1.5,
+          gap: 1.25,
           alignItems: 'center',
           flexWrap: 'wrap',
           justifyContent: { xs: 'flex-start', sm: 'flex-end' },
@@ -168,9 +169,9 @@ export function AppHeader() {
                   alt=""
                   draggable={false}
                   sx={{
-                    width: 32,
-                    height: 32,
-                    marginBlock: '-5px',
+                    width: 26,
+                    height: 26,
+                    marginBlock: '-3px',
                     borderRadius: '50%',
                     objectFit: 'cover',
                     display: 'block',

@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { CircularProgress, IconButton, InputAdornment, MenuItem, TextField } from '@mui/material';
+import { CircularProgress, IconButton, MenuItem, TextField } from '@mui/material';
 import { palette } from '@/lib/palette';
-import { FieldAction, fieldActionPaddingSx } from './FieldAction';
+import { FieldAction, FIELD_SPINNER_RIGHT_PX, fieldActionPaddingSx } from './FieldAction';
 import { skipToken } from '@reduxjs/toolkit/query';
 import {
   useFetchTmdbTitleQuery,
@@ -130,9 +130,9 @@ export function TmdbSeasonSelect({ showId, mediaType, fieldSx, onError }: TmdbSe
           endAdornment: (
             <>
               {isLoading && (
-                <InputAdornment position="end">
+                <FieldAction right={FIELD_SPINNER_RIGHT_PX}>
                   <CircularProgress size={16} thickness={5} color="inherit" />
-                </InputAdornment>
+                </FieldAction>
               )}
               {seasonNumber != null && (
                 <FieldAction>

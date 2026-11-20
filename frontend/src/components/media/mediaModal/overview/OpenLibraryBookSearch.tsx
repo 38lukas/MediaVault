@@ -4,9 +4,9 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Autocomplete,
   CircularProgress,
-  InputAdornment,
   TextField,
 } from '@mui/material';
+import { FieldAction, FIELD_SPINNER_RIGHT_PX } from './FieldAction';
 import {
   useLazyFetchOpenLibraryBookQuery,
   useLazySearchOpenLibraryBooksQuery,
@@ -174,9 +174,9 @@ export function OpenLibraryBookSearch({
               endAdornment: (
                 <>
                   {(isSearching || bookState.isFetching) && (
-                    <InputAdornment position="end">
+                    <FieldAction right={FIELD_SPINNER_RIGHT_PX}>
                       <CircularProgress size={16} thickness={5} color="inherit" />
-                    </InputAdornment>
+                    </FieldAction>
                   )}
                   {titleAction}
                   {params.slotProps.input.endAdornment}
