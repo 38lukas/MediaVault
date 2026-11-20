@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 import ReplayIcon from '@mui/icons-material/Replay';
@@ -15,10 +15,12 @@ export type { MediaItem };
 interface MediaCardProps {
   item: MediaItem;
   onClick?: () => void;
+  // Stable alternative to onClick: the card calls it with its item, so memoization keeps working.
+  onSelect?: (item: MediaItem) => void;
 }
 
 // Poster card with hover overlay and status-colored outline glow.
-export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
+export const MediaCard = memo(function MediaCard({ item, onClick, onSelect }: MediaCardProps) {
   const fallbackImage = 'https://via.placeholder.com/300x450?text=No+Cover';
   const statusStyle = getStatusColor(item.status);
   const title = mediaDisplayTitle(item);
@@ -26,7 +28,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
 
   return (
     <Box
-      onClick={onClick}
+      onClick={onClick ?? (onSelect ? () => onSelect(item) : undefined)}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -46,9 +48,8 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
           borderRadius: 2,
           boxShadow: `
             0 0 0 1.5px ${statusStyle.color}55,
-            0 0 10px ${statusStyle.color}40,
-            0 0 22px ${statusStyle.color}28,
-            0 4px 14px rgba(0, 0, 0, 0.35)
+            0 0 12px ${statusStyle.color}40,
+            0 4px 10px rgba(0, 0, 0, 0.35)
           `,
         }}
       >
@@ -159,4 +160,4 @@ export const MediaCard: React.FC<MediaCardProps> = ({ item, onClick }) => {
       </Box>
     </Box>
   );
-};
+});

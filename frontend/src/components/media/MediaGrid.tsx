@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import { Grid, Typography, Box } from '@mui/material';
+import { LazyMount } from '@/components/common/LazyMount';
 import { MediaCard } from './MediaCard';
 import { useAppSelector } from '@/redux/hooks';
 import type { CardSize, MediaItem } from '@/types/media';
@@ -12,6 +13,9 @@ interface MediaGridProps {
   cardSize?: CardSize;
   emptyMessage?: string;
 }
+
+// Cards beyond the first screenful are only built once they scroll near the viewport.
+const EAGER_CARD_COUNT = 24;
 
 export const CARD_GRID_COLS: Record<
   CardSize,
@@ -48,9 +52,11 @@ export const MediaGrid = memo(function MediaGrid({
 
   return (
     <Grid container spacing={2}>
-      {items.map((item) => (
+      {items.map((item, index) => (
         <Grid key={item.id} size={cols}>
-          <MediaCard item={item} onClick={() => onItemClick?.(item)} />
+          <LazyMount eager={index < EAGER_CARD_COUNT}>
+            <MediaCard item={item} onSelect={onItemClick} />
+          </LazyMount>
         </Grid>
       ))}
     </Grid>
