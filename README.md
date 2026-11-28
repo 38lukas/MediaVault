@@ -82,6 +82,20 @@ uvicorn app.main:app --reload
 * **Interactive API Docs (Swagger UI):** http://127.0.0.1:8000/docs
 * **Alternative API Docs (ReDoc):** http://127.0.0.1:8000/redoc
 
+### 5. Database Migrations
+
+Schema migrations no longer run on every API startup (that made Render cold starts slow).
+After pulling changes that touch the database schema, run them once against the database:
+
+```bash
+cd backend
+python -m app.migrations
+```
+
+This uses `DATABASE_URL` from the root `.env`, so running it locally updates the Neon database
+that Render uses too. Alternatively, set `RUN_MIGRATIONS=1` on the Render Web Service for one
+deploy, then remove it again. All statements are idempotent, so running them twice is safe.
+
 On Render you need **two services**: a Static Site for `frontend/out` and a
 separate Web Service for FastAPI (`uvicorn app.main:app --host 0.0.0.0 --port $PORT`).
 Set the frontend build env `NEXT_PUBLIC_API_URL` to the Web Service URL + `/api`
