@@ -4,7 +4,7 @@ These used to run on every API startup, which made each Render cold start
 noticeably slower. Now they run only when you ask for them:
 
     cd backend
-    python -m app.migrations
+    python -m app.core.migrations
 
 or by setting RUN_MIGRATIONS=1 in the environment before starting the API.
 All statements are idempotent (IF EXISTS / IF NOT EXISTS), so running them
@@ -13,7 +13,7 @@ more than once is safe.
 
 from sqlalchemy import text
 
-from app.database import engine, Base
+from app.core.database import engine, Base
 from app import models  # noqa: F401  (registers all tables on Base)
 
 

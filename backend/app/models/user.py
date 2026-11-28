@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from app.database import Base
+from app.core.database import Base
 
 
 class User(Base):

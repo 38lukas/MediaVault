@@ -89,7 +89,7 @@ After pulling changes that touch the database schema, run them once against the 
 
 ```bash
 cd backend
-python -m app.migrations
+python -m app.core.migrations
 ```
 
 This uses `DATABASE_URL` from the root `.env`, so running it locally updates the Neon database

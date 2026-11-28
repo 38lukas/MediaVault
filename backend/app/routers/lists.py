@@ -3,8 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.dependencies import get_current_username
+from app.core.database import get_db
+from app.core.dependencies import get_current_username
 from app import models, schemas
 
 router = APIRouter(prefix="/lists", tags=["lists"])

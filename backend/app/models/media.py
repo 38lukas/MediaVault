@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY
 
-from app.database import Base
+from app.core.database import Base
 
 
 class MediaEntry(Base):

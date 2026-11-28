@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.core.database import get_db
 from app import models, schemas
 
 router = APIRouter(prefix="/auth", tags=["auth"])

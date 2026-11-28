@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.dependencies import get_current_username
+from app.core.database import get_db
+from app.core.dependencies import get_current_username
 from app import models, schemas
 from app.services.avatars import save_avatar
 

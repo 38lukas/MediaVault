@@ -1,6 +1,6 @@
 ---
 name: worker
-description: Implements a clearly scoped MediaVault task end to end (backend, frontend or both), following CLAUDE.md, adds small fast tests for it, then verifies with tests/lint/build. Use for any concrete code change once the plan is clear.
+description: Implements a clearly scoped MediaVault task end to end (backend, frontend or both), following CLAUDE.md, adds small fast backend tests for it, then verifies with tests/lint/build. Use for any concrete code change once the plan is clear.
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 
@@ -16,17 +16,16 @@ How to work:
 3. Keep backend and frontend in sync: schemas ↔ `frontend/src/types`, enums ↔
    `types/media.ts`, new endpoints ↔ an RTK Query endpoint with correct cache tags.
 4. Database changes: follow the "Rules for database changes" in CLAUDE.md exactly.
-   Update both the model and `app/migrations.py`; never drop or rewrite data in the
+   Update both the model and `app/core/migrations.py`; never drop or rewrite data in the
    same step. Never connect to or migrate the production database yourself.
-5. Add small tests for what you changed, per the "Tests" section of CLAUDE.md: one focused
-   test file per changed module where it makes sense (`backend/tests/test_<module>.py`,
-   `frontend/src/**/<name>.test.ts`). Cover the main behaviour and the edge case most likely
-   to break; skip pure styling/layout. Keep them fast: no network, no real DB, no sleeps,
-   no big fixtures. If a test would need Postgres-only features, say so instead.
+5. Add small tests for backend changes, per the "Tests" section of CLAUDE.md: one focused
+   test file per changed backend module where it makes sense (`backend/tests/<pkg>/test_<module>.py`, mirroring `app/`).
+   Cover the main behaviour and the edge case most likely to break. Keep them fast: no
+   network, no real DB, no sleeps, no big fixtures. If a test would need Postgres-only
+   features, say so instead. Never add frontend tests or frontend test tooling.
 6. Verify before reporting:
    - backend: `cd backend && python -m compileall -q app && pytest`
-   - frontend: `cd frontend && npm run lint`, `npm test` once Vitest exists, and for
-     type-level changes `npm run build`
+   - frontend: `cd frontend && npm run lint`, and for type-level changes `npm run build`
    If a command can't run (missing deps, no network), say so instead of claiming success.
 7. Don't commit or push. Don't touch `.env` or print secrets.
 

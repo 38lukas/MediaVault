@@ -1,19 +1,21 @@
+"""Friends routes under /api/friends."""
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.dependencies import get_current_username
-from app import models
-from app.schemas.friends import FriendAddRequest, FriendEntryResponse, FriendResponse
+from app.core.database import get_db
+from app.core.dependencies import get_current_username
+from app import models, schemas
 
 router = APIRouter(prefix="/friends", tags=["friends"])
 
 
-@router.get("", response_model=list[FriendResponse])
+@router.get("", response_model=list[schemas.FriendResponse])
 def list_friends(
     db: Session = Depends(get_db),
     username: str = Depends(get_current_username),
 ):
+    """Return the logged-in user's friends, sorted by username."""
     rows = (
         db.query(models.Friendship, models.User.avatar_path)
         .join(
@@ -25,12 +27,12 @@ def list_friends(
         .all()
     )
     return [
-        FriendResponse(username=friendship.friend_username, avatar_path=avatar_path)
+        schemas.FriendResponse(username=friendship.friend_username, avatar_path=avatar_path)
         for friendship, avatar_path in rows
     ]
 
 
-@router.get("/entries", response_model=list[FriendEntryResponse])
+@router.get("/entries", response_model=list[schemas.FriendEntryResponse])
 def list_friend_entries(
     external_id: str = Query(..., min_length=1),
     db: Session = Depends(get_db),
@@ -52,7 +54,7 @@ def list_friend_entries(
         .all()
     )
     return [
-        FriendEntryResponse(
+        schemas.FriendEntryResponse(
             username=entry.username,
             avatar_path=avatar_path,
             status=entry.status,
@@ -63,12 +65,13 @@ def list_friend_entries(
     ]
 
 
-@router.post("", response_model=FriendResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=schemas.FriendResponse, status_code=status.HTTP_201_CREATED)
 def add_friend(
-    payload: FriendAddRequest,
+    payload: schemas.FriendAddRequest,
     db: Session = Depends(get_db),
     username: str = Depends(get_current_username),
 ):
+    """Add an existing user to the logged-in user's friends list."""
     friend_username = payload.username.strip()
     if not friend_username:
         raise HTTPException(
@@ -110,7 +113,7 @@ def add_friend(
     )
     db.add(friendship)
     db.commit()
-    return FriendResponse(username=friend.username, avatar_path=friend.avatar_path)
+    return schemas.FriendResponse(username=friend.username, avatar_path=friend.avatar_path)
 
 
 @router.delete("/{friend_username}", status_code=status.HTTP_204_NO_CONTENT)
@@ -119,6 +122,7 @@ def remove_friend(
     db: Session = Depends(get_db),
     username: str = Depends(get_current_username),
 ):
+    """Remove a user from the logged-in user's friends list."""
     friendship = (
         db.query(models.Friendship)
         .filter(

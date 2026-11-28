@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, CheckConstraint, Column, ForeignKey, Integer, String, UniqueConstraint
 
-from app.database import Base
+from app.core.database import Base
 
 FAVORITE_SLOT_COUNT = 5
 FAVORITE_CATEGORIES = ("All", "Game", "Movie", "Series", "Anime", "Book")

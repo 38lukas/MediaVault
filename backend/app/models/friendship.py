@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, UniqueConstraint
 
-from app.database import Base
+from app.core.database import Base
 
 
 class Friendship(Base):

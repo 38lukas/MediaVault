@@ -1,4 +1,4 @@
-from app.schemas.friends import FriendAddRequest, FriendResponse
+from app.schemas.friends import FriendAddRequest, FriendEntryResponse, FriendResponse
 from app.schemas.lists import (
     MediaListItemCreate,
     MediaListItemResponse,
@@ -32,6 +32,7 @@ __all__ = [
     "FavoriteSlotUpdate",
     "FinishedCounts",
     "FriendAddRequest",
+    "FriendEntryResponse",
     "FriendResponse",
     "LoginRequest",
     "MediaEntryBase",

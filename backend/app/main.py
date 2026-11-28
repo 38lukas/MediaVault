@@ -5,13 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
-from app.database import get_db
+from app.core.database import get_db
 from app import models  # noqa: F401
-from app.migrations import run_migrations
+from app.core.migrations import run_migrations
 from app.routers import auth, entries, friends, igdb, lists, openlibrary, profile, tmdb, users
 
 # Schema migrations no longer run on every startup (that slowed down cold starts).
-# Run them with `python -m app.migrations`, or set RUN_MIGRATIONS=1 to run them on boot.
+# Run them with `python -m app.core.migrations`, or set RUN_MIGRATIONS=1 to run them on boot.
 if os.getenv("RUN_MIGRATIONS", "").strip().lower() in {"1", "true", "yes"}:
     run_migrations()
 
