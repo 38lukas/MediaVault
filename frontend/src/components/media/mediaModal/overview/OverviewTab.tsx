@@ -17,7 +17,6 @@ import {
 import { StarRating } from '@/components/common/StarRating';
 import { palette } from '@/lib/palette';
 import { MEDIA_TYPES, STATUSES_BY_TYPE, isGameType, supportsRewatches } from '@/types/media';
-import { getStatusColor } from '@/utils/mediaStatus';
 import { toDbRating } from '@/utils/rating';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import type { TmdbMediaType } from '@/redux/api';
@@ -211,7 +210,7 @@ export function OverviewTab() {
           options={STATUSES_BY_TYPE[form.mediaType]}
           value={form.status}
           onChange={(status) => dispatch(patchForm({ status }))}
-          getOptionColors={getStatusColor}
+          statusOptions
         />
       </Box>
 

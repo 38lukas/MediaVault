@@ -1,8 +1,7 @@
 'use client';
 
-import { Box } from '@mui/material';
 import { MultiFilterSelect } from '@/components/library/MultiFilterSelect';
-import { getStatusColor } from '@/utils/mediaStatus';
+import { StatusLabel } from '@/components/common/StatusLabel';
 
 interface StatusMultiSelectProps {
   label: string;
@@ -12,37 +11,7 @@ interface StatusMultiSelectProps {
   onChange: (statuses: string[]) => void;
 }
 
-// Colored status pill, same look as in the media modal's status dropdown.
-function StatusPill({ status }: { status: string }) {
-  const colors = getStatusColor(status);
-  return (
-    <Box
-      component="span"
-      sx={{
-        boxSizing: 'border-box',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minWidth: 72,
-        height: 20,
-        px: 1,
-        pt: '2px',
-        border: `1px solid ${colors.border}`,
-        backgroundColor: colors.bg,
-        color: colors.color,
-        borderRadius: 999,
-        fontSize: '0.72rem',
-        fontWeight: 600,
-        lineHeight: 1,
-        textTransform: 'capitalize',
-      }}
-    >
-      {status}
-    </Box>
-  );
-}
-
-// Library status filter: a checkbox per status, shown as colored pills.
+// Library status filter: a checkbox per status, each with its colored dot.
 export function StatusMultiSelect({ label, options, value, onChange }: StatusMultiSelectProps) {
   return (
     <MultiFilterSelect
@@ -50,7 +19,7 @@ export function StatusMultiSelect({ label, options, value, onChange }: StatusMul
       options={options}
       value={value}
       onChange={onChange}
-      renderOption={(status) => <StatusPill status={status} />}
+      renderOption={(status) => <StatusLabel status={status} />}
     />
   );
 }
