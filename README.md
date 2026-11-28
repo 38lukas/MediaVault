@@ -96,6 +96,25 @@ This uses `DATABASE_URL` from the root `.env`, so running it locally updates the
 that Render uses too. Alternatively, set `RUN_MIGRATIONS=1` on the Render Web Service for one
 deploy, then remove it again. All statements are idempotent, so running them twice is safe.
 
+### 6. Backups
+
+`.github/workflows/db-backup.yml` backs up the Neon database every night (02:17 UTC) and
+can also be started by hand under **Actions → Database backup → Run workflow**. Each run
+restores the dump into a throwaway Postgres and compares row counts with the live database,
+then stores the dump **encrypted** (AES-256) as a workflow artifact for 30 days.
+
+It needs two repository secrets (**Settings → Secrets and variables → Actions**):
+`DATABASE_URL` (the Neon connection string) and `BACKUP_PASSPHRASE` (keep a copy in your
+password manager — without it the backups can't be decrypted).
+
+To restore:
+
+1. Download the artifact from the workflow run and unzip it.
+2. Decrypt: `gpg --output mediavault.dump --decrypt mediavault_<date>.dump.gpg`
+3. In Neon, create a new branch (or database) to restore into, so the current data stays untouched.
+4. Restore: `pg_restore --no-owner --no-privileges --dbname="<connection string of the new branch>" mediavault.dump`
+5. Check the data, then point `DATABASE_URL` (locally and on Render) at the restored branch.
+
 On Render you need **two services**: a Static Site for `frontend/out` and a
 separate Web Service for FastAPI (`uvicorn app.main:app --host 0.0.0.0 --port $PORT`).
 Set the frontend build env `NEXT_PUBLIC_API_URL` to the Web Service URL + `/api`

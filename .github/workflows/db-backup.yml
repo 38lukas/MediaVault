@@ -1,0 +1,102 @@
+# Nightly backup of the Neon database.
+#
+# 1. Dumps the database with pg_dump (custom format).
+# 2. Restores the dump into a throwaway Postgres and checks that every table
+#    has the same number of rows as the live database (proves the backup works).
+# 3. Encrypts the dump with BACKUP_PASSPHRASE (AES-256) and stores it as a
+#    workflow artifact for 30 days. The repo is public, so the dump is never
+#    stored unencrypted.
+#
+# Required repository secrets (Settings -> Secrets and variables -> Actions):
+#   DATABASE_URL       Neon connection string (same as in the root .env)
+#   BACKUP_PASSPHRASE  Long random passphrase; keep a copy in your password manager,
+#                      without it the backups cannot be decrypted.
+#
+# Run it manually any time: Actions -> "Database backup" -> "Run workflow".
+# Restore instructions: see README.md, section "Backups".
+
+name: Database backup
+
+on:
+  schedule:
+    - cron: "17 2 * * *" # every night at 02:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      PG_IMAGE: postgres:18 # pg_dump must be >= the Neon server version
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+      RESTORE_URL: postgresql://postgres:restoretest@localhost:5432/postgres
+
+    services:
+      restoretest:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: restoretest
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Check secrets
+        run: |
+          if [ -z "$DATABASE_URL" ]; then echo "::error::Secret DATABASE_URL is not set"; exit 1; fi
+          if [ -z "$BACKUP_PASSPHRASE" ]; then echo "::error::Secret BACKUP_PASSPHRASE is not set"; exit 1; fi
+
+      - name: Dump database
+        run: |
+          mkdir -p backup
+          echo "STAMP=$(date -u +%Y-%m-%d_%H%M)" >> "$GITHUB_ENV"
+          docker run --rm -e DATABASE_URL -v "$PWD/backup:/backup" "$PG_IMAGE" \
+            sh -c 'pg_dump "$DATABASE_URL" --format=custom --no-owner --no-privileges --file=/backup/mediavault.dump'
+          echo "Dump size: $(du -h backup/mediavault.dump | cut -f1)"
+
+      - name: Test restore and compare row counts
+        run: |
+          docker run --rm --network host -e RESTORE_URL -v "$PWD/backup:/backup" "$PG_IMAGE" \
+            sh -c 'pg_restore --no-owner --no-privileges --exit-on-error --dbname="$RESTORE_URL" /backup/mediavault.dump'
+
+          export COUNT_SQL="SELECT table_name || '=' || (xpath('/row/c/text()', query_to_xml(format('SELECT count(*) AS c FROM %I.%I', table_schema, table_name), false, true, '')))[1]::text FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' ORDER BY table_name;"
+
+          docker run --rm -e DATABASE_URL -e COUNT_SQL "$PG_IMAGE" \
+            sh -c 'psql "$DATABASE_URL" -At -c "$COUNT_SQL"' > backup/live_counts.txt
+          docker run --rm --network host -e RESTORE_URL -e COUNT_SQL "$PG_IMAGE" \
+            sh -c 'psql "$RESTORE_URL" -At -c "$COUNT_SQL"' > backup/restored_counts.txt
+
+          if [ ! -s backup/live_counts.txt ]; then echo "::error::No tables found in live database"; exit 1; fi
+          if ! diff backup/live_counts.txt backup/restored_counts.txt; then
+            echo "::error::Restored row counts differ from the live database (left: live, right: restored). If someone edited data during the backup, just re-run."
+            exit 1
+          fi
+          echo "Restore test passed for $(wc -l < backup/live_counts.txt) tables."
+
+      - name: Encrypt dump
+        run: |
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+            --symmetric --cipher-algo AES256 \
+            --output "backup/mediavault_${STAMP}.dump.gpg" backup/mediavault.dump
+          rm -f backup/mediavault.dump backup/*_counts.txt
+
+      - name: Upload encrypted backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: mediavault-db-${{ env.STAMP }}
+          path: backup/mediavault_${{ env.STAMP }}.dump.gpg
+          retention-days: 30
+          if-no-files-found: error
