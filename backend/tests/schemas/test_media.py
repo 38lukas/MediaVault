@@ -36,7 +36,13 @@ def test_rewatches_not_allowed_for_books():
         make(media_type="Book", status="Read", number_of_rewatches=1)
 
 
-@pytest.mark.parametrize("rating", [0, 11])
+def test_zero_rating_means_unrated():
+    assert make(rating=0).rating is None
+    assert make(rating=None).rating is None
+    assert make(rating=1).rating == 1
+
+
+@pytest.mark.parametrize("rating", [-1, 11])
 def test_rating_out_of_range(rating):
     with pytest.raises(ValidationError):
         make(rating=rating)

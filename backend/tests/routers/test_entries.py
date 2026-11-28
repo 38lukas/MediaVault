@@ -71,3 +71,17 @@ def test_cannot_delete_someone_elses_entry(client, db):
     entry = add_entry(db, "bob")
     assert client.delete(f"/api/entries/{entry.id}", headers=headers("alice")).status_code == 404
     assert db.rows(models.MediaEntry) == [entry]
+
+
+def test_stored_zero_rating_is_returned_as_unrated(client, db):
+    setup_users(db)
+    add_entry(db, "alice", rating=0)
+    response = client.get("/api/entries", headers=headers("alice"))
+    assert response.status_code == 200
+    assert response.json()[0]["rating"] is None
+
+
+def test_saving_zero_rating_stores_unrated(client, db):
+    setup_users(db)
+    client.post("/api/entries", json={**NEW_ENTRY, "rating": 0}, headers=headers("alice"))
+    assert db.rows(models.MediaEntry)[0].rating is None

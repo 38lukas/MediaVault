@@ -30,6 +30,15 @@ def test_stats_only_use_own_entries(client, db):
     assert [g["category"] for g in body["favorites"]] == ["All", "Game", "Movie", "Series", "Anime", "Book"]
 
 
+def test_stored_zero_rating_counts_as_unrated(client, db):
+    add_user(db, "alice")
+    add_entry(db, "alice", rating=0)
+    add_entry(db, "alice", rating=6)
+    body = client.get("/api/profile/stats", headers=ALICE).json()
+    assert body["unrated_count"] == 1
+    assert sum(b["count"] for b in body["rating_distribution"]) == 1
+
+
 def test_recent_activity_newest_first_capped_at_8(client, db):
     add_user(db, "alice")
     for day in range(1, 11):

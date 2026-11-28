@@ -58,7 +58,7 @@ def list_friend_entries(
             username=entry.username,
             avatar_path=avatar_path,
             status=entry.status,
-            rating=entry.rating,
+            rating=entry.rating or None,  # 0 = unrated
             finished_at=entry.finished_at,
         )
         for entry, avatar_path in rows

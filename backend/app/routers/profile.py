@@ -39,9 +39,8 @@ def build_profile_stats(db: Session, username: str) -> schemas.ProfileStatsRespo
     finished_this_year = profile_stats.finished_counts(entries, year=finished_year)
 
     # count the number of ratings for each rating value
-    rating_counts = Counter(
-        entry.rating for entry in entries if entry.rating is not None
-    )
+    # A stored 0 counts as unrated, like null.
+    rating_counts = Counter(entry.rating for entry in entries if entry.rating)
 
     # create a new RatingBucket object for each rating value
     rating_distribution = [
@@ -49,7 +48,7 @@ def build_profile_stats(db: Session, username: str) -> schemas.ProfileStatsRespo
         for rating in range(1, 11)
     ]
 
-    unrated_count = sum(1 for entry in entries if entry.rating is None)
+    unrated_count = sum(1 for entry in entries if not entry.rating)
 
     # get the 8 entries with the most recent activity
     active_entries = [

@@ -3,7 +3,7 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.enums import ALLOWED_STATUSES, MediaStatus, MediaType
 
@@ -38,12 +38,18 @@ class MediaEntryBase(BaseModel):
     poster_path: Optional[str] = None
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
-    rating: Optional[int] = Field(default=None, ge=1, le=10)  # Null = unrated; when set, must be an integer 1–10.
+    rating: Optional[int] = Field(default=None, ge=1, le=10)  # Null (or 0 on input) = unrated; else 1–10.
     played_dates: Optional[list[date]] = None  # Journal days, stored sorted and unique.
     rewatch_dates: Optional[list[date]] = None  # Journal days marked as a rewatch; subset of played_dates.
     number_of_rewatches: Optional[int] = Field(default=None, ge=0)  # Replays/rewatches; not for books.
     is_favorite: bool = False  # Heart toggle in the media modal.
     hide_season_name: bool = False  # Eye toggle: show only the show title, not "Show: Season".
+
+    @field_validator("rating", mode="before")
+    @classmethod
+    def zero_rating_is_unrated(cls, value: object) -> object:
+        """A rating of 0 means "no rating" and is stored as null."""
+        return None if value == 0 and not isinstance(value, bool) else value
 
     @model_validator(mode="after")
     def validate_status_for_media_type(self):
