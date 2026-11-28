@@ -18,6 +18,7 @@ from sqlalchemy.sql import operators
 from sqlalchemy.sql.elements import BinaryExpression, BindParameter, BooleanClauseList, UnaryExpression
 
 from app import models
+from app.core.security import create_access_token
 
 _OPS = {
     operators.eq: operator.eq,
@@ -199,5 +200,9 @@ def add_entry(db: FakeSession, username: str, **fields: Any) -> models.MediaEntr
     return entry
 
 
-def headers(username: str) -> dict[str, str]:
-    return {"X-Username": username}
+def headers(user: str | models.User) -> dict[str, str]:
+    """Bearer token header. A plain name stands for a user seeded with add_user's defaults;
+    pass the User itself when it was seeded with a different password."""
+    if isinstance(user, str):
+        user = models.User(username=user, password="pw")
+    return {"Authorization": f"Bearer {create_access_token(user)}"}

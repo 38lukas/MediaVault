@@ -15,6 +15,8 @@ def test_register_creates_hashed_account(client, db):
     assert response.status_code == 201
     assert response.json()["username"] == "newbie"
     assert "password" not in response.json() and "password_hash" not in response.json()
+    token = {"Authorization": f"Bearer {response.json()['access_token']}"}
+    assert client.get("/api/users/me", headers=token).json()["username"] == "newbie"
     (user,) = db.rows(models.User)
     assert user.password is None
     assert verify_password("secret123", user.password_hash)
@@ -47,6 +49,9 @@ def test_login_with_hashed_password(client, db):
     response = post(client, "login", "alice", "secret123")
     assert response.status_code == 200
     assert "password" not in response.json()
+    assert response.json()["token_type"] == "bearer"
+    token = {"Authorization": f"Bearer {response.json()['access_token']}"}
+    assert client.get("/api/users/me", headers=token).status_code == 200
     assert post(client, "login", "alice", "nope").status_code == 401
 
 

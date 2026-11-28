@@ -13,6 +13,7 @@ os.environ["DATABASE_URL"] = "postgresql+psycopg://test:test@localhost:5432/test
 # app.core.database loads the repo-root .env, but never overrides variables that are already
 # set. Pinning these first keeps real secrets out of the test process.
 _DUMMY_ENV = {
+    "AUTH_SECRET": "test-secret-that-is-at-least-32-characters-long",
     "TWITCH_CLIENT_ID": "test-client-id",
     "TWITCH_CLIENT_SECRET": "test-client-secret",
     "TMDB_ACCESS_TOKEN": "test-tmdb-token",

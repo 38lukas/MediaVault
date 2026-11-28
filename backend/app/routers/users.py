@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_username
-from app.core.security import check_user_password, hash_password, password_problem
+from app.core.security import check_user_password, create_access_token, hash_password, password_problem
 from app import models, schemas
 from app.services.avatars import save_avatar
 
@@ -58,13 +58,16 @@ async def upload_avatar(
     return user
 
 
-@router.patch("/account", response_model=schemas.UserSettingsResponse)
+@router.patch("/account", response_model=schemas.AccountUpdateResponse)
 def update_account(
     payload: schemas.UserAccountUpdate,
     db: Session = Depends(get_db),
     username: str = Depends(get_current_username),
 ):
-    """Change the username and/or password; password changes require the current password."""
+    """Change the username and/or password; password changes require the current password.
+
+    Returns a fresh token, since both changes invalidate the old one.
+    """
     user = db.query(models.User).filter(models.User.username == username).first()
 
     # Password changes must be confirmed with the current password.
@@ -103,4 +106,8 @@ def update_account(
             detail="Username is already taken",
         )
 
-    return user
+    settings = schemas.UserSettingsResponse.model_validate(user)
+    return schemas.AccountUpdateResponse(
+        **settings.model_dump(),
+        access_token=create_access_token(user),
+    )

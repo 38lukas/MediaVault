@@ -1,8 +1,14 @@
-"""Password hashing with bcrypt."""
+"""Password hashing (bcrypt) and signed login tokens (JWT, HS256)."""
 
+import hashlib
 import hmac
+import os
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import bcrypt
+import jwt
+from fastapi import HTTPException, status
 
 from app import models
 
@@ -64,3 +70,54 @@ def password_problem(password: str) -> str | None:
     if len(password.encode("utf-8")) > MAX_PASSWORD_BYTES:
         return f"Password must be at most {MAX_PASSWORD_BYTES} bytes"
     return None
+
+
+TOKEN_LIFETIME = timedelta(days=60)
+TOKEN_ALGORITHM = "HS256"
+MIN_SECRET_LENGTH = 32
+
+
+def _auth_secret() -> str:
+    """Signing key from AUTH_SECRET; 503 when it is missing or too short."""
+    secret = (os.getenv("AUTH_SECRET") or "").strip()
+    if len(secret) < MIN_SECRET_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Login is not configured (AUTH_SECRET missing or shorter than 32 characters)",
+        )
+    return secret
+
+
+def password_stamp(user: models.User) -> str:
+    """Short keyed fingerprint of the user's current password.
+
+    Stored in every token, so changing the password invalidates all older tokens.
+    Keyed with the secret, so the readable token payload reveals nothing about the password.
+    """
+    source = (user.password_hash or user.password or "").encode("utf-8")
+    return hmac.new(_auth_secret().encode("utf-8"), source, hashlib.sha256).hexdigest()[:16]
+
+
+def create_access_token(user: models.User, now: datetime | None = None) -> str:
+    """Signed token naming the user, valid for TOKEN_LIFETIME."""
+    issued = now or datetime.now(timezone.utc)
+    payload = {
+        "sub": user.username,
+        "pwd": password_stamp(user),
+        "iat": issued,
+        "exp": issued + TOKEN_LIFETIME,
+    }
+    return jwt.encode(payload, _auth_secret(), algorithm=TOKEN_ALGORITHM)
+
+
+def read_access_token(token: str) -> dict[str, Any] | None:
+    """Payload of a valid, unexpired token; None for anything else."""
+    try:
+        return jwt.decode(
+            token,
+            _auth_secret(),
+            algorithms=[TOKEN_ALGORITHM],
+            options={"require": ["sub", "exp"]},
+        )
+    except jwt.PyJWTError:
+        return None

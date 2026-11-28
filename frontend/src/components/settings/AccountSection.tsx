@@ -91,7 +91,8 @@ export function AccountSection() {
           : {}),
       }).unwrap();
 
-      dispatch(setUsername(result.username));
+      dispatch(setUsername({ username: result.username, token: result.access_token }));
+      dispatch(mediaApi.util.invalidateTags(['UserSettings', 'MediaEntries', 'ProfileStats']));
       dispatch(resetAccountDrafts());
     } catch {
     }

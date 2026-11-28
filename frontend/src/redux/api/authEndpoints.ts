@@ -13,9 +13,11 @@ export const authEndpoints = mediaApi.injectEndpoints({
       query: (body) => ({ url: '/auth/register', method: 'POST', body }),
     }),
 
-    updateAccount: builder.mutation<UserSettings, AccountUpdate>({
+    // Returns a fresh token: renames and password changes invalidate the old one.
+    // No invalidatesTags here: refetching before the new token is stored would send the
+    // old one. AccountSection invalidates after saving the token.
+    updateAccount: builder.mutation<UserSettings & { access_token: string }, AccountUpdate>({
       query: (body) => ({ url: '/users/me/account', method: 'PATCH', body }),
-      invalidatesTags: ['UserSettings', 'MediaEntries', 'ProfileStats'],
     }),
   }),
 });

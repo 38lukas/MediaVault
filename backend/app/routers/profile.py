@@ -22,7 +22,11 @@ def get_profile_stats(
     username: str = Depends(get_current_username),
 ):
     """Aggregate finished counts, rating histogram, and recently active entries."""
+    return build_profile_stats(db, username)
 
+
+def build_profile_stats(db: Session, username: str) -> schemas.ProfileStatsResponse:
+    """Profile stats for one user (the logged-in user, or a friend in friend view)."""
     # get all entries for the current user
     entries = (
         db.query(models.MediaEntry)

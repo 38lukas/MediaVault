@@ -39,6 +39,13 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class TokenResponse(UserResponse):
+    """Login / sign-up result: the user plus a bearer token for later requests."""
+
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"
+
+
 class UserSettingsResponse(BaseModel):
     """Account info plus general settings of the current user."""
 
@@ -52,6 +59,14 @@ class UserSettingsResponse(BaseModel):
     profile_hidden_sections: Optional[list[ProfileSection]] = None  # None = nothing hidden.
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class AccountUpdateResponse(UserSettingsResponse):
+    """Settings after an account change, plus a fresh token (rename and password
+    changes invalidate the old one)."""
+
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"
 
 
 class UserSettingsUpdate(BaseModel):

@@ -21,7 +21,7 @@ def _owned_list(db: Session, list_id: int, username: str) -> models.MediaList:
     return row
 
 
-def _load_lists(db: Session, username: str) -> list[schemas.MediaListResponse]:
+def load_lists(db: Session, username: str) -> list[schemas.MediaListResponse]:
     """Return every list for a user, with items in position order."""
     lists = (
         db.query(models.MediaList)
@@ -74,7 +74,7 @@ def _load_lists(db: Session, username: str) -> list[schemas.MediaListResponse]:
 
 
 def _load_list(db: Session, username: str, list_id: int) -> schemas.MediaListResponse:
-    for row in _load_lists(db, username):
+    for row in load_lists(db, username):
         if row.id == list_id:
             return row
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="List not found")
@@ -86,7 +86,7 @@ def list_media_lists(
     username: str = Depends(get_current_username),
 ):
     """Return the logged-in user's lists, oldest first."""
-    return _load_lists(db, username)
+    return load_lists(db, username)
 
 
 @router.post("", response_model=schemas.MediaListResponse, status_code=status.HTTP_201_CREATED)

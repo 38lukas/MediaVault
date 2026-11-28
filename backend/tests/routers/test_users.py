@@ -35,9 +35,11 @@ def test_invalid_setting_is_rejected(client, db):
     assert user.default_type_filter == "All"
 
 
-def change_password(client, current, new):
+def change_password(client, user, current, new):
     return client.patch(
-        "/api/users/me/account", json={"current_password": current, "new_password": new}, headers=ALICE
+        "/api/users/me/account",
+        json={"current_password": current, "new_password": new},
+        headers=headers(user),
     )
 
 
@@ -45,32 +47,44 @@ def test_password_change_needs_current_password(client, db):
     user = add_user(db, "alice", password=None, password_hash=hash_password("old-password"))
     old_hash = user.password_hash
     for current in (None, "wrong"):
-        assert change_password(client, current, "new-password").status_code == 401
+        assert change_password(client, user, current, "new-password").status_code == 401
     assert user.password_hash == old_hash
-    assert change_password(client, "old-password", "new-password").status_code == 200
+    assert change_password(client, user, "old-password", "new-password").status_code == 200
     assert verify_password("new-password", user.password_hash)
 
 
 def test_password_change_from_legacy_plain_text_clears_it(client, db):
     user = add_user(db, "alice", password="legacy")
-    assert change_password(client, "legacy", "new-password").status_code == 200
+    assert change_password(client, user, "legacy", "new-password").status_code == 200
     assert user.password is None
     assert verify_password("new-password", user.password_hash)
 
 
 def test_new_password_must_follow_rules(client, db):
     user = add_user(db, "alice", password="legacy")
-    response = change_password(client, "legacy", "short")
+    response = change_password(client, user, "legacy", "short")
     assert response.status_code == 400
     assert user.password == "legacy"
 
 
-def test_rename(client, db):
+def test_rename_returns_a_token_for_the_new_name(client, db):
     user = add_user(db, "alice")
     response = client.patch("/api/users/me/account", json={"new_username": " alicia "}, headers=ALICE)
     assert response.status_code == 200
     assert response.json()["username"] == "alicia"
     assert user.username == "alicia"
+    new_token = {"Authorization": f"Bearer {response.json()['access_token']}"}
+    assert client.get("/api/users/me", headers=new_token).json()["username"] == "alicia"
+    assert client.get("/api/users/me", headers=ALICE).status_code == 401  # old name
+
+
+def test_password_change_logs_out_other_tokens(client, db):
+    user = add_user(db, "alice", password="legacy-pw")
+    old = headers(user)
+    response = change_password(client, user, "legacy-pw", "new-password")
+    new_token = {"Authorization": f"Bearer {response.json()['access_token']}"}
+    assert client.get("/api/users/me", headers=old).status_code == 401
+    assert client.get("/api/users/me", headers=new_token).status_code == 200
 
 
 def test_rename_to_taken_name_conflicts(client, db):

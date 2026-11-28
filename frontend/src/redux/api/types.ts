@@ -17,6 +17,8 @@ export interface AccountUpdate {
 export interface AuthUser {
   username: string;
   joined_date: string;
+  access_token: string;
+  token_type: 'bearer';
 }
 
 export interface IgdbGameLookup {

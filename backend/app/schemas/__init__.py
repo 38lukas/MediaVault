@@ -17,9 +17,11 @@ from app.schemas.profile import (
     RatingBucket,
 )
 from app.schemas.user import (
+    AccountUpdateResponse,
     LoginRequest,
     RegisterRequest,
     SortField,
+    TokenResponse,
     UserAccountUpdate,
     UserResponse,
     UserSettingsResponse,
@@ -27,6 +29,7 @@ from app.schemas.user import (
 )
 
 __all__ = [
+    "AccountUpdateResponse",
     "Achievement",
     "FavoriteGroup",
     "FavoriteSlot",
@@ -48,6 +51,7 @@ __all__ = [
     "RatingBucket",
     "RegisterRequest",
     "SortField",
+    "TokenResponse",
     "UserAccountUpdate",
     "UserResponse",
     "UserSettingsResponse",

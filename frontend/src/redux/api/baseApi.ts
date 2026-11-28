@@ -5,6 +5,7 @@ import {
   type FetchArgs,
   type FetchBaseQueryError,
 } from '@reduxjs/toolkit/query/react';
+import { clearUsername } from '@/redux/slices/authSlice';
 
 // Normalizes NEXT_PUBLIC_API_URL into a clean base URL for RTK Query.
 export function resolveApiBaseUrl(): string {
@@ -21,38 +22,50 @@ export function resolveApiBaseUrl(): string {
 }
 
 type AuthStateSlice = {
-  auth: { username: string | null; viewingAs: string | null };
+  auth: { token: string | null; viewingAs: string | null };
 };
 
-const FRIENDS_ENDPOINTS = new Set([
-  'getFriends',
-  'getFriendEntries',
-  'addFriend',
-  'removeFriend',
-]);
+// Own-data reads that have a read-only friend counterpart under /friends/{name}/...
+const FRIEND_VIEW_PATHS: Record<string, string> = {
+  '/users/me': 'settings',
+  '/entries': 'entries',
+  '/lists': 'lists',
+  '/profile/stats': 'profile/stats',
+};
 
-// Attaches X-Username from auth state (owner for friends, viewingAs otherwise).
+// 401 here means a wrong password, not an expired session.
+const NO_LOGOUT_ON_401 = new Set(['login', 'register', 'updateAccount']);
+
+// Attaches the logged-in user's bearer token to every request.
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: resolveApiBaseUrl(),
-  prepareHeaders: (headers, { getState, endpoint }) => {
-    const auth = (getState() as AuthStateSlice).auth;
-    const username = FRIENDS_ENDPOINTS.has(endpoint)
-      ? auth.username
-      : (auth.viewingAs ?? auth.username);
-    if (username) {
-      headers.set('X-Username', username);
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as AuthStateSlice).auth.token;
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
     }
     return headers;
   },
 });
 
-// Blocks non-GET mutations while viewing a friend's library.
+// Points an own-data read at the friend's read-only endpoint.
+function toFriendView(args: string | FetchArgs, friend: string): string | FetchArgs {
+  const url = typeof args === 'string' ? args : args.url;
+  const target = FRIEND_VIEW_PATHS[url];
+  if (!target) return args;
+  const friendUrl = `/friends/${encodeURIComponent(friend)}/${target}`;
+  return typeof args === 'string' ? friendUrl : { ...args, url: friendUrl };
+}
+
+// In friend view: reads go to the friend endpoints, writes are blocked.
+// Logs out when the server rejects the token (expired or invalidated session).
 const baseQueryWithViewGuard: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  const viewingAs = (api.getState() as AuthStateSlice).auth.viewingAs;
+  const { viewingAs, token: sentToken } = (api.getState() as AuthStateSlice).auth;
+  let requestArgs = args;
   if (viewingAs) {
     const method =
       typeof args === 'string' ? 'GET' : (args.method ?? 'GET').toUpperCase();
@@ -64,8 +77,22 @@ const baseQueryWithViewGuard: BaseQueryFn<
         },
       };
     }
+    requestArgs = toFriendView(args, viewingAs);
   }
-  return rawBaseQuery(args, api, extraOptions);
+
+  const result = await rawBaseQuery(requestArgs, api, extraOptions);
+  // Only log out if the rejected token is still the current one (not a request that was
+  // sent before a fresh token arrived).
+  const currentToken = (api.getState() as AuthStateSlice).auth.token;
+  if (
+    result.error?.status === 401 &&
+    !NO_LOGOUT_ON_401.has(api.endpoint) &&
+    sentToken === currentToken
+  ) {
+    api.dispatch(clearUsername());
+    api.dispatch(mediaApi.util.resetApiState());
+  }
+  return result;
 };
 
 // Empty RTK Query API shell; domain endpoints are injected in sibling files.

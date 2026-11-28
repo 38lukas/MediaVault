@@ -48,7 +48,7 @@ export function LoginForm() {
     try {
       const submit = isSignUp ? register : login;
       const user = await submit({ username: trimmed, password }).unwrap();
-      dispatch(setUsername(user.username));
+      dispatch(setUsername({ username: user.username, token: user.access_token }));
     } catch {
     }
   };

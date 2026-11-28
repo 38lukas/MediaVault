@@ -46,6 +46,7 @@ cp .env.example .env
 
 ```env
 DATABASE_URL=postgresql://USER:PASSWORD@HOST/neondb?sslmode=require
+AUTH_SECRET=at_least_32_random_characters
 TWITCH_CLIENT_ID=your_twitch_client_id
 TWITCH_CLIENT_SECRET=your_twitch_client_secret
 TMDB_ACCESS_TOKEN=your_tmdb_read_access_token
@@ -59,6 +60,10 @@ S3_REGION=auto
 S3_ENDPOINT_URL=
 S3_PUBLIC_BASE_URL=https://your-public-base-url
 ```
+
+`AUTH_SECRET` signs login tokens; generate one with
+`python -c "import secrets; print(secrets.token_urlsafe(48))"` and set the same kind of value
+on Render. Changing it logs everyone out.
 
 IGDB uses Twitch developer credentials. Create an app at https://dev.twitch.tv/console/apps
 (Confidential client type), generate a Client Secret, then paste both values into the root `.env`.

@@ -7,10 +7,24 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.security import burn_password_check, check_user_password, hash_password, password_problem
+from app.core.security import (
+    burn_password_check,
+    check_user_password,
+    create_access_token,
+    hash_password,
+    password_problem,
+)
 from app import models, schemas
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def _token_response(user: models.User) -> schemas.TokenResponse:
+    return schemas.TokenResponse(
+        username=user.username,
+        joined_date=user.joined_date,
+        access_token=create_access_token(user),
+    )
 
 
 def _clean_credentials(credentials: schemas.LoginRequest) -> tuple[str, str]:
@@ -24,9 +38,9 @@ def _clean_credentials(credentials: schemas.LoginRequest) -> tuple[str, str]:
     return username, credentials.password
 
 
-@router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=schemas.TokenResponse, status_code=status.HTTP_201_CREATED)
 def register(credentials: schemas.RegisterRequest, db: Session = Depends(get_db)):
-    """Create a new account with a hashed password."""
+    """Create a new account with a hashed password and log it in."""
     username, password = _clean_credentials(credentials)
 
     problem = password_problem(password)
@@ -50,12 +64,12 @@ def register(credentials: schemas.RegisterRequest, db: Session = Depends(get_db)
         db.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username is already taken")
     db.refresh(user)
-    return user
+    return _token_response(user)
 
 
-@router.post("/login", response_model=schemas.UserResponse)
+@router.post("/login", response_model=schemas.TokenResponse)
 def login(credentials: schemas.LoginRequest, db: Session = Depends(get_db)):
-    """Log in with username/password. Unknown usernames are rejected, not created."""
+    """Log in with username/password and get a bearer token. Unknown usernames are rejected."""
     username, password = _clean_credentials(credentials)
 
     user = db.query(models.User).filter(models.User.username == username).first()
@@ -69,4 +83,4 @@ def login(credentials: schemas.LoginRequest, db: Session = Depends(get_db)):
         )
 
     db.commit()  # Saves the hash if a legacy plain-text password was just upgraded.
-    return user
+    return _token_response(user)
