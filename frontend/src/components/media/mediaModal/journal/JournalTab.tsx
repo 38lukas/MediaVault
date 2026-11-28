@@ -7,7 +7,6 @@ import { palette } from '@/lib/palette';
 import { isGameType } from '@/types/media';
 import { buildMonthGrid, toDateKey } from '@/utils/calendar';
 import { useAppSelector } from '@/redux/hooks';
-import { fieldSx } from '../constants';
 import { JournalDayPopover } from './JournalDayPopover';
 
 // Calendar weekday headers (Monday-first).
@@ -78,7 +77,7 @@ export function JournalTab() {
           size="small"
           value={view.month}
           onChange={(e) => setView((prev) => ({ ...prev, month: Number(e.target.value) }))}
-          sx={{ ...fieldSx, minWidth: 140 }}
+          sx={{ minWidth: 140 }}
         >
           {MONTHS.map((name, month) => (
             <MenuItem
@@ -98,7 +97,7 @@ export function JournalTab() {
             const maxMonth = year === today.getFullYear() ? today.getMonth() : 11;
             setView((prev) => ({ year, month: Math.min(prev.month, maxMonth) }));
           }}
-          sx={{ ...fieldSx, minWidth: 100 }}
+          sx={{ minWidth: 100 }}
         >
           {years.map((year) => (
             <MenuItem key={year} value={year}>
@@ -111,7 +110,7 @@ export function JournalTab() {
           variant="contained"
           aria-label="Previous month"
           onClick={() => shiftMonth(-1)}
-          sx={{ minWidth: 48, borderRadius: 2 }}
+          sx={{ minWidth: 48 }}
         >
           <ArrowBackIcon fontSize="small" />
         </Button>
@@ -120,7 +119,7 @@ export function JournalTab() {
           aria-label="Next month"
           onClick={() => shiftMonth(1)}
           disabled={isCurrentMonth}
-          sx={{ minWidth: 48, borderRadius: 2 }}
+          sx={{ minWidth: 48 }}
         >
           <ArrowForwardIcon fontSize="small" />
         </Button>

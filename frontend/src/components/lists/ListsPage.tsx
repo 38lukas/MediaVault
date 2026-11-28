@@ -44,13 +44,6 @@ const FALLBACK_POSTER = 'https://via.placeholder.com/300x450?text=No+Cover';
 
 const VIEW_COLS = { xs: 6, sm: 4, md: 3, lg: 2.4, xl: 2 } as const;
 
-const fieldSx = {
-  '& .MuiOutlinedInput-root': {
-    borderRadius: 2,
-    backgroundColor: palette.fieldBg,
-  },
-} as const;
-
 function titleCount(count: number): string {
   if (count === 0) return 'Empty';
   return count === 1 ? '1 title' : `${count} titles`;
@@ -119,7 +112,6 @@ function ListFormDialog({
             fullWidth
             disabled={pending}
             slotProps={{ htmlInput: { maxLength: 120 } }}
-            sx={fieldSx}
           />
           <TextField
             label="Description"
@@ -130,7 +122,6 @@ function ListFormDialog({
             minRows={3}
             disabled={pending}
             slotProps={{ htmlInput: { maxLength: 1000 } }}
-            sx={fieldSx}
           />
           {error && <Alert severity="error">{error}</Alert>}
         </Stack>
@@ -327,7 +318,6 @@ function ListDetail({
             fullWidth
             disabled={updateState.isLoading}
             slotProps={{ htmlInput: { maxLength: 120 } }}
-            sx={fieldSx}
           />
           <TextField
             label="Description"
@@ -338,7 +328,6 @@ function ListDetail({
             minRows={2}
             disabled={updateState.isLoading}
             slotProps={{ htmlInput: { maxLength: 1000 } }}
-            sx={fieldSx}
           />
         </Stack>
       ) : (
@@ -447,7 +436,6 @@ function ListDetail({
               {...params}
               size="small"
               placeholder="Search your library to add"
-              sx={fieldSx}
               slotProps={{
                 ...params.slotProps,
                 input: {
@@ -816,10 +804,8 @@ export function ListsPage() {
                     sx={{
                       justifyContent: 'flex-start',
                       textAlign: 'left',
-                      textTransform: 'none',
                       px: 1.5,
                       py: 1,
-                      borderRadius: 1.5,
                       color: active ? palette.primary : 'text.primary',
                       backgroundColor: active ? palette.selectedBg : 'transparent',
                       border: `1px solid ${active ? palette.primary : 'transparent'}`,

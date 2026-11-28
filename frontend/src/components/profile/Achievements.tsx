@@ -144,16 +144,6 @@ export function Achievements({ achievements }: AchievementsProps) {
         onClose={() => setOpen(false)}
         fullWidth
         maxWidth="md"
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: 2,
-              backgroundColor: palette.surface,
-              border: `1px solid ${palette.border}`,
-              backgroundImage: 'none',
-            },
-          },
-        }}
       >
         <DialogTitle>Achievements</DialogTitle>
         <DialogContent>

@@ -21,11 +21,11 @@ import {
   TYPE_FILTER_ICONS,
 } from '@/lib/icons';
 import { StarRating } from '@/components/common/StarRating';
-import { fieldSx } from '@/components/media/mediaModal/constants';
 import { OptionSelect } from '@/components/media/mediaModal/overview/OptionSelect';
 import { MultiFilterSelect } from '@/components/library/MultiFilterSelect';
 import { StatusMultiSelect } from '@/components/library/StatusMultiSelect';
 import { palette } from '@/lib/palette';
+import { CONTROL_HEIGHT } from '@/lib/theme';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openCreateMediaModal } from '@/redux/slices/mediaModalSlice';
 import {
@@ -115,7 +115,7 @@ export function LibraryToolbar() {
           placeholder="Search your library"
           value={searchQuery}
           onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-          sx={{ ...fieldSx, flex: '1 1 260px', minWidth: 200 }}
+          sx={{ flex: '1 1 260px', minWidth: 200 }}
           slotProps={{
             htmlInput: { 'aria-label': 'Search by title' },
             input: {
@@ -149,7 +149,6 @@ export function LibraryToolbar() {
               </SvgIcon>
             }
             onClick={() => dispatch(openCreateMediaModal())}
-            sx={{ whiteSpace: 'nowrap', minHeight: 44 }}
           >
             Add Media
           </Button>
@@ -169,7 +168,7 @@ export function LibraryToolbar() {
               onClick={() => deferDispatch(setTypeFilter(type))}
               variant={selected ? 'filled' : 'outlined'}
               sx={{
-                height: 36,
+                height: CONTROL_HEIGHT,
                 px: 0.5,
                 fontWeight: selected ? 700 : 500,
                 borderColor: selected ? palette.primary : palette.borderStrong,
@@ -232,7 +231,6 @@ export function LibraryToolbar() {
               label="Sort by"
               options={SORT_FIELD_OPTIONS.map((opt) => opt.value)}
               value={sortField}
-              dense
               onChange={(field) => deferDispatch(setSortField(field))}
               renderOption={(field) => {
                 const Icon = SORT_FIELD_ICONS[field];
@@ -256,8 +254,8 @@ export function LibraryToolbar() {
               deferDispatch(setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc'))
             }
             sx={{
-              width: 36,
-              height: 36,
+              width: CONTROL_HEIGHT,
+              height: CONTROL_HEIGHT,
               borderRadius: 2,
               border: `1px solid ${palette.borderStrong}`,
               color: 'text.secondary',
@@ -279,7 +277,7 @@ export function LibraryToolbar() {
               size="small"
               startIcon={<FilterListOffIcon />}
               onClick={resetFilters}
-              sx={{ whiteSpace: 'nowrap', color: 'text.secondary' }}
+              sx={{ color: 'text.secondary' }}
             >
               Reset
             </Button>

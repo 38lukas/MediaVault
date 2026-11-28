@@ -29,7 +29,6 @@ import { IgdbGameSearch } from '@/components/media/mediaModal/overview/IgdbGameS
 import { OpenLibraryBookSearch } from '@/components/media/mediaModal/overview/OpenLibraryBookSearch';
 import { TmdbTitleSearch } from '@/components/media/mediaModal/overview/TmdbTitleSearch';
 import {
-  fieldSx,
   getCoverProvider,
   parseIgdbExternalId,
   type CoverProvider,
@@ -463,7 +462,6 @@ function FavoritePickerDialog({
                 open
                 title={title}
                 skipSearchForTitle={skipSearchForTitle}
-                fieldSx={fieldSx}
                 onTitleChange={(value, hadSelection) => {
                   setTitle(value);
                   if (hadSelection) {
@@ -487,7 +485,6 @@ function FavoritePickerDialog({
                 title={title}
                 mediaType={mediaType as TmdbMediaType}
                 skipSearchForTitle={skipSearchForTitle}
-                fieldSx={fieldSx}
                 onTitleChange={(value, hadSelection) => {
                   setTitle(value);
                   if (hadSelection) {
@@ -510,7 +507,6 @@ function FavoritePickerDialog({
                 open
                 title={title}
                 skipSearchForTitle={skipSearchForTitle}
-                fieldSx={fieldSx}
                 onTitleChange={(value, hadSelection) => {
                   setTitle(value);
                   if (hadSelection) {
@@ -689,7 +685,6 @@ function FavoriteCoverEditor({
               onChange={(event) => setDraft((prev) => ({ ...prev, externalId: event.target.value }))}
               disabled={applying}
               fullWidth
-              sx={fieldSx}
             />
             <TextField
               label="Poster URL"
@@ -698,7 +693,6 @@ function FavoriteCoverEditor({
               onChange={(event) => setDraft((prev) => ({ ...prev, posterUrl: event.target.value }))}
               disabled={applying}
               fullWidth
-              sx={fieldSx}
             />
           </Stack>
         </DialogContent>

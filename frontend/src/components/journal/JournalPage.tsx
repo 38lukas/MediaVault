@@ -184,7 +184,6 @@ export function JournalPage() {
           variant="contained"
           onClick={() => setView({ year: today.getFullYear(), month: today.getMonth() })}
           disabled={isCurrentMonth}
-          sx={{ borderRadius: 2 }}
         >
           Today
         </Button>
@@ -193,7 +192,7 @@ export function JournalPage() {
           variant="contained"
           aria-label="Previous month"
           onClick={() => shiftMonth(-1)}
-          sx={{ minWidth: 48, borderRadius: 2 }}
+          sx={{ minWidth: 48 }}
         >
           <ArrowBackIcon fontSize="small" />
         </Button>
@@ -202,7 +201,7 @@ export function JournalPage() {
           aria-label="Next month"
           onClick={() => shiftMonth(1)}
           disabled={isCurrentMonth}
-          sx={{ minWidth: 48, borderRadius: 2 }}
+          sx={{ minWidth: 48 }}
         >
           <ArrowForwardIcon fontSize="small" />
         </Button>

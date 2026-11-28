@@ -53,9 +53,6 @@ export function MediaModalTabs() {
             onClick={() => dispatch(setMediaModalTab(id))}
             sx={{
               justifyContent: 'flex-start',
-              borderRadius: 2,
-              fontWeight: 600,
-              textTransform: 'none',
               ...(active
                 ? {
                     border: `1px solid ${palette.primary}`,

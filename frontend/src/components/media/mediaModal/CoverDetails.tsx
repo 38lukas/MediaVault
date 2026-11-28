@@ -33,7 +33,6 @@ interface CoverDetailsProps {
   coverProvider: CoverProvider | null;
   statusBorder: string;
   statusShadow: string;
-  fieldSx: object;
   onApply: (details: { externalId: string; posterUrl: string }) => void;
 }
 
@@ -45,7 +44,6 @@ export function CoverDetails({
   coverProvider,
   statusBorder,
   statusShadow,
-  fieldSx,
   onApply,
 }: CoverDetailsProps) {
   const dispatch = useAppDispatch();
@@ -189,16 +187,6 @@ export function CoverDetails({
         }}
         fullWidth
         maxWidth="xs"
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: 2,
-              backgroundColor: palette.surface,
-              border: `1px solid ${palette.border}`,
-              backgroundImage: 'none',
-            },
-          },
-        }}
       >
         <DialogTitle>Cover details</DialogTitle>
         <DialogContent>
@@ -221,7 +209,6 @@ export function CoverDetails({
               }
               disabled={applying}
               fullWidth
-              sx={fieldSx}
             />
             <TextField
               label="Poster URL"
@@ -235,7 +222,6 @@ export function CoverDetails({
               }
               disabled={applying}
               fullWidth
-              sx={fieldSx}
             />
           </Stack>
         </DialogContent>

@@ -24,7 +24,8 @@ interface OpenLibraryBookSearchProps {
   open: boolean;
   title: string;
   skipSearchForTitle?: string;
-  fieldSx: object;
+  // Extra field styles, e.g. room for a FieldAction button.
+  fieldSx?: object;
   onTitleChange: (title: string, hadSelection: boolean) => void;
   onSelectionChange: (book: OpenLibraryBookSearchResult | null, loading: boolean) => void;
   onBookLoaded: (book: OpenLibraryBookLookup) => void;

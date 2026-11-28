@@ -3,7 +3,6 @@
 import { useId, type ReactNode } from 'react';
 import { Box, FormControl, InputLabel, MenuItem, OutlinedInput, Select } from '@mui/material';
 import { palette } from '@/lib/palette';
-import { fieldSx, selectMenuProps } from '../constants';
 
 interface OptionSelectProps<T extends string> {
   label: string;
@@ -14,8 +13,6 @@ interface OptionSelectProps<T extends string> {
   // Adds a first "nothing selected" entry (for filters); picking it calls onClear.
   emptyLabel?: string;
   onClear?: () => void;
-  // Compact 36px field (same height as the filter chips) for toolbars.
-  dense?: boolean;
   // Custom content for an option (e.g. stars); ignored when getOptionColors is given.
   renderOption?: (option: T) => ReactNode;
   // When provided, options render as colored pills.
@@ -30,25 +27,12 @@ export function OptionSelect<T extends string>({
   onChange,
   emptyLabel,
   onClear,
-  dense = false,
   renderOption,
   getOptionColors,
 }: OptionSelectProps<T>) {
   const labelId = useId();
   return (
-    <FormControl
-      size="small"
-      fullWidth
-      sx={
-        dense
-          ? {
-              ...fieldSx,
-              '& .MuiOutlinedInput-root.MuiOutlinedInput-root': { minHeight: 36 },
-              '& .MuiSelect-select.MuiSelect-select': { py: '5px', fontSize: '0.85rem' },
-            }
-          : fieldSx
-      }
-    >
+    <FormControl fullWidth>
       <InputLabel id={labelId} shrink={emptyLabel ? true : undefined}>
         {label}
       </InputLabel>
@@ -63,7 +47,6 @@ export function OptionSelect<T extends string>({
           if (next === '') onClear?.();
           else onChange(next);
         }}
-        MenuProps={selectMenuProps}
         // Pills and icon+text options are not plain text, so center them vertically in the field.
         sx={
           getOptionColors || renderOption

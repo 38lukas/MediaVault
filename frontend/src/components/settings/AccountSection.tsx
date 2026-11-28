@@ -142,7 +142,7 @@ export function AccountSection() {
         <Button
           variant="contained"
           onClick={handleUsernameEditToggle}
-          sx={{ mt: 1, flexShrink: 0, minWidth: 88 }}
+          sx={{ flexShrink: 0, minWidth: 88 }}
         >
           {editingUsername ? 'Cancel' : 'Edit'}
         </Button>
@@ -162,7 +162,7 @@ export function AccountSection() {
         <Button
           variant="contained"
           onClick={handlePasswordEditToggle}
-          sx={{ mt: 1, flexShrink: 0, minWidth: 88 }}
+          sx={{ flexShrink: 0, minWidth: 88 }}
         >
           {editingPassword ? 'Cancel' : 'Edit'}
         </Button>

@@ -25,7 +25,6 @@ interface TmdbSeasonSelectProps {
   // Null until a TMDB show is picked.
   showId: number | null;
   mediaType: TmdbMediaType;
-  fieldSx: object;
   onError: (error: unknown) => void;
 }
 
@@ -43,7 +42,7 @@ function seasonLabel(season: Pick<TmdbSeasonSummary, 'name' | 'air_date'>): stri
 }
 
 // Season picker for TMDB shows; choosing a season swaps in that season's poster and details.
-export function TmdbSeasonSelect({ showId, mediaType, fieldSx, onError }: TmdbSeasonSelectProps) {
+export function TmdbSeasonSelect({ showId, mediaType, onError }: TmdbSeasonSelectProps) {
   const dispatch = useAppDispatch();
   const seasonNumber = useAppSelector((state) => state.mediaModal.form.seasonNumber);
   const seasonName = useAppSelector((state) => state.mediaModal.form.seasonName);
@@ -123,7 +122,7 @@ export function TmdbSeasonSelect({ showId, mediaType, fieldSx, onError }: TmdbSe
       onChange={(event) => void handleChange(Number(event.target.value))}
       disabled={!show}
       helperText={showId == null ? 'Pick a show from the title search to choose a season.' : undefined}
-      sx={{ ...fieldSx, ...fieldActionPaddingSx }}
+      sx={fieldActionPaddingSx}
       slotProps={{
         input: {
           endAdornment: (

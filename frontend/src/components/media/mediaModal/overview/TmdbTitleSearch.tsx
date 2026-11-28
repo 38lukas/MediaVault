@@ -26,7 +26,8 @@ interface TmdbTitleSearchProps {
   title: string;
   mediaType: TmdbMediaType;
   skipSearchForTitle?: string;
-  fieldSx: object;
+  // Extra field styles, e.g. room for a FieldAction button.
+  fieldSx?: object;
   onTitleChange: (title: string, hadSelection: boolean) => void;
   onSelectionChange: (result: TmdbSearchResult | null, loading: boolean) => void;
   onTitleLoaded: (result: TmdbLookup) => void;

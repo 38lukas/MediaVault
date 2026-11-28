@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { CalendarTodayOutlinedIcon } from '@/lib/icons';
 import { Box, IconButton, InputAdornment, TextField } from '@mui/material';
-import { fieldSx } from '../constants';
 
 interface DateFieldProps {
   label: string;
@@ -82,7 +81,6 @@ export function DateField({ label, value, onChange }: DateFieldProps) {
             ),
           },
         }}
-        sx={fieldSx}
       />
       {/* Native picker only supplies the calendar popup; the visible value stays German. */}
       <input

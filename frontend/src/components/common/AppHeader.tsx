@@ -62,12 +62,7 @@ const NAV_ITEMS = [
 
 // Shared sizing for inactive header nav buttons.
 const NAV_BUTTON_SX = {
-  whiteSpace: 'nowrap',
   px: 1.75,
-  py: 0.5,
-  minHeight: 36,
-  height: 36,
-  fontSize: '0.875rem',
   overflow: 'visible',
   '& .MuiButton-startIcon': { mr: 0.75, ml: 0, overflow: 'visible' },
   '& .MuiButton-startIcon > *:nth-of-type(1)': { fontSize: 20 },

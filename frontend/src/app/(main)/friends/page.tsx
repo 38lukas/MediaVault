@@ -117,7 +117,6 @@ export default function FriendsPage() {
           variant="contained"
           startIcon={<PersonAddOutlinedIcon />}
           disabled={addState.isLoading || !name.trim()}
-          sx={{ whiteSpace: 'nowrap', height: 40 }}
         >
           {addState.isLoading ? 'Adding…' : 'Add friend'}
         </Button>

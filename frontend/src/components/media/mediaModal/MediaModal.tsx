@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { CoverDetails } from './CoverDetails';
 import { MediaModalTabs } from './MediaModalTabs';
-import { getCoverProvider, fieldSx } from './constants';
+import { getCoverProvider } from './constants';
 import { OverviewTab } from './overview/OverviewTab';
 import { DetailsTab } from './details/DetailsTab';
 import { JournalTab } from './journal/JournalTab';
@@ -162,15 +162,11 @@ export function MediaModal() {
       slotProps={{
         paper: {
           sx: {
-            borderRadius: 3,
             mt: '5vh',
             maxHeight: '90vh',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            backgroundImage: 'none',
-            backgroundColor: palette.surface,
-            border: `1px solid ${palette.border}`,
           },
         },
       }}
@@ -237,7 +233,6 @@ export function MediaModal() {
                     coverProvider={getCoverProvider(form.mediaType)}
                     statusBorder={statusStyle.border}
                     statusShadow={statusStyle.bg}
-                    fieldSx={fieldSx}
                     onApply={(details) => {
                       if (!readOnly) dispatch(patchForm(details));
                     }}
@@ -281,12 +276,12 @@ export function MediaModal() {
               variant="text"
               onClick={handleDelete}
               disabled={isBusy}
-              sx={{ mr: 'auto', borderRadius: 2 }}
+              sx={{ mr: 'auto' }}
             >
               {deleteState.isLoading ? 'Removing…' : 'Remove'}
             </Button>
           )}
-          <Button onClick={handleClose} disabled={isBusy} sx={{ borderRadius: 2 }}>
+          <Button onClick={handleClose} disabled={isBusy}>
             {readOnly ? 'Close' : 'Cancel'}
           </Button>
           {!readOnly && (
@@ -295,11 +290,6 @@ export function MediaModal() {
               variant="contained"
               color="primary"
               disabled={isBusy || !form.title.trim()}
-              sx={{
-                borderRadius: 2,
-                px: 2.5,
-                fontWeight: 700,
-              }}
             >
               {createState.isLoading || updateState.isLoading ? 'Saving…' : 'Save'}
             </Button>

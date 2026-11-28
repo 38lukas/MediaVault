@@ -58,7 +58,7 @@ export function SectionDivider({
             gap: 0.25,
             py: 0.55,
             px: 1.25,
-            borderRadius: 1.5,
+            borderRadius: 999, // Same round pill as the status pills in selects.
             backgroundColor: colors.bg,
             border: `1px solid ${colors.border}`,
             color: colors.color,

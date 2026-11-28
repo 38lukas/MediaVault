@@ -32,9 +32,7 @@ import {
   tmdbTitleLoaded,
 } from '@/redux/slices/mediaModalSlice';
 import {
-  fieldSx,
   getCoverProvider,
-  selectMenuProps,
   parseTmdbShowId,
   sanitizeIntegerInput,
 } from '../constants';
@@ -130,7 +128,7 @@ export function OverviewTab() {
     </IconButton>
     </FieldAction>
   );
-  const titleFieldSx = { ...fieldSx, ...fieldActionPaddingSx };
+  const titleFieldSx = fieldActionPaddingSx;
   const handleTitleChange = (title: string, hadSelection: boolean) =>
     dispatch(lookupTitleChanged({ title, hadSelection }));
   const handleSelectionChange = (result: { name: string } | null, loading: boolean) =>
@@ -147,7 +145,7 @@ export function OverviewTab() {
           autoFocus
           value={form.title}
           onChange={(e) => dispatch(patchForm({ title: e.target.value }))}
-          sx={{ ...fieldSx, ...fieldActionPaddingSx }}
+          sx={fieldActionPaddingSx}
           slotProps={{ input: { endAdornment: renameButton } }}
         />
       ) : provider === 'IGDB' ? (
@@ -197,7 +195,6 @@ export function OverviewTab() {
           key={`${searchKey}:${tmdbShowId ?? 'none'}`}
           showId={tmdbShowId}
           mediaType={form.mediaType as TmdbMediaType}
-          fieldSx={fieldSx}
           onError={handleTmdbSearchError}
         />
       )}
@@ -234,7 +231,6 @@ export function OverviewTab() {
                 inputLabel: { shrink: true },
                 htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
               }}
-              sx={fieldSx}
             />
             <TextField
               label="Playtime (mins)"
@@ -249,10 +245,9 @@ export function OverviewTab() {
                 inputLabel: { shrink: true },
                 htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' },
               }}
-              sx={fieldSx}
             />
           </Stack>
-          <FormControl size="small" fullWidth sx={fieldSx} disabled={form.platforms.length === 0}>
+          <FormControl fullWidth disabled={form.platforms.length === 0}>
             <InputLabel id="played-on-label" shrink>
               Played on
             </InputLabel>
@@ -262,7 +257,6 @@ export function OverviewTab() {
               value={form.platformPlayedOn}
               displayEmpty
               onChange={(e) => dispatch(patchForm({ platformPlayedOn: e.target.value }))}
-              MenuProps={selectMenuProps}
             >
               <MenuItem value="">
                 <em>{form.platforms.length ? 'Not selected' : 'No platforms available'}</em>

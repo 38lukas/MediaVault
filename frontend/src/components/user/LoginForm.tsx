@@ -138,7 +138,6 @@ export function LoginForm() {
               variant="contained"
               disabled={activeState.isLoading || !canSubmit}
               fullWidth
-              sx={{ py: 1.25, fontWeight: 700 }}
             >
               {isSignUp
                 ? registerState.isLoading
@@ -148,7 +147,7 @@ export function LoginForm() {
                   ? 'Signing in…'
                   : 'Sign in'}
             </Button>
-            <Button variant="text" onClick={switchMode} sx={{ textTransform: 'none' }}>
+            <Button variant="text" onClick={switchMode}>
               {isSignUp ? 'Already have an account? Sign in' : 'New here? Create an account'}
             </Button>
           </Stack>

@@ -24,7 +24,8 @@ interface IgdbGameSearchProps {
   open: boolean;
   title: string;
   skipSearchForTitle?: string;
-  fieldSx: object;
+  // Extra field styles, e.g. room for a FieldAction button.
+  fieldSx?: object;
   onTitleChange: (title: string, hadSelection: boolean) => void;
   onSelectionChange: (game: IgdbGameSearchResult | null, loading: boolean) => void;
   onGameLoaded: (game: IgdbGameLookup) => void;

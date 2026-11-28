@@ -10,7 +10,6 @@ import {
   OutlinedInput,
   Select,
 } from '@mui/material';
-import { fieldSx, selectMenuProps } from '@/components/media/mediaModal/constants';
 import { palette } from '@/lib/palette';
 
 interface MultiFilterSelectProps {
@@ -23,7 +22,7 @@ interface MultiFilterSelectProps {
   renderOption: (option: string) => ReactNode;
 }
 
-// Compact (36px) multi-select for library filters: a checkbox per option.
+// Multi-select for library filters: a checkbox per option.
 export function MultiFilterSelect({
   label,
   options,
@@ -35,15 +34,7 @@ export function MultiFilterSelect({
   const selected = options.filter((option) => value.includes(option));
 
   return (
-    <FormControl
-      size="small"
-      fullWidth
-      sx={{
-        ...fieldSx,
-        '& .MuiOutlinedInput-root.MuiOutlinedInput-root': { minHeight: 36 },
-        '& .MuiSelect-select.MuiSelect-select': { py: '5px', fontSize: '0.85rem' },
-      }}
-    >
+    <FormControl fullWidth>
       <InputLabel id={labelId} shrink>
         {label}
       </InputLabel>
@@ -53,7 +44,6 @@ export function MultiFilterSelect({
         labelId={labelId}
         input={<OutlinedInput label={label} notched />}
         value={selected}
-        MenuProps={selectMenuProps}
         onChange={(e) =>
           onChange(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)
         }
