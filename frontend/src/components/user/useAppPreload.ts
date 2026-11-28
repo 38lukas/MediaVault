@@ -32,7 +32,6 @@ export function useAppPreload(username: string | null, viewingAs: string | null)
     if (!username) return;
     let cancelled = false;
     const subscriptions: { unsubscribe: () => void }[] = [];
-    setState({ key, ready: false, progress: 0 });
 
     const run = async () => {
       const tasks = [

@@ -120,7 +120,7 @@ export function FavoriteMedia({ favorites, readOnly }: FavoriteMediaProps) {
         category,
         title: pick?.title.trim() || null,
         media_type: pick?.mediaType ?? null,
-        external_id: pick ? pick.externalId.trim() || `manual_${Date.now()}` : null,
+        external_id: pick ? pick.externalId.trim() || manualExternalId() : null,
         poster_path: pick?.posterUrl.trim() || null,
         is_number_one: pick == null ? false : isNumberOne,
       }).unwrap();
@@ -379,6 +379,11 @@ const actionButtonSx = {
   backgroundColor: 'rgba(0,0,0,0.62)',
   '&:hover': { backgroundColor: 'rgba(0,0,0,0.82)' },
 } as const;
+
+// Id for a favorite typed in by hand (no TMDB/IGDB/Open Library match).
+function manualExternalId(): string {
+  return `manual_${Date.now()}`;
+}
 
 function FavoritePickerDialog({
   category,

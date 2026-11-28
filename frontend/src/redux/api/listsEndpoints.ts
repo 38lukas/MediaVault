@@ -3,8 +3,8 @@ import { mediaApi } from './baseApi';
 
 type ListsApi = typeof listsEndpoints;
 
-// Assigned after injectEndpoints so mutation handlers can patch this cache.
-let listsApi: ListsApi;
+// Lets the mutation handlers below patch this API's own cache (they only run after it exists).
+const listsApi = (): ListsApi => listsEndpoints;
 
 function replaceList(
   draft: MediaList[],
@@ -30,7 +30,7 @@ export const listsEndpoints = mediaApi.injectEndpoints({
         try {
           const { data } = await queryFulfilled;
           dispatch(
-            listsApi.util.updateQueryData('getMediaLists', undefined, (draft) => {
+            listsApi().util.updateQueryData('getMediaLists', undefined, (draft) => {
               replaceList(draft, data);
             }),
           );
@@ -47,7 +47,7 @@ export const listsEndpoints = mediaApi.injectEndpoints({
         try {
           const { data } = await queryFulfilled;
           dispatch(
-            listsApi.util.updateQueryData('getMediaLists', undefined, (draft) => {
+            listsApi().util.updateQueryData('getMediaLists', undefined, (draft) => {
               replaceList(draft, data);
             }),
           );
@@ -62,7 +62,7 @@ export const listsEndpoints = mediaApi.injectEndpoints({
       invalidatesTags: ['MediaLists'],
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
         const patch = dispatch(
-          listsApi.util.updateQueryData('getMediaLists', undefined, (draft) => {
+          listsApi().util.updateQueryData('getMediaLists', undefined, (draft) => {
             const index = draft.findIndex((list) => list.id === id);
             if (index >= 0) draft.splice(index, 1);
           }),
@@ -86,7 +86,7 @@ export const listsEndpoints = mediaApi.injectEndpoints({
         try {
           const { data } = await queryFulfilled;
           dispatch(
-            listsApi.util.updateQueryData('getMediaLists', undefined, (draft) => {
+            listsApi().util.updateQueryData('getMediaLists', undefined, (draft) => {
               replaceList(draft, data);
             }),
           );
@@ -106,7 +106,7 @@ export const listsEndpoints = mediaApi.injectEndpoints({
         try {
           const { data } = await queryFulfilled;
           dispatch(
-            listsApi.util.updateQueryData('getMediaLists', undefined, (draft) => {
+            listsApi().util.updateQueryData('getMediaLists', undefined, (draft) => {
               replaceList(draft, data);
             }),
           );
@@ -125,7 +125,7 @@ export const listsEndpoints = mediaApi.injectEndpoints({
       invalidatesTags: ['MediaLists'],
       async onQueryStarted({ listId, itemIds }, { dispatch, queryFulfilled }) {
         const patch = dispatch(
-          listsApi.util.updateQueryData('getMediaLists', undefined, (draft) => {
+          listsApi().util.updateQueryData('getMediaLists', undefined, (draft) => {
             const list = draft.find((entry) => entry.id === listId);
             if (!list) return;
             const byId = new Map(list.items.map((item) => [item.id, item]));
@@ -142,7 +142,7 @@ export const listsEndpoints = mediaApi.injectEndpoints({
         try {
           const { data } = await queryFulfilled;
           dispatch(
-            listsApi.util.updateQueryData('getMediaLists', undefined, (draft) => {
+            listsApi().util.updateQueryData('getMediaLists', undefined, (draft) => {
               replaceList(draft, data);
             }),
           );
@@ -154,7 +154,6 @@ export const listsEndpoints = mediaApi.injectEndpoints({
   }),
 });
 
-listsApi = listsEndpoints;
 
 export const {
   useGetMediaListsQuery,

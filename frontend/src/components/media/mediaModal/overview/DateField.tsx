@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { CalendarTodayOutlinedIcon } from '@/lib/icons';
 import { Box, IconButton, InputAdornment, TextField } from '@mui/material';
 
@@ -41,12 +41,14 @@ function displayToIso(display: string): string {
 // Date input that always shows the German format, independent of the browser/OS locale.
 export function DateField({ label, value, onChange }: DateFieldProps) {
   const [text, setText] = useState(() => isoToDisplay(value));
+  const [syncedValue, setSyncedValue] = useState(value);
   const pickerRef = useRef<HTMLInputElement>(null);
 
   // Follow outside changes (loading an entry, picking from the calendar) but not our own partial typing.
-  useEffect(() => {
-    setText((current) => (displayToIso(current) === value ? current : isoToDisplay(value)));
-  }, [value]);
+  if (value !== syncedValue) {
+    setSyncedValue(value);
+    if (displayToIso(text) !== value) setText(isoToDisplay(value));
+  }
 
   const handleTyping = (raw: string) => {
     const formatted = formatDigits(raw.replace(/\D/g, '').slice(0, 8));

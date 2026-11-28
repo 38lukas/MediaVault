@@ -25,7 +25,7 @@ import { OptionSelect } from '@/components/media/mediaModal/overview/OptionSelec
 import { MultiFilterSelect } from '@/components/library/MultiFilterSelect';
 import { StatusMultiSelect } from '@/components/library/StatusMultiSelect';
 import { palette } from '@/lib/palette';
-import { CONTROL_HEIGHT } from '@/lib/theme';
+import { CONTROL_HEIGHT, OUTLINED_IDLE, OUTLINED_SELECTED, TAB_IDLE } from '@/lib/theme';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { openCreateMediaModal } from '@/redux/slices/mediaModalSlice';
 import {
@@ -166,20 +166,14 @@ export function LibraryToolbar() {
               label={TYPE_FILTER_LABELS[type]}
               clickable
               onClick={() => deferDispatch(setTypeFilter(type))}
-              variant={selected ? 'filled' : 'outlined'}
+              variant="outlined"
+              aria-pressed={selected}
               sx={{
                 height: CONTROL_HEIGHT,
                 px: 0.5,
-                fontWeight: selected ? 700 : 500,
-                borderColor: selected ? palette.primary : palette.borderStrong,
-                backgroundColor: selected ? palette.primary : 'transparent',
-                color: selected ? palette.primaryContrast : 'text.primary',
-                '& .MuiChip-icon': {
-                  color: selected ? palette.primaryContrast : 'text.secondary',
-                },
-                '&:hover': {
-                  backgroundColor: selected ? palette.primary : palette.selectedBg,
-                },
+                // Same look as the media modal tabs.
+                ...(selected ? OUTLINED_SELECTED : TAB_IDLE),
+                '& .MuiChip-icon': { color: 'inherit' },
               }}
             />
           );
@@ -257,9 +251,8 @@ export function LibraryToolbar() {
               width: CONTROL_HEIGHT,
               height: CONTROL_HEIGHT,
               borderRadius: 2,
-              border: `1px solid ${palette.borderStrong}`,
-              color: 'text.secondary',
-              '&:hover': { borderColor: palette.primary, color: palette.primary },
+              border: '1px solid',
+              ...OUTLINED_IDLE,
             }}
           >
             {sortDirection === 'asc' ? (

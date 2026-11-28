@@ -292,7 +292,6 @@ function ListDetail({
           >
             <Button
               variant="outlined"
-              size="small"
               color="error"
               startIcon={<DeleteOutlinedIcon />}
               onClick={onDelete}
@@ -302,7 +301,6 @@ function ListDetail({
             </Button>
             <Button
               variant="contained"
-              size="small"
               startIcon={<CheckIcon />}
               onClick={finishEditing}
               disabled={updateState.isLoading}

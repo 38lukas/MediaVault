@@ -60,25 +60,11 @@ const NAV_ITEMS = [
   },
 ] as const;
 
-// Shared sizing for inactive header nav buttons.
+// Header nav button layout; colors (gray / selected) come from the theme's outlined style.
 const NAV_BUTTON_SX = {
-  px: 1.75,
   overflow: 'visible',
   '& .MuiButton-startIcon': { mr: 0.75, ml: 0, overflow: 'visible' },
   '& .MuiButton-startIcon > *:nth-of-type(1)': { fontSize: 20 },
-} as const;
-
-// Active/disabled nav button styles (selected route look).
-const ACTIVE_BUTTON_SX = {
-  ...NAV_BUTTON_SX,
-  border: `1px solid ${palette.primary}`,
-  backgroundColor: palette.selectedBg,
-  color: palette.primary,
-  '&.Mui-disabled': {
-    border: `1px solid ${palette.primary}`,
-    backgroundColor: palette.selectedBg,
-    color: palette.primary,
-  },
 } as const;
 
 // App brand header with profile avatar and section navigation.
@@ -150,21 +136,6 @@ export function AppHeader() {
                 <Icon />
               );
 
-            if (active) {
-              return (
-                <Button
-                  key={id}
-                  variant="outlined"
-                  disabled
-                  startIcon={startIcon}
-                  aria-current="page"
-                  sx={ACTIVE_BUTTON_SX}
-                >
-                  {label}
-                </Button>
-              );
-            }
-
             return (
               <Button
                 key={id}
@@ -172,6 +143,7 @@ export function AppHeader() {
                 component={Link}
                 href={href}
                 startIcon={startIcon}
+                aria-current={active ? 'page' : undefined}
                 sx={NAV_BUTTON_SX}
               >
                 {label}

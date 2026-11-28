@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useMemo, useRef, useState } from 'react';
+import { forwardRef, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -342,8 +342,9 @@ const DayCell = forwardRef<
   const titles = logs.map((log) => log.title).join(', ');
   const visibleLogs = logs.slice(0, MAX_VISIBLE_COVERS);
   const hasMore = logs.length > MAX_VISIBLE_COVERS;
-  const [moreOpen, setMoreOpen] = useState(false);
-  const moreButtonRef = useRef<HTMLButtonElement | null>(null);
+  // The "+N more" button the popover is anchored to; null = closed.
+  const [moreAnchor, setMoreAnchor] = useState<HTMLElement | null>(null);
+  const moreOpen = moreAnchor != null;
   return (
     <Box
       ref={ref}
@@ -397,12 +398,12 @@ const DayCell = forwardRef<
                 }
                 aria-haspopup={showMore ? 'dialog' : undefined}
                 aria-expanded={showMore ? moreOpen : undefined}
-                ref={showMore ? moreButtonRef : undefined}
                 onMouseDown={(event) => event.stopPropagation()}
                 onClick={(event) => {
                   event.stopPropagation();
                   if (showMore) {
-                    setMoreOpen((open) => !open);
+                    const button = event.currentTarget;
+                    setMoreAnchor((open) => (open ? null : button));
                     return;
                   }
                   onOpen(log.item);
@@ -504,8 +505,8 @@ const DayCell = forwardRef<
       <DayEntriesPopover
         date={date}
         logs={logs}
-        anchorEl={moreOpen ? moreButtonRef.current : null}
-        onClose={() => setMoreOpen(false)}
+        anchorEl={moreAnchor}
+        onClose={() => setMoreAnchor(null)}
         onOpen={onOpen}
       />
     </Box>

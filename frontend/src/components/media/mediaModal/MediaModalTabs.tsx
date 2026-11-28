@@ -2,7 +2,7 @@
 
 import { Box, Button } from '@mui/material';
 import { CalendarMonthOutlinedIcon, InfoOutlinedIcon, ListAltIcon, PeopleOutlinedIcon } from '@/lib/icons';
-import { palette } from '@/lib/palette';
+import { TAB_IDLE } from '@/lib/theme';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setMediaModalTab, type MediaModalTab } from '@/redux/slices/mediaModalSlice';
 import { isMatchableExternalId } from './constants';
@@ -53,16 +53,7 @@ export function MediaModalTabs() {
             onClick={() => dispatch(setMediaModalTab(id))}
             sx={{
               justifyContent: 'flex-start',
-              ...(active
-                ? {
-                    border: `1px solid ${palette.primary}`,
-                    backgroundColor: palette.selectedBg,
-                    color: palette.primary,
-                  }
-                : {
-                    borderColor: palette.borderMuted,
-                    color: 'text.secondary',
-                  }),
+              ...(!active && TAB_IDLE),
             }}
           >
             {label}

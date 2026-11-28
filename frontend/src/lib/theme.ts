@@ -7,6 +7,42 @@ export const CONTROL_RADIUS = 8; // buttons, inputs, selects, menus
 export const SURFACE_RADIUS = 12; // dialogs and cards
 export const PILL_RADIUS = 999; // chips, status pills
 
+const HOVER_BG = 'rgba(255, 255, 255, 0.04)';
+
+// Outlined controls (buttons, toggle pills, icon buttons with a border): gray border with
+// primary text until selected; selected adds the primary border and a light fill.
+// Selected = aria-pressed="true" (toggles, tabs) or aria-current="page" (navigation).
+export const OUTLINED_IDLE = {
+  borderColor: palette.borderMuted,
+  color: palette.primary,
+  '&:hover': {
+    borderColor: palette.borderStrong,
+    color: palette.primary,
+    backgroundColor: HOVER_BG,
+  },
+} as const;
+export const OUTLINED_SELECTED = {
+  borderColor: palette.primary,
+  color: palette.primary,
+  backgroundColor: palette.selectedBg,
+  '&:hover': {
+    borderColor: palette.primary,
+    color: palette.primary,
+    backgroundColor: palette.selectedBg,
+  },
+} as const;
+// Tab-style toggles (media modal tabs, library type pills): gray until hovered or selected.
+export const TAB_IDLE = {
+  borderColor: palette.borderMuted,
+  color: 'rgba(255, 255, 255, 0.7)', // MUI dark-mode text.secondary
+  '&:hover': {
+    borderColor: palette.primary,
+    color: palette.primary,
+    backgroundColor: 'transparent',
+  },
+} as const;
+const SELECTED_SELECTOR = '&[aria-pressed="true"], &[aria-current="page"]';
+
 // Build the dark MUI theme for MediaVault. Component looks live here, not in per-component sx.
 export function createMediaVaultTheme(primaryColor: string, primaryContrast: string) {
   return createTheme({
@@ -33,13 +69,10 @@ export function createMediaVaultTheme(primaryColor: string, primaryContrast: str
             textTransform: 'none',
             whiteSpace: 'nowrap',
             variants: [
-              // Neutral outlined buttons get the muted border; colored ones keep their color.
+              // Outlined buttons are gray until selected. Error (destructive) buttons stay red.
               {
-                props: { variant: 'outlined', color: 'inherit' },
-                style: {
-                  borderColor: palette.borderMuted,
-                  '&:hover': { borderColor: palette.borderStrong },
-                },
+                props: ({ variant, color }) => variant === 'outlined' && color !== 'error',
+                style: { ...OUTLINED_IDLE, [SELECTED_SELECTOR]: OUTLINED_SELECTED },
               },
             ],
           },
