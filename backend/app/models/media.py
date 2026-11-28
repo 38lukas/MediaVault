@@ -1,11 +1,58 @@
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    func,
+)
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from app.core.database import Base
+from app.enums import ALLOWED_STATUSES, MediaType
+
+UNIQUE_ENTRY_INDEX = "uq_media_entries_user_external_season"
+
+
+def _quoted(values) -> str:
+    return ", ".join(f"'{value}'" for value in values)
+
+
+# Same rules as migrations/versions/0003_entry_rules.py (the database enforces them).
+_STATUS_RULE = " OR ".join(
+    f"(media_type = '{media_type.value}' AND status IN ({_quoted(sorted(s.value for s in statuses))}))"
+    for media_type, statuses in ALLOWED_STATUSES.items()
+)
 
 
 class MediaEntry(Base):
     __tablename__ = "media_entries"
+    __table_args__ = (
+        CheckConstraint(f"media_type IN ({_quoted(t.value for t in MediaType)})", name="ck_media_entries_media_type"),
+        CheckConstraint(_STATUS_RULE, name="ck_media_entries_status_for_type"),
+        CheckConstraint("rating IS NULL OR rating BETWEEN 1 AND 10", name="ck_media_entries_rating"),
+        CheckConstraint(
+            "(playtime IS NULL OR playtime >= 0) AND (runtime IS NULL OR runtime >= 0) "
+            "AND (number_of_seasons IS NULL OR number_of_seasons >= 0) "
+            "AND (number_of_episodes IS NULL OR number_of_episodes >= 0) "
+            "AND (number_of_rewatches IS NULL OR number_of_rewatches >= 0)",
+            name="ck_media_entries_non_negative",
+        ),
+        CheckConstraint("season_number IS NULL OR season_number >= 1", name="ck_media_entries_season_number"),
+        # One entry per user, title and season (two whole-show entries count as duplicates).
+        Index(
+            UNIQUE_ENTRY_INDEX,
+            "username",
+            "external_id",
+            "season_number",
+            unique=True,
+            postgresql_nulls_not_distinct=True,
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(

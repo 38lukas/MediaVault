@@ -3,13 +3,30 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_username
 from app import models, schemas
+from app.models.media import UNIQUE_ENTRY_INDEX
 
 router = APIRouter(prefix="/entries", tags=["entries"])
+
+
+def _commit_entry(db: Session) -> None:
+    """Commit, turning a duplicate title (same user, title id and season) into a 409."""
+    try:
+        db.commit()
+    except IntegrityError as error:
+        db.rollback()
+        diag = getattr(error.orig, "diag", None)
+        if getattr(diag, "constraint_name", None) == UNIQUE_ENTRY_INDEX or UNIQUE_ENTRY_INDEX in str(error.orig):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This title is already in your library",
+            )
+        raise
 
 
 @router.get("", response_model=List[schemas.MediaEntryResponse])
@@ -81,7 +98,7 @@ def create_entry(
     )
 
     db.add(db_entry)
-    db.commit()
+    _commit_entry(db)
     db.refresh(db_entry)
     return db_entry
 
@@ -139,7 +156,7 @@ def update_entry(
     entry.is_favorite = entry_in.is_favorite
     entry.hide_season_name = entry_in.hide_season_name
 
-    db.commit()
+    _commit_entry(db)
     db.refresh(entry)
     return entry
 

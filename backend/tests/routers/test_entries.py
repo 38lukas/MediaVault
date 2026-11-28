@@ -1,3 +1,6 @@
+import pytest
+from sqlalchemy.exc import IntegrityError
+
 from app import models
 from tests.fakes import add_entry, add_user, headers
 
@@ -85,3 +88,32 @@ def test_saving_zero_rating_stores_unrated(client, db):
     setup_users(db)
     client.post("/api/entries", json={**NEW_ENTRY, "rating": 0}, headers=headers("alice"))
     assert db.rows(models.MediaEntry)[0].rating is None
+
+
+def unique_violation():
+    return IntegrityError(
+        "INSERT", {}, Exception('duplicate key value violates unique constraint "uq_media_entries_user_external_season"')
+    )
+
+
+def test_duplicate_title_is_a_conflict(client, db):
+    setup_users(db)
+    db.commit_error = unique_violation()
+    response = client.post("/api/entries", json=NEW_ENTRY, headers=headers("alice"))
+    assert response.status_code == 409
+    assert response.json()["detail"] == "This title is already in your library"
+    assert db.rollbacks == 1
+
+
+def test_update_into_a_duplicate_is_a_conflict(client, db):
+    setup_users(db)
+    entry = add_entry(db, "alice")
+    db.commit_error = unique_violation()
+    assert client.put(f"/api/entries/{entry.id}", json=NEW_ENTRY, headers=headers("alice")).status_code == 409
+
+
+def test_other_integrity_errors_are_not_hidden(client, db):
+    setup_users(db)
+    db.commit_error = IntegrityError("INSERT", {}, Exception("violates check constraint"))
+    with pytest.raises(IntegrityError):
+        client.post("/api/entries", json=NEW_ENTRY, headers=headers("alice"))

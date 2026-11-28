@@ -6,6 +6,7 @@ import pytest
 from alembic.script import ScriptDirectory
 
 from app.core import migrations
+from app.enums import ALLOWED_STATUSES, MediaType
 from app.core.security import hash_password, verify_password
 
 
@@ -109,6 +110,30 @@ def test_baseline_fills_missing_and_stale_hashes_only(monkeypatch):
     assert verify_password("new-pw", updates[1][1]["hash"])
     assert all("SET password_hash" in sql and "password =" not in sql.replace("password_hash", "")
                for sql, _ in updates)
+
+
+def latest(attribute):
+    """The value from the newest revision that defines `attribute`."""
+    return next(getattr(r.module, attribute) for r in reversed(revisions()) if hasattr(r.module, attribute))
+
+
+def test_database_type_and_status_rules_match_enums():
+    # Fails when app/enums.py changes: add a revision that replaces the CHECK constraints.
+    assert set(latest("MEDIA_TYPES")) == {t.value for t in MediaType}
+    in_db = {(t, s) for t, statuses in latest("ALLOWED_STATUSES").items() for s in statuses}
+    in_enums = {(t.value, s.value) for t, statuses in ALLOWED_STATUSES.items() for s in statuses}
+    assert in_db == in_enums
+
+
+def test_entry_rules_are_guarded_and_unique_index_covers_whole_shows(monkeypatch):
+    rules = next(r for r in revisions() if r.revision == "0003_entry_rules")
+    sql = run_upgrade(rules, monkeypatch)
+    adds = [s for s in sql if "ADD CONSTRAINT" in s]
+    assert len(adds) == 5
+    assert all(s.startswith("DO $$") and "IF NOT EXISTS (SELECT 1 FROM PG_CONSTRAINT" in s for s in adds)
+    (index,) = [s for s in sql if "UNIQUE INDEX" in s]
+    assert "(USERNAME, EXTERNAL_ID, SEASON_NUMBER) NULLS NOT DISTINCT" in index
+    assert "RATING BETWEEN 1 AND 10" in " ".join(sql)
 
 
 def test_no_revision_drops_a_column_that_a_later_one_adds(monkeypatch):
