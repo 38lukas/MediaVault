@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from app.core.database import Base
@@ -47,3 +47,6 @@ class MediaEntry(Base):
     number_of_rewatches = Column(Integer, nullable=True)  # Rewatches (movie/series/anime) or replays (game/DLC).
     is_favorite = Column(Boolean, nullable=False, default=False, server_default="false")
     hide_season_name = Column(Boolean, nullable=False, default=False, server_default="false")
+    # Set by the database; NULL for entries created before these columns existed.
+    created_at = Column(DateTime(timezone=True), nullable=True, server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), nullable=True, server_default=func.now(), onupdate=func.now())

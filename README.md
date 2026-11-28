@@ -94,8 +94,14 @@ After pulling changes that touch the database schema, run them once against the 
 
 ```bash
 cd backend
-python -m app.core.migrations
+python -m app.core.migrations   # same as: alembic upgrade head
 ```
+
+Migrations are versioned with Alembic (`backend/migrations/versions/`). `alembic current`
+shows which version a database is at; `alembic history` lists all of them.
+
+Never run `python -m app.core.migrations` from a checkout older than the switch to Alembic
+against a database that is already on Alembic: the old script drops `media_entries.created_at`.
 
 This uses `DATABASE_URL` from the root `.env`, so running it locally updates the Neon database
 that Render uses too. Alternatively, set `RUN_MIGRATIONS=1` on the Render Web Service for one

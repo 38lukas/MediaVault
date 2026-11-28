@@ -100,6 +100,8 @@ class MediaEntryResponse(MediaEntryBase):
 
     id: int
     username: str
+    created_at: Optional[datetime] = None  # Null for entries older than this field.
+    updated_at: Optional[datetime] = None
 
     # Configuration to allow Pydantic to read data directly from SQLAlchemy models
     model_config = ConfigDict(from_attributes=True)

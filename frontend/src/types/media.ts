@@ -1,6 +1,8 @@
 export interface MediaItem {
   id: number;
   username: string;
+  created_at?: string | null; // Null for entries older than the timestamp columns.
+  updated_at?: string | null;
   title: string;
   media_type: string;
   status: string;

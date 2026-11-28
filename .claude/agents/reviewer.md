@@ -16,7 +16,7 @@ Check, in this order:
 
 1. **Data safety** — could this lose or corrupt data? Dropped/renamed columns, rewritten
    rows, constraints added without checking existing data, non-idempotent statements in
-   `app/core/migrations.py`, model and migration out of sync, cascades that delete too much.
+   an Alembic revision in `backend/migrations/versions/`, model and migration out of sync, cascades that delete too much.
 2. **Security / ownership** — every query and write filtered by the current username;
    no new way to act as another user; no secrets in code, logs or responses; input validated.
 3. **Correctness** — logic errors, edge cases (empty lists, None, season vs whole show),

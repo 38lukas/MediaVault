@@ -16,7 +16,7 @@ How to work:
 3. Keep backend and frontend in sync: schemas ↔ `frontend/src/types`, enums ↔
    `types/media.ts`, new endpoints ↔ an RTK Query endpoint with correct cache tags.
 4. Database changes: follow the "Rules for database changes" in CLAUDE.md exactly.
-   Update both the model and `app/core/migrations.py`; never drop or rewrite data in the
+   Update both the model and an Alembic revision in `backend/migrations/versions/`; never drop or rewrite data in the
    same step. Never connect to or migrate the production database yourself.
 5. Add small tests for backend changes, per the "Tests" section of CLAUDE.md: one focused
    test file per changed backend module where it makes sense (`backend/tests/<pkg>/test_<module>.py`, mirroring `app/`).
