@@ -40,6 +40,9 @@ function partSx(activeTab: MediaModalTab, tab: MediaModalTab) {
   } as const;
 }
 
+// Fieldset reset; in friend view it disables the editable parts while tabs stay clickable.
+const FIELDSET_STYLE = { border: 'none', margin: 0, padding: 0, minInlineSize: 0 } as const;
+
 // Create/edit media dialog with overview, details, and journal tabs.
 export function MediaModal() {
   const dispatch = useAppDispatch();
@@ -211,20 +214,17 @@ export function MediaModal() {
             scrollbarGutter: 'stable',
           }}
         >
-          <fieldset
-            disabled={readOnly}
-            style={{ border: 'none', margin: 0, padding: 0, minInlineSize: 0 }}
-          >
-            <Stack spacing={2.5}>
-              {isError && <Alert severity="error">{errorMessage}</Alert>}
-              {fetchError && <Alert severity="error">{fetchError}</Alert>}
+          <Stack spacing={2.5}>
+            {isError && <Alert severity="error">{errorMessage}</Alert>}
+            {fetchError && <Alert severity="error">{fetchError}</Alert>}
 
-              <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                spacing={3}
-                sx={{ alignItems: { md: 'flex-start' } }}
-              >
-                <Box sx={{ width: { xs: '100%', md: 220 }, flexShrink: 0 }}>
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={3}
+              sx={{ alignItems: { md: 'flex-start' } }}
+            >
+              <Box sx={{ width: { xs: '100%', md: 220 }, flexShrink: 0 }}>
+                <fieldset disabled={readOnly} style={FIELDSET_STYLE}>
                   <CoverDetails
                     key={partKey}
                     posterUrl={form.posterUrl}
@@ -237,28 +237,30 @@ export function MediaModal() {
                       if (!readOnly) dispatch(patchForm(details));
                     }}
                   />
-                  <MediaModalTabs />
-                </Box>
+                </fieldset>
+                <MediaModalTabs />
+              </Box>
 
-                <Box sx={{ flex: 1, minWidth: 0, display: 'grid' }}>
-                  <Box sx={partSx(activeTab, 'overview')}>
+              <Box sx={{ flex: 1, minWidth: 0, display: 'grid' }}>
+                <Box sx={partSx(activeTab, 'overview')}>
+                  <fieldset disabled={readOnly} style={FIELDSET_STYLE}>
                     <OverviewTab />
-                  </Box>
-                  <Box sx={partSx(activeTab, 'details')}>
-                    <DetailsTab />
-                  </Box>
-                  <Box sx={{ gridArea: '1 / 1', display: activeTab === 'journal' ? 'block' : 'none' }}>
-                    <JournalTab key={partKey} />
-                  </Box>
-                  {activeTab === 'friends' && (
-                    <Box sx={{ gridArea: '1 / 1' }}>
-                      <FriendsTab />
-                    </Box>
-                  )}
+                  </fieldset>
                 </Box>
-              </Stack>
+                <Box sx={partSx(activeTab, 'details')}>
+                  <DetailsTab />
+                </Box>
+                <Box sx={{ gridArea: '1 / 1', display: activeTab === 'journal' ? 'block' : 'none' }}>
+                  <JournalTab key={partKey} readOnly={readOnly} />
+                </Box>
+                {activeTab === 'friends' && (
+                  <Box sx={{ gridArea: '1 / 1' }}>
+                    <FriendsTab />
+                  </Box>
+                )}
+              </Box>
             </Stack>
-          </fieldset>
+          </Stack>
         </DialogContent>
 
         <DialogActions

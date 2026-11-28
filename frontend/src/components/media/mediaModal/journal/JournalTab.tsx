@@ -36,8 +36,8 @@ function loggedLabel(mediaType: string): string {
   return mediaType === 'Book' ? 'Read' : 'Watched';
 }
 
-// Month calendar for logging played / watched / read days.
-export function JournalTab() {
+// Month calendar for logging played / watched / read days; readOnly (friend view) only browses.
+export function JournalTab({ readOnly = false }: { readOnly?: boolean }) {
   const playedDates = useAppSelector((state) => state.mediaModal.form.playedDates);
   const rewatchDates = useAppSelector((state) => state.mediaModal.form.rewatchDates);
   const mediaType = useAppSelector((state) => state.mediaModal.form.mediaType);
@@ -157,14 +157,15 @@ export function JournalTab() {
           const isFuture = key > todayKey;
           const isPlayed = played.has(key);
           const isRewatch = rewatch.has(key);
+          const clickable = !isFuture && !readOnly;
           return (
             <Box
               key={key}
               component="button"
               type="button"
-              disabled={isFuture}
+              disabled={!clickable}
               aria-pressed={isPlayed}
-              aria-haspopup="dialog"
+              aria-haspopup={readOnly ? undefined : 'dialog'}
               aria-label={`${date.toDateString()}${isPlayed ? `, ${label}` : ''}`}
               onClick={(e) => {
                 const anchor = e.currentTarget;
@@ -185,7 +186,7 @@ export function JournalTab() {
                 color: inMonth && !isFuture ? 'text.primary' : palette.textDisabled,
                 fontFamily: 'inherit',
                 fontSize: '0.9rem',
-                cursor: isFuture ? 'default' : 'pointer',
+                cursor: clickable ? 'pointer' : 'default',
                 transition: 'background-color 0.15s ease',
                 '&:hover:not(:disabled)': { backgroundColor: palette.borderMuted },
                 '&:focus-visible': { outline: `2px solid ${palette.primary}`, outlineOffset: -2 },
