@@ -27,6 +27,7 @@ export type {
 
 export {
   useLoginMutation,
+  useRegisterMutation,
   useUpdateAccountMutation,
 } from './authEndpoints';
 

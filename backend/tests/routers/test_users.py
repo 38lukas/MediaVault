@@ -1,5 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 
+from app.core.security import hash_password, verify_password
 from app.routers import users as users_router
 from tests.fakes import add_user, headers
 
@@ -34,19 +35,34 @@ def test_invalid_setting_is_rejected(client, db):
     assert user.default_type_filter == "All"
 
 
-def test_password_change_needs_current_password(client, db):
-    user = add_user(db, "alice", password="old")
-    for current in (None, "wrong"):
-        response = client.patch(
-            "/api/users/me/account", json={"current_password": current, "new_password": "new"}, headers=ALICE
-        )
-        assert response.status_code == 401
-    assert user.password == "old"
-    response = client.patch(
-        "/api/users/me/account", json={"current_password": "old", "new_password": "new"}, headers=ALICE
+def change_password(client, current, new):
+    return client.patch(
+        "/api/users/me/account", json={"current_password": current, "new_password": new}, headers=ALICE
     )
-    assert response.status_code == 200
-    assert user.password == "new"
+
+
+def test_password_change_needs_current_password(client, db):
+    user = add_user(db, "alice", password=None, password_hash=hash_password("old-password"))
+    old_hash = user.password_hash
+    for current in (None, "wrong"):
+        assert change_password(client, current, "new-password").status_code == 401
+    assert user.password_hash == old_hash
+    assert change_password(client, "old-password", "new-password").status_code == 200
+    assert verify_password("new-password", user.password_hash)
+
+
+def test_password_change_from_legacy_plain_text_clears_it(client, db):
+    user = add_user(db, "alice", password="legacy")
+    assert change_password(client, "legacy", "new-password").status_code == 200
+    assert user.password is None
+    assert verify_password("new-password", user.password_hash)
+
+
+def test_new_password_must_follow_rules(client, db):
+    user = add_user(db, "alice", password="legacy")
+    response = change_password(client, "legacy", "short")
+    assert response.status_code == 400
+    assert user.password == "legacy"
 
 
 def test_rename(client, db):

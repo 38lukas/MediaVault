@@ -26,6 +26,10 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class RegisterRequest(LoginRequest):
+    """Username and password for a new account."""
+
+
 class UserResponse(BaseModel):
     """Public user payload returned after a successful login."""
 

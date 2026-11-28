@@ -6,6 +6,15 @@ from contextlib import contextmanager
 import pytest
 
 from app.core import migrations
+from app.core.security import hash_password, verify_password
+
+
+class FakeResult:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def all(self):
+        return self.rows
 
 
 @pytest.fixture
@@ -14,8 +23,9 @@ def statements(monkeypatch):
     executed: list[str] = []
 
     class FakeConnection:
-        def execute(self, statement):
+        def execute(self, statement, params=None):
             executed.append(str(statement))
+            return FakeResult([])
 
     class FakeEngine:
         @contextmanager
@@ -49,3 +59,25 @@ def test_do_blocks_check_before_changing_schema(statements):
     for sql in statements:
         if sql.startswith("DO $$") and re.search(r"\bDROP COLUMN\b(?! IF EXISTS)", sql):
             assert "IF EXISTS (" in sql, sql
+
+
+def test_hash_plaintext_passwords_fills_missing_and_stale_hashes_only():
+    updates = []
+    rows = [
+        ("alice", "secret", None),  # no hash yet
+        ("bob", "new-pw", hash_password("old-pw")),  # stale hash
+        ("carol", "same", hash_password("same")),  # already fine
+        ("long", "x" * 73, None),  # too long for bcrypt
+    ]
+
+    class Connection:
+        def execute(self, statement, params=None):
+            if params is None:  # the SELECT
+                return FakeResult(rows)
+            updates.append((str(statement), params))
+
+    assert migrations.hash_plaintext_passwords(Connection()) == 2
+    assert [params["username"] for _, params in updates] == ["alice", "bob"]
+    assert verify_password("new-pw", updates[1][1]["hash"])
+    sql = updates[0][0]
+    assert "SET password_hash" in sql and "password =" not in sql.replace("password_hash", "")

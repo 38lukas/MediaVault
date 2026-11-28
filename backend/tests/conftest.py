@@ -32,9 +32,16 @@ os.environ.update(_DUMMY_ENV)
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
+from app.core import security  # noqa: E402
 from app.core.database import get_db  # noqa: E402
 from app.main import app  # noqa: E402
 from tests.fakes import FakeSession  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def fast_bcrypt(monkeypatch):
+    """Lowest bcrypt work factor, so hashing in tests takes milliseconds."""
+    monkeypatch.setattr(security, "BCRYPT_ROUNDS", 4)
 
 
 @pytest.fixture

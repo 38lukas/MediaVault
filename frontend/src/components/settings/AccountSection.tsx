@@ -32,6 +32,7 @@ import {
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const PASSWORD_MASK = '******';
+const MIN_PASSWORD_LENGTH = 8; // Must match MIN_PASSWORD_LENGTH in backend app/core/security.py.
 
 // Account settings: rename, change password, and log out.
 export function AccountSection() {
@@ -65,10 +66,13 @@ export function AccountSection() {
   const usernameChanged = usernameDraft.trim() !== currentName;
   const isEditing = editingUsername || editingPassword;
   const canSaveUsername = editingUsername && usernameChanged;
+  const newPasswordTooShort =
+    Boolean(newPasswordDraft) && newPasswordDraft.length < MIN_PASSWORD_LENGTH;
   const canSavePassword =
     editingPassword &&
     Boolean(currentPasswordDraft) &&
     Boolean(newPasswordDraft) &&
+    !newPasswordTooShort &&
     passwordsMatch;
   const canSave = canSaveUsername || canSavePassword;
 
@@ -171,6 +175,8 @@ export function AccountSection() {
             value={newPasswordDraft}
             onChange={(e) => dispatch(setNewPasswordDraft(e.target.value))}
             fullWidth
+            error={newPasswordTooShort}
+            helperText={newPasswordTooShort ? `At least ${MIN_PASSWORD_LENGTH} characters` : undefined}
             autoComplete="new-password"
           />
           <TextField

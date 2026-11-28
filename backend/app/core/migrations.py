@@ -14,7 +14,34 @@ more than once is safe.
 from sqlalchemy import text
 
 from app.core.database import engine, Base
+from app.core.security import MAX_PASSWORD_BYTES, hash_password, verify_password
 from app import models  # noqa: F401  (registers all tables on Base)
+
+
+def hash_plaintext_passwords(connection) -> int:
+    """Give every user that still has a plain-text password a matching password_hash.
+
+    Also repairs a hash that no longer matches (the password was changed by code that
+    only wrote the plain-text column). The plain-text column is not touched; clearing it
+    is a later, separate step once every login works from the hash. Safe to run repeatedly.
+
+    @returns Number of users whose hash was written.
+    """
+    rows = connection.execute(text(
+        'SELECT username, password, password_hash FROM "user" WHERE password IS NOT NULL'
+    )).all()
+    hashed = 0
+    for username, password, password_hash in rows:
+        if password_hash and verify_password(password, password_hash):
+            continue
+        if len(password.encode("utf-8")) > MAX_PASSWORD_BYTES:
+            continue  # bcrypt can't hash it; login keeps using the plain-text fallback.
+        connection.execute(
+            text('UPDATE "user" SET password_hash = :hash WHERE username = :username'),
+            {"hash": hash_password(password), "username": username},
+        )
+        hashed += 1
+    return hashed
 
 
 def run_migrations() -> None:
@@ -61,6 +88,9 @@ def run_migrations() -> None:
         connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS library_loaded_statuses VARCHAR[]'))
         connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS profile_hidden_sections VARCHAR[]'))
         connection.execute(text('ALTER TABLE "user" DROP COLUMN IF EXISTS profile_alignments'))
+        connection.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS password_hash VARCHAR'))
+        connection.execute(text('ALTER TABLE "user" ALTER COLUMN password DROP NOT NULL'))
+        hash_plaintext_passwords(connection)
         connection.execute(text("""
             DO $$
             BEGIN

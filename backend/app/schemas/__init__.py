@@ -18,6 +18,7 @@ from app.schemas.profile import (
 )
 from app.schemas.user import (
     LoginRequest,
+    RegisterRequest,
     SortField,
     UserAccountUpdate,
     UserResponse,
@@ -45,6 +46,7 @@ __all__ = [
     "MediaListWrite",
     "ProfileStatsResponse",
     "RatingBucket",
+    "RegisterRequest",
     "SortField",
     "UserAccountUpdate",
     "UserResponse",

@@ -10,7 +10,10 @@ class User(Base):
     __tablename__ = "user"
 
     username = Column(String, primary_key=True)
-    password = Column(String, nullable=False)
+    # Legacy plain-text password; kept until every row has a verified password_hash, then
+    # cleared in a separate step. New accounts and password changes leave it NULL.
+    password = Column(String, nullable=True)
+    password_hash = Column(String, nullable=True)  # bcrypt
     joined_date = Column(
         DateTime(timezone=True),
         nullable=False,
